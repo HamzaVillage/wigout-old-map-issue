@@ -80,8 +80,10 @@ export const notifyUserForNearbyReviewedPlaces = async (
         },
       },
     );
+    console.log('Notify API Response:-', response?.data);
     return response?.data;
   } catch (error) {
+    console.log('Notify API Error:-', error);
     return {
       success: false,
       message: error?.response?.data?.message || error.message,

@@ -98,7 +98,7 @@ const Home = () => {
       <LineBreak space={3} />
 
       {/* Search Bar */}
-      <View style={{paddingHorizontal: responsiveWidth(5)}}>
+      {/* <View style={{paddingHorizontal: responsiveWidth(5)}}>
         <AppTextInput
           inputPlaceHolder="What event are you looking for..."
           inputWidth={64}
@@ -117,9 +117,8 @@ const Home = () => {
             />
           }
         />
-      </View>
-
-      <LineBreak space={3} />
+      </View> */}
+      {/* <LineBreak space={3} /> */}
 
       {/* Recommended Horizontal Section */}
       {includeShowBranding && (
@@ -132,12 +131,12 @@ const Home = () => {
               textFontWeight
             />
             <TouchableOpacity>
-              <AppText
+              {/* <AppText
                 title="See All"
                 textColor={AppColors.BTNCOLOURS}
                 textSize={1.8}
                 textFontWeight
-              />
+              /> */}
             </TouchableOpacity>
           </View>
 

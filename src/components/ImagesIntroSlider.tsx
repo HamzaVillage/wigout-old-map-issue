@@ -18,8 +18,6 @@ import AppColors from '../utils/AppColors';
 
 const ImageIntroSlider = ({images}) => {
   const navigation = useNavigation();
-  
-
 
   // Render the item for the slider
   const renderItem = ({item}) => {
@@ -29,15 +27,15 @@ const ImageIntroSlider = ({images}) => {
           <AppHeader
             onBackPress={() => navigation.goBack()}
             backIconColor={AppColors.WHITE}
-            rightIcon={
-              <TouchableOpacity>
-                <AntDesign
-                  name={'hearto'}
-                  size={responsiveFontSize(2.5)}
-                  color={AppColors.WHITE}
-                />
-              </TouchableOpacity>
-            }
+            // rightIcon={
+            //   <TouchableOpacity>
+            //     <AntDesign
+            //       name={'hearto'}
+            //       size={responsiveFontSize(2.5)}
+            //       color={AppColors.WHITE}
+            //     />
+            //   </TouchableOpacity>
+            // }
           />
         </View>
       </ImageBackground>
@@ -47,7 +45,7 @@ const ImageIntroSlider = ({images}) => {
   return (
     <View style={{width: responsiveWidth(100), height: responsiveHeight(50)}}>
       <AppIntroSlider
-        data={images}  // Pass images to the slider
+        data={images} // Pass images to the slider
         renderItem={renderItem}
         showSkipButton={false}
         showNextButton={false}

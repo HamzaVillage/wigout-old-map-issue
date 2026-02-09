@@ -27,27 +27,25 @@ const veryIntensiveTask = async taskDataArguments => {
   // Infinite loop for the background service
   const {delay} = taskDataArguments;
 
-  await new Promise(async resolve => {
-    for await (const _ of BackgroundService) {
-      console.log('Background Service running...');
+  while (BackgroundService.isRunning()) {
+    console.log('Background Service pulse...');
 
-      try {
-        // Get Token from Redux Store
-        const state = store.getState();
-        const token = state?.user?.token; // Verify this path in Redux slice
+    try {
+      // Get Token from Redux Store
+      const state = store.getState();
+      const token = state?.user?.token;
 
-        if (token) {
-          getCurrentLocationAndNotify(token);
-        } else {
-          console.log('No token found in Redux store, skipping API call.');
-        }
-      } catch (error) {
-        console.error('Background Service Error:', error);
+      if (token) {
+        getCurrentLocationAndNotify(token);
+      } else {
+        console.log('No token found in Redux store, skipping API call.');
       }
-
-      await sleep(delay);
+    } catch (error) {
+      console.error('Background Service Error:', error);
     }
-  });
+
+    await sleep(delay);
+  }
 };
 
 const getCurrentLocationAndNotify = token => {

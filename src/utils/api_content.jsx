@@ -7,6 +7,8 @@ export const Google_Places_Images = `https://maps.googleapis.com/maps/api/place/
 
 // export const baseUrl = 'https://appsdemo.pro/WIGOut-Backend';
 export const baseUrl = 'https://wigout.apiforapp.link';
+export const webClientId =
+  '351663174027-9bfvj1am9c3gffblde070dpreubomoj7.apps.googleusercontent.com';
 
 export const endPoints = {
   signUp: '/api/user/signup',

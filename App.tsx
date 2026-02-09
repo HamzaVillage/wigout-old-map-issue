@@ -2,22 +2,85 @@ import React, {useEffect} from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import Routes from './src/routes/Routes';
 import {persistor, store} from './src/redux/Store';
-import {Provider} from 'react-redux';
+import {Provider, useSelector} from 'react-redux';
 import {PersistGate} from 'redux-persist/integration/react';
 import {GoogleSignin} from '@react-native-google-signin/google-signin';
+import {webClientId} from './src/utils/api_content';
+import {
+  listenForForegroundMessages,
+  registerNotifeeForegroundHandler,
+  requestUserPermission,
+  displayNotification, // ✅ Added proper import
+} from './src/utils/Notifications';
+import {
+  startBackgroundService,
+  stopBackgroundService,
+} from './src/services/BackgroundLocationService';
+import {notifyUserForNearbyReviewedPlaces} from './src/GlobalFunctions/main';
+import notifee from '@notifee/react-native'; // ✅ Added notifee import
+
+// const latitude = '37.414429';
+// const longitude = '122.081155';
+
+const BackgroundManager = () => {
+  const token = useSelector((state: any) => state?.user?.token);
+  const location = useSelector((state: any) => state?.user?.current_location);
+
+  useEffect(() => {
+    if (token) {
+      // ✅ Immediate hit when active/on login
+      if (location?.latitude) {
+        notifyUserForNearbyReviewedPlaces(
+          token,
+          location?.latitude,
+          location?.longitude,
+        );
+      }
+
+      startBackgroundService();
+      return () => {};
+    } else {
+      stopBackgroundService();
+    }
+  }, [token]);
+
+  return null;
+};
 
 const App = () => {
   useEffect(() => {
     GoogleSignin.configure({
-      webClientId:
-        '351663174027-9bfvj1am9c3gffblde070dpreubomoj7.apps.googleusercontent.com',
+      webClientId: webClientId,
     });
+
+    // Initialize Notifications
+    const initNotifications = async () => {
+      // ✅ Explicit Notifee permission request for Android 13+
+      await notifee.requestPermission();
+
+      const granted = await requestUserPermission();
+      console.log('Notification Permission Granted:', granted);
+
+      const unsubscribeMessaging = listenForForegroundMessages();
+      const unsubscribeNotifee = registerNotifeeForegroundHandler();
+
+      return () => {
+        unsubscribeMessaging();
+        unsubscribeNotifee();
+      };
+    };
+
+    const cleanup = initNotifications();
+    return () => {
+      cleanup.then(unsub => unsub?.());
+    };
   }, []);
 
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
         <NavigationContainer>
+          <BackgroundManager />
           <Routes />
         </NavigationContainer>
       </PersistGate>

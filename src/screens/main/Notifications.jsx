@@ -1,7 +1,14 @@
-/* eslint-disable react/no-unstable-nested-components */
-/* eslint-disable react-native/no-inline-styles */
-import React from 'react';
-import {View, TouchableOpacity, FlatList} from 'react-native';
+import React, {useState, useEffect, useCallback} from 'react';
+import {
+  View,
+  TouchableOpacity,
+  FlatList,
+  RefreshControl,
+  ActivityIndicator,
+  StyleSheet,
+} from 'react-native';
+import {useSelector} from 'react-redux';
+import {getAllNotifications} from '../../GlobalFunctions/main';
 import LineBreak from '../../components/LineBreak';
 import AppHeader from '../../components/AppHeader';
 import AppColors from '../../utils/AppColors';
@@ -12,122 +19,87 @@ import {
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import AppText from '../../components/AppTextComps/AppText';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
-
-const notificationData = [
-  {
-    id: 1,
-    icon: (
-      <View
-        style={{
-          backgroundColor: '#f2f1fe',
-          padding: responsiveWidth(3.5),
-          borderRadius: 100,
-        }}>
-        <Ionicons
-          name={'calendar'}
-          size={responsiveFontSize(2.2)}
-          color={AppColors.BTNCOLOURS}
-        />
-      </View>
-    ),
-    title: 'Booking Successful!',
-    description:
-      'You have successfully booked the Art Workshops. The event will be held on Sunday, December 22, 2022, 13.00 - 14.00 PM. Don"t forget to activate your reminder. Enjoy the event!',
-    date: '20 Dec, 2022 | 20:49 PM',
-    badge: 'New',
-  },
-  {
-    id: 2,
-    icon: (
-      <View
-        style={{
-          backgroundColor: '#f2f1fe',
-          padding: responsiveWidth(3.5),
-          borderRadius: 100,
-        }}>
-        <Ionicons
-          name={'calendar'}
-          size={responsiveFontSize(2.2)}
-          color={AppColors.BTNCOLOURS}
-        />
-      </View>
-    ),
-    title: 'Booking Successful!',
-    description:
-      'You have successfully booked the National Music Festival. The event will be held on Monday, December 24, 2022, 18.00 - 23.00 PM. Don"t forget to activate your reminder. Enjoy the event!',
-    date: '19 Dec, 2022 | 18:35 PM',
-    badge: 'New',
-  },
-  {
-    id: 3,
-    icon: (
-      <View
-        style={{
-          backgroundColor: '#FF98002E',
-          padding: responsiveWidth(3.5),
-          borderRadius: 100,
-        }}>
-        <MaterialCommunityIcons
-          name={'ticket'}
-          size={responsiveFontSize(2.2)}
-          color={AppColors.PEACHCOLOUR}
-        />
-      </View>
-    ),
-    title: 'New Services Available!',
-    description:
-      'You can now make multiple book events at once. You can also cancel your booking.',
-    date: '19 Dec, 2022 | 18:35 PM',
-  },
-  {
-    id: 4,
-    icon: (
-      <View
-        style={{
-          backgroundColor: '#246BFD2E',
-          padding: responsiveWidth(3.5),
-          borderRadius: 100,
-        }}>
-        <Ionicons
-          name={'wallet'}
-          size={responsiveFontSize(2.2)}
-          color={'#246BFD'}
-        />
-      </View>
-    ),
-    title: 'Credit Card Connected!',
-    description:
-      'Your credit card has been successfully linked with Eveno. Enjoy our service..',
-    date: '19 Dec, 2022 | 18:35 PM',
-  },
-  {
-    id: 5,
-    icon: (
-      <View
-        style={{
-          backgroundColor: '#4CAF502E',
-          padding: responsiveWidth(3.5),
-          borderRadius: 100,
-        }}>
-        <FontAwesome6
-          name={'user'}
-          size={responsiveFontSize(2.2)}
-          color={'#22BB9C'}
-        />
-      </View>
-    ),
-    title: 'Account Setup Successful!',
-    description:
-      'Your account creation is successful, you can now experience our services.',
-    date: '19 Dec, 2022 | 18:35 PM',
-  },
-];
+import moment from 'moment';
 
 const Notifications = ({navigation}) => {
+  // Use optional chaining for safety
+  const token = useSelector(state => state?.user?.token);
+
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Memoized fetch function to prevent unnecessary re-creations
+  const fetchNotifications = useCallback(
+    async (isRefreshing = false) => {
+      if (!token) return;
+
+      if (isRefreshing) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+
+      try {
+        const response = await getAllNotifications(token);
+        if (response?.success) {
+          // Ensure we always have an array
+          setNotifications(Array.isArray(response.data) ? response.data : []);
+        } else {
+          console.error('Failed to fetch notifications:', response?.message);
+        }
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [token],
+  );
+
+  // Initial load effect
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
+
+  const onRefresh = () => {
+    fetchNotifications(true);
+  };
+
+  const renderNotificationIcon = () => (
+    <View style={styles.iconContainer}>
+      <Ionicons
+        name={'notifications'}
+        size={responsiveFontSize(2.2)}
+        color={AppColors.BTNCOLOURS}
+      />
+    </View>
+  );
+
+  const renderEmptyComponent = () => (
+    <View style={styles.emptyContainer}>
+      <AppText
+        title={'No Notifications'}
+        textColor={AppColors.BLACK}
+        textSize={2.2}
+        textFontWeight
+        textAlignment={'center'}
+      />
+      <LineBreak space={1} />
+      <AppText
+        title={'You have no notifications yet.'}
+        textColor={AppColors.GRAY}
+        textSize={1.8}
+        textAlignment={'center'}
+      />
+    </View>
+  );
+
+  console.log('notifications:-', notifications);
+
   return (
-    <View>
+    <View style={styles.container}>
       <LineBreak space={3} />
       <AppHeader
         onBackPress={() => navigation.goBack()}
@@ -144,96 +116,104 @@ const Notifications = ({navigation}) => {
       />
       <LineBreak space={3} />
 
-      {/* <View style={{flex: 0.7, justifyContent: 'center', alignItems: 'center'}}>
-        <Image
-          source={AppImages.FILE}
-          resizeMode="contain"
-          style={{
-            width: responsiveWidth(90),
-            height: responsiveHeight(35),
-          }}
-        />
-        <LineBreak space={4} />
-        <AppText
-          title={'Empty'}
-          textColor={AppColors.WHITE}
-          textSize={2.5}
-          textFontWeight
-          textAlignment={'center'}
-        />
-        <LineBreak space={1} />
-        <AppText
-          title={'You don"t have any notifications at this time'}
-          textColor={AppColors.LIGHTGRAY}
-          textSize={2}
-          textAlignment={'center'}
-          lineHeight={3.5}
-        />
-      </View> */}
-
-      <FlatList
-        data={notificationData}
-        ItemSeparatorComponent={() => <LineBreak space={2} />}
-        renderItem={({item}) => {
-          return (
-            <View style={{paddingHorizontal: responsiveWidth(5)}}>
-              <View style={{gap: 20}}>
-                <View
-                  style={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                  }}>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      gap: 13,
-                    }}>
-                    {item.icon}
-                    <View>
-                      <AppText
-                        title={item.title}
-                        textColor={AppColors.BLACK}
-                        textSize={2.2}
-                        textFontWeight
-                      />
-                      <AppText
-                        title={item.date}
-                        textColor={AppColors.GRAY}
-                        textSize={1.5}
-                      />
-                    </View>
-                  </View>
-                  {item?.badge && (
-                    <View
-                      style={{
-                        backgroundColor: AppColors.BTNCOLOURS,
-                        padding: responsiveWidth(2),
-                        borderRadius: 10,
-                      }}>
-                      <AppText
-                        title={item?.badge}
-                        textColor={AppColors.WHITE}
-                        textSize={1.2}
-                        textFontWeight
-                      />
-                    </View>
-                  )}
+      {loading && !refreshing ? (
+        <View style={styles.loaderContainer}>
+          <ActivityIndicator size="large" color={AppColors.BTNCOLOURS} />
+        </View>
+      ) : (
+        <FlatList
+          data={notifications}
+          keyExtractor={(item, index) =>
+            item?.id?.toString() || index.toString()
+          }
+          ItemSeparatorComponent={() => <LineBreak space={2} />}
+          ListEmptyComponent={renderEmptyComponent}
+          contentContainerStyle={
+            notifications.length === 0 ? {flex: 1} : {paddingBottom: 20}
+          }
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={[AppColors.BTNCOLOURS]} // Android
+              tintColor={AppColors.BTNCOLOURS} // iOS
+            />
+          }
+          renderItem={({item}) => (
+            <View style={styles.notificationItem}>
+              <View style={styles.row}>
+                {renderNotificationIcon()}
+                <View style={styles.textContainer}>
+                  <AppText
+                    title={item.title || 'Notification'}
+                    textColor={AppColors.BLACK}
+                    textSize={2.1}
+                    textFontWeight
+                  />
+                  <AppText
+                    title={
+                      item.created_at
+                        ? moment(item.created_at).format(
+                            'DD MMM, YYYY | hh:mm A',
+                          )
+                        : moment().format('DD MMM, YYYY | hh:mm A')
+                    }
+                    textColor={AppColors.GRAY}
+                    textSize={1.4}
+                  />
                 </View>
-                <AppText
-                  title={item?.description}
-                  textColor={AppColors.GRAY}
-                  textSize={1.5}
-                  lineHeight={2.5}
-                />
               </View>
+              <LineBreak space={1} />
+              <AppText
+                title={item.message || item.description || ''}
+                textColor={AppColors.GRAY}
+                textSize={1.6}
+                lineHeight={2.2}
+              />
             </View>
-          );
-        }}
-      />
+          )}
+        />
+      )}
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: AppColors.WHITE,
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: responsiveWidth(20),
+  },
+  notificationItem: {
+    marginHorizontal: responsiveWidth(5),
+    // backgroundColor: AppColors.appBgColor,
+    // borderRadius: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: AppColors.GRAY,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 13,
+  },
+  iconContainer: {
+    backgroundColor: '#f2f1fe',
+    padding: responsiveWidth(3.5),
+    borderRadius: 100,
+  },
+  textContainer: {
+    flex: 1,
+  },
+});
 
 export default Notifications;
