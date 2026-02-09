@@ -38,7 +38,6 @@ import {
   statusCodes,
 } from '@react-native-google-signin/google-signin';
 import {getFcmToken} from '../../GlobalFunctions/other/Firebase';
-import {cleanSingle} from 'react-native-image-crop-picker';
 
 // AsyncStorage keys
 const REMEMBER_ME_EMAIL = '@rememberedEmail';
@@ -55,7 +54,7 @@ const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [fcmToken, setFcmToken] = useState('');
-  console.log('fcmToken', fcmToken);
+  console.log('fcmToken:-', fcmToken);
 
   const loadSavedCredentials = useCallback(async () => {
     try {
@@ -195,6 +194,7 @@ const Login = () => {
       setGLoading(false);
     }
   };
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}

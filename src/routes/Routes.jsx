@@ -8,6 +8,7 @@ import {GetCurrentLocation} from '../GlobalFunctions/other/GetCurrentLocation';
 import {setCurrentLocation} from '../redux/Slices';
 import LatLngIntoAddress from '../GlobalFunctions/other/LatLngIntoAddress';
 import FetchNearbyPlaces from '../ApiCalls/Main/FetchNearbyPlaces';
+import SetLocation from '../screens/auth/AccountSetup/SetLocation';
 
 const Stack = createStackNavigator();
 const Routes = () => {
@@ -15,16 +16,19 @@ const Routes = () => {
   const token = useSelector(state => state?.user?.token);
   const userData = useSelector(state => state?.user?.userData);
   const current_location = useSelector(state => state?.user?.current_location);
-  console.log('TOKEN:-', token);
-  console.log('userData:-', userData);
+  // console.log('TOKEN in Routes:-', token);
+  // console.log('userData:-', userData);
+  // console.log('current_location:-', current_location);
 
   return (
     <>
       <Stack.Navigator screenOptions={{headerShown: false}}>
         {token ? (
           <>
-            {userData?.isCreated == true ? (
+            {current_location?.latitude && userData?.isCreated == true ? (
               <Stack.Screen name="Main" component={Main} />
+            ) : !current_location?.latitude && userData?.isCreated == true ? (
+              <Stack.Screen name="SetLocation" component={SetLocation} />
             ) : (
               <Stack.Screen
                 name="CreateProfileRoute"
