@@ -27,6 +27,7 @@ import {useCustomNavigation} from '../../utils/Hooks';
 import {signUp} from '../../GlobalFunctions/auth';
 import {ShowToast} from '../../utils/api_content';
 import {signUpAndSignInFormValidation} from '../../utils/Validation';
+import {getFcmToken} from '../../GlobalFunctions/other/Firebase';
 
 const socialIcons = [
   {
@@ -51,6 +52,20 @@ const SignUp = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const {navigateToRoute} = useCustomNavigation();
+  const [fcmToken, setFcmToken] = useState(null);
+
+  useEffect(() => {
+    const fetchFcmToken = async () => {
+      try {
+        const newFcmToken = await getFcmToken();
+        console.log('FCM Token:', newFcmToken);
+        setFcmToken(newFcmToken);
+      } catch (err) {
+        console.error('Error fetching FCM token:', err);
+      }
+    };
+    fetchFcmToken();
+  }, []);
 
   const handleSignUp = async () => {
     const isValid = signUpAndSignInFormValidation(email, password);
@@ -59,10 +74,18 @@ const SignUp = () => {
       const res = await signUp({
         email: email?.toLowerCase(),
         password: password,
+        fcmToken,
       });
-
+      console.log('res in signup:-', res);
       if (res.success) {
-        navigateToRoute('Login'); // BuildYourList
+        // navigateToRoute('Login'); // BuildYourList
+        navigateToRoute('OtpVerification', {
+          email: email?.toLowerCase(),
+          otp: res?.data?.otp,
+          from: 'signUp',
+          userId: res?.data?.userId,
+          accessToken: res?.accessToken,
+        });
         ShowToast('success', res?.msg);
         setIsLoading(false);
       } else {
@@ -208,7 +231,7 @@ const SignUp = () => {
               loading={isLoading}
             />
             <LineBreak space={6} />
-            <View style={{flexDirection: 'row', gap: 20, alignItems: 'center'}}>
+            {/* <View style={{flexDirection: 'row', gap: 20, alignItems: 'center'}}>
               <View
                 style={{
                   backgroundColor: AppColors.GRAY,
@@ -230,8 +253,8 @@ const SignUp = () => {
                 }}
               />
             </View>
-            <LineBreak space={4} />
-            <FlatList
+            <LineBreak space={4} /> */}
+            {/* <FlatList
               data={socialIcons}
               horizontal
               contentContainerStyle={{
@@ -255,7 +278,7 @@ const SignUp = () => {
                   </TouchableOpacity>
                 );
               }}
-            />
+            /> */}
             <LineBreak space={2} />
             <View style={{flexDirection: 'row', gap: 10, alignItems: 'center'}}>
               <AppText

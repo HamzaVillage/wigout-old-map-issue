@@ -1,11 +1,12 @@
 import axios from 'axios';
 import {baseUrl, endPoints} from '../utils/api_content';
 
-export const signUp = async ({email, password}: any) => {
+export const signUp = async ({email, password, fcmToken}: any) => {
   try {
     const data = await axios.post(`${baseUrl}${endPoints.signUp}`, {
       email: email.toString()?.toLowerCase(),
       password: password.toString(),
+      FCMToken: fcmToken,
     });
     console.log('DATA in signUp:-', data);
 
@@ -18,11 +19,12 @@ export const signUp = async ({email, password}: any) => {
   }
 };
 
-export const signIn = async ({email, password}: any) => {
+export const signIn = async ({email, password, fcmToken}: any) => {
   try {
     const data = await axios.post(`${baseUrl}${endPoints.signIn}`, {
       email: email.toString()?.toLowerCase(),
       password: password.toString(),
+      FCMToken: fcmToken,
     });
     console.log('DATA in signIn:-', data);
     return data?.data;
@@ -97,12 +99,17 @@ export const forgotPassword = async ({email}: any) => {
   }
 };
 
-export const verifyOtpForResetPassword = async ({email, otp}: any) => {
+export const verifyOtpForResetPassword = async ({email, otp, token}: any) => {
   try {
-    const data = await axios.post(`${baseUrl}${endPoints.verifyOtp}`, {
-      email: email.toString(),
-      OTP: otp,
-    });
+    const payload: any = {OTP: otp};
+
+    if (token) {
+      payload.token = token;
+    } else if (email) {
+      payload.email = email.toString();
+    }
+
+    const data = await axios.post(`${baseUrl}${endPoints.verifyOtp}`, payload);
 
     return data?.data;
   } catch (error) {
@@ -120,6 +127,31 @@ export const resetPassword = async ({userId, newPassword}: any) => {
       newPassword: newPassword.toString(),
     });
 
+    return data?.data;
+  } catch (error) {
+    return {
+      success: false,
+      message: error?.response?.data?.message || error.message,
+    };
+  }
+};
+
+export const socialLogin = async ({
+  email,
+  fullName,
+  socialType,
+  socialId,
+  fcmToken,
+}: any) => {
+  try {
+    const data = await axios.post(`${baseUrl}${endPoints.socialLogin}`, {
+      email: email?.toString()?.toLowerCase(),
+      fullName: fullName?.toString(),
+      socialType: socialType?.toString(),
+      socialId: socialId?.toString(),
+      FCMToken: fcmToken,
+    });
+    console.log('DATA in socialLogin:-', data);
     return data?.data;
   } catch (error) {
     return {

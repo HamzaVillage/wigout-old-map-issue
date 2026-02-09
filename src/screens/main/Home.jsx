@@ -433,8 +433,6 @@ const Home = () => {
               columnWrapperStyle={{gap: 15, marginBottom: responsiveHeight(2)}}
               numColumns={2}
               renderItem={({item}) => {
-                console.log('item..', item);
-
                 return (
                   <RecommendedCard
                     item={item}

@@ -44,7 +44,7 @@ const FillYourProfile = () => {
 
   const [image, setImage] = useState('');
   const [date, setDate] = useState(new Date());
-  const [gender, setGender] = useState('');
+  const [gender, setGender] = useState('Male');
   const [fullName, setFullName] = useState('');
   const [nickName, setNickName] = useState('');
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);

@@ -160,6 +160,10 @@ const HomeDetails = ({route}) => {
   // console.log('images', images);
 
   const CeateReview = async type => {
+    if (!MorePlaceDetails) {
+      ShowError('Please wait, details are loading...', 2000);
+      return;
+    }
     setButtonLoader(true);
     const data = {
       placeId: MorePlaceDetails?.place_id,
@@ -169,10 +173,8 @@ const HomeDetails = ({route}) => {
       reviewText: typeReview,
       actionType: type,
       photos: images,
-      coordinates: {
-        latitude: MorePlaceDetails?.geometry?.location?.lat,
-        longitude: MorePlaceDetails?.geometry?.location?.lng,
-      },
+      latitude: MorePlaceDetails?.geometry?.location?.lat,
+      longitude: MorePlaceDetails?.geometry?.location?.lng,
     };
 
     const _addReview = await AddReviews(token, data);
@@ -185,10 +187,10 @@ const HomeDetails = ({route}) => {
         }, 2000);
       }
     }
-    console.log(_addReview);
     setTypeReview('');
     setButtonLoader(false);
-    ShowError(_addReview.message, 2000);
+    ShowError(_addReview.msg, 2000);
+    console.log(_addReview);
 
     console.log('_addReview', _addReview);
   };

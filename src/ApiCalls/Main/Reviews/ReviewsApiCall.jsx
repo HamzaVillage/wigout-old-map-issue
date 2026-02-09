@@ -8,6 +8,13 @@ export const AddReviews = async (token, data) => {
     return response.data;
   } catch (error) {
     console.log('error..', error);
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        error.message ||
+        'Something went wrong',
+    };
   }
 };
 

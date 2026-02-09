@@ -44,3 +44,47 @@ export const updateProfile = async ({
     };
   }
 };
+
+export const getAllNotifications = async (token: string) => {
+  try {
+    const data = await axios.get(`${baseUrl}${endPoints.getAllNotifications}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return data?.data;
+  } catch (error) {
+    return {
+      success: false,
+      message: error?.response?.data?.message || error.message,
+    };
+  }
+};
+
+export const notifyUserForNearbyReviewedPlaces = async (
+  token: string,
+  latitude: string,
+  longitude: string,
+) => {
+  const data = {
+    latitude: latitude,
+    longitude: longitude,
+  };
+  try {
+    const response = await axios.post(
+      `${baseUrl}${endPoints.notifyUser}`,
+      data,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      },
+    );
+    return response?.data;
+  } catch (error) {
+    return {
+      success: false,
+      message: error?.response?.data?.message || error.message,
+    };
+  }
+};

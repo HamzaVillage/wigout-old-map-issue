@@ -1,11 +1,14 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useCallback} from 'react';
 import {
   View,
   ScrollView,
   Image,
   TouchableOpacity,
   FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AppColors from '../../utils/AppColors';
@@ -25,47 +28,36 @@ import AppButton from '../../components/AppButton';
 import SVGXml from '../../components/SVGXML';
 import {AppIcons} from '../../assets/icons';
 import {useCustomNavigation} from '../../utils/Hooks';
-import {signIn} from '../../GlobalFunctions/auth';
+import {signIn, socialLogin} from '../../GlobalFunctions/auth';
 import {signUpAndSignInFormValidation} from '../../utils/Validation';
 import {ShowToast} from '../../utils/api_content';
 import {setToken, setUserData} from '../../redux/Slices';
 import {store} from '../../redux/Store';
+import {
+  GoogleSignin,
+  statusCodes,
+} from '@react-native-google-signin/google-signin';
+import {getFcmToken} from '../../GlobalFunctions/other/Firebase';
+import {cleanSingle} from 'react-native-image-crop-picker';
 
-// AsyncStorage keys for Remember Me feature
+// AsyncStorage keys
 const REMEMBER_ME_EMAIL = '@rememberedEmail';
 const REMEMBER_ME_PASSWORD = '@rememberedPassword';
 const REMEMBER_ME_ENABLED = '@rememberMeEnabled';
-
-const socialIcons = [
-  {
-    id: 1,
-    icon: <SVGXml icon={AppIcons.facebook_rounded} width={25} height={25} />,
-  },
-  {
-    id: 2,
-    icon: <SVGXml icon={AppIcons.google_pay} width={25} height={25} />,
-  },
-  {
-    id: 3,
-    icon: <SVGXml icon={AppIcons.black_apple} width={25} height={25} />,
-  },
-];
 
 const Login = () => {
   const [isFocused, setIsFocused] = useState({email: false, password: false});
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const {navigateToRoute} = useCustomNavigation();
+  const {navigateToRoute, navigation} = useCustomNavigation();
   const [isLoading, setIsLoading] = useState(false);
+  const [gLoading, setGLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fcmToken, setFcmToken] = useState('');
+  console.log('fcmToken', fcmToken);
 
-  // Load saved credentials on component mount
-  useEffect(() => {
-    loadSavedCredentials();
-  }, []);
-
-  const loadSavedCredentials = async () => {
+  const loadSavedCredentials = useCallback(async () => {
     try {
       const savedEmail = await AsyncStorage.getItem(REMEMBER_ME_EMAIL);
       const savedPassword = await AsyncStorage.getItem(REMEMBER_ME_PASSWORD);
@@ -73,128 +65,204 @@ const Login = () => {
         REMEMBER_ME_ENABLED,
       );
 
-      if (isRememberMeEnabled === 'true' && savedEmail && savedPassword) {
+      if (isRememberMeEnabled === 'true' && savedEmail) {
         setEmail(savedEmail);
-        setPassword(savedPassword);
+        setPassword(savedPassword || '');
         setRememberMe(true);
       }
     } catch (error) {
-      console.error('Error loading saved credentials:', error);
+      console.error('Error loading credentials:', error);
     }
-  };
+  }, []);
 
-  const saveCredentials = async (userEmail, userPassword) => {
-    try {
-      await AsyncStorage.setItem(REMEMBER_ME_EMAIL, userEmail);
-      await AsyncStorage.setItem(REMEMBER_ME_PASSWORD, userPassword);
-      await AsyncStorage.setItem(REMEMBER_ME_ENABLED, 'true');
-    } catch (error) {
-      console.error('Error saving credentials:', error);
-    }
-  };
+  useEffect(() => {
+    loadSavedCredentials();
+  }, [loadSavedCredentials]);
 
-  const clearSavedCredentials = async () => {
-    try {
-      await AsyncStorage.removeItem(REMEMBER_ME_EMAIL);
-      await AsyncStorage.removeItem(REMEMBER_ME_PASSWORD);
-      await AsyncStorage.removeItem(REMEMBER_ME_ENABLED);
-    } catch (error) {
-      console.error('Error clearing credentials:', error);
-    }
-  };
+  useEffect(() => {
+    const fetchFcmToken = async () => {
+      try {
+        const newFcmToken = await getFcmToken();
+        console.log('FCM Token:', newFcmToken);
+        setFcmToken(newFcmToken);
+      } catch (err) {
+        console.error('Error fetching FCM token:', err);
+      }
+    };
+    fetchFcmToken();
+  }, []);
 
   const handleSignIn = async () => {
     const isValid = signUpAndSignInFormValidation(email, password);
-    if (isValid === true) {
-      setIsLoading(true);
+    if (isValid !== true) return;
+
+    setIsLoading(true);
+    try {
       const res = await signIn({
-        email: email?.toLowerCase(),
+        email: email?.trim().toLowerCase(),
         password: password,
+        fcmToken,
       });
 
-      if (res.success) {
-        // Save or clear credentials based on Remember Me checkbox
+      if (res?.success) {
         if (rememberMe) {
-          await saveCredentials(email, password);
+          await AsyncStorage.multiSet([
+            [REMEMBER_ME_EMAIL, email],
+            [REMEMBER_ME_PASSWORD, password],
+            [REMEMBER_ME_ENABLED, 'true'],
+          ]);
         } else {
-          await clearSavedCredentials();
+          await AsyncStorage.multiRemove([
+            REMEMBER_ME_EMAIL,
+            REMEMBER_ME_PASSWORD,
+            REMEMBER_ME_ENABLED,
+          ]);
         }
 
         store.dispatch(setToken(res?.accessToken));
         store.dispatch(setUserData(res?.data));
-        ShowToast('success', res?.msg);
-        setIsLoading(false);
+        ShowToast('success', res?.msg || 'Login Successful');
       } else {
-        ShowToast('error', res?.msg || res?.message);
-        setIsLoading(false);
+        ShowToast('error', res?.msg || res?.message || 'Authentication Failed');
       }
+    } catch (error) {
+      ShowToast('error', 'An unexpected error occurred');
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  const handleGoogleSignIn = async () => {
+    if (gLoading) {
+      return;
+    }
+    setGLoading(true);
+    try {
+      if (Platform.OS === 'android') {
+        await GoogleSignin.hasPlayServices({
+          showPlayServicesUpdateDialog: true,
+        });
+      }
+
+      await GoogleSignin.signOut();
+
+      const signInResult = await GoogleSignin.signIn();
+
+      console.log('Google signInResult:', signInResult);
+
+      const body = {
+        email: signInResult?.data?.user?.email,
+        socialType: 'Google',
+        socialId: signInResult?.data?.user?.id,
+        fcmToken: fcmToken,
+      };
+
+      console.log('body in socialLogin:-', body);
+      const res = await socialLogin(body);
+      console.log('res in socialLogin:-', res);
+
+      if (res?.success) {
+        store.dispatch(setToken(res?.token));
+
+        let data = res?.data;
+        // if (data?.userName) {
+        //   data = {...data, isCreated: true};
+        // } else {
+        //   data = {...data, isCreated: false};
+        // }
+        store.dispatch(setUserData(data));
+
+        ShowToast('success', res?.msg || 'Login Successful');
+      } else {
+        ShowToast('error', res?.msg || res?.message || 'Authentication Failed');
+      }
+    } catch (err) {
+      if (err.code === statusCodes.SIGN_IN_CANCELLED) {
+        console.log('Google sign-in cancelled');
+      } else if (err.code === statusCodes.IN_PROGRESS) {
+        console.log('Google sign-in already in progress');
+      } else if (err.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        ShowToast('error', 'Google Play Services not available');
+      } else {
+        console.log(
+          'Google sign-in error full details:',
+          JSON.stringify(err, null, 2),
+        );
+        console.log('Google sign-in error:', err);
+        ShowToast('error', err?.message || 'Something went wrong');
+      }
+    } finally {
+      setGLoading(false);
+    }
+  };
   return (
-    <ScrollView style={{flex: 1, backgroundColor: AppColors.WHITE}}>
-      <AppHeader onBackPress={false} />
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{flex: 1, backgroundColor: AppColors.WHITE}}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <AppHeader onBackPress={false} />
 
-      <View style={{paddingHorizontal: responsiveWidth(5)}}>
-        <View style={{width: responsiveWidth(100), alignItems: 'center'}}>
-          <Image
-            source={AppImages.signup_logo}
-            style={{
-              width: responsiveWidth(100),
-              height: responsiveHeight(25),
-              alignSelf: 'center',
-            }}
-            resizeMode="contain"
+        <View style={{paddingHorizontal: responsiveWidth(5)}}>
+          <View style={{width: responsiveWidth(100), alignItems: 'center'}}>
+            <Image
+              source={AppImages.signup_logo}
+              style={{
+                width: responsiveWidth(100),
+                height: responsiveHeight(25),
+              }}
+              resizeMode="contain"
+            />
+          </View>
+
+          <LineBreak space={2} />
+          <AppText
+            title={'Login to Your Account'}
+            textAlignment={'center'}
+            textColor={AppColors.BLACK}
+            textFontWeight
+            textSize={3}
           />
-        </View>
-        <LineBreak space={2} />
+          <LineBreak space={4} />
 
-        <AppText
-          title={'Login to Your Account'}
-          textAlignment={'center'}
-          textColor={AppColors.BLACK}
-          textFontWeight
-          textSize={3}
-        />
-        <LineBreak space={4} />
-
-        <View>
           <View>
             <AppTextInput
               inputPlaceHolder={'Email'}
               inputWidth={70}
+              keyboardType="email-address"
+              autoCapitalize="none"
               isFocused={isFocused.email}
               onFocus={() => setIsFocused(prev => ({...prev, email: true}))}
               onBlur={() => setIsFocused(prev => ({...prev, email: false}))}
-              placeholderTextColor={AppColors.BLACK}
+              placeholderTextColor={AppColors.GRAY}
               value={email}
-              onChangeText={text => setEmail(text)}
+              onChangeText={setEmail}
               logo={
                 <MaterialIcons
                   name={'email'}
-                  size={responsiveFontSize(2)}
+                  size={responsiveFontSize(2.2)}
                   color={
                     isFocused.email ? AppColors.BTNCOLOURS : AppColors.GRAY
                   }
                 />
               }
             />
-          </View>
-          <LineBreak space={2} />
-          <View>
+
+            <LineBreak space={2} />
+
             <AppTextInput
               inputPlaceHolder={'Password'}
               inputWidth={70}
               isFocused={isFocused.password}
-              placeholderTextColor={AppColors.BLACK}
+              placeholderTextColor={AppColors.GRAY}
               onFocus={() => setIsFocused(prev => ({...prev, password: true}))}
               onBlur={() => setIsFocused(prev => ({...prev, password: false}))}
               value={password}
-              onChangeText={text => setPassword(text)}
+              onChangeText={setPassword}
+              secureTextEntry={!showPassword}
               logo={
                 <MaterialIcons
                   name={'lock'}
-                  size={responsiveFontSize(2)}
+                  size={responsiveFontSize(2.2)}
                   color={
                     isFocused.password ? AppColors.BTNCOLOURS : AppColors.GRAY
                   }
@@ -202,156 +270,179 @@ const Login = () => {
               }
               rightIcon={
                 <TouchableOpacity
-                  onPress={() => setShowPassword(prevState => !prevState)}>
+                  onPress={() => setShowPassword(!showPassword)}>
                   <FontAwesome
                     name={showPassword ? 'eye' : 'eye-slash'}
                     size={responsiveFontSize(2)}
-                    color={
-                      isFocused.password ? AppColors.BTNCOLOURS : AppColors.GRAY
-                    }
+                    color={AppColors.GRAY}
                   />
                 </TouchableOpacity>
               }
-              secureTextEntry={!showPassword}
             />
-          </View>
-          <LineBreak space={2} />
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 15,
-              alignSelf: 'center',
-            }}>
+
+            <LineBreak space={2} />
+
             <TouchableOpacity
               style={{
-                height: responsiveHeight(3),
-                width: responsiveHeight(3),
-                borderWidth: rememberMe ? 0 : 3,
-                borderRadius: 7,
-                borderColor: AppColors.BTNCOLOURS,
-                backgroundColor: rememberMe
-                  ? AppColors.BTNCOLOURS
-                  : 'transparent',
-                justifyContent: 'center',
+                flexDirection: 'row',
                 alignItems: 'center',
-              }}
-              onPress={() => setRememberMe(prevState => !prevState)}>
-              {rememberMe ? (
-                <FontAwesome
-                  name={'check'}
-                  size={responsiveFontSize(1.7)}
-                  color={AppColors.WHITE}
-                />
-              ) : (
-                <View />
-              )}
-            </TouchableOpacity>
-            <AppText
-              title={'Remember me'}
-              textColor={AppColors.BLACK}
-              textSize={2}
-            />
-          </View>
-
-          <LineBreak space={2} />
-
-          <View style={{alignItems: 'center'}}>
-            <AppButton
-              title={'Sign in'}
-              handlePress={() => handleSignIn()}
-              textSize={1.8}
-              btnPadding={18}
-              btnWidth={90}
-              loading={isLoading}
-            />
-            <LineBreak space={2} />
-
-            <TouchableOpacity onPress={() => navigateToRoute('ForgotPassword')}>
-              <AppText
-                title={'Forgot the password?'}
-                textAlignment={'center'}
-                textColor={AppColors.BTNCOLOURS}
-                textSize={2}
-                textFontWeight
-              />
-            </TouchableOpacity>
-
-            <LineBreak space={4} />
-
-            <View style={{flexDirection: 'row', gap: 20, alignItems: 'center'}}>
-              <View
-                style={{
-                  backgroundColor: AppColors.GRAY,
-                  width: responsiveWidth(24),
-                  height: responsiveHeight(0.1),
-                }}
-              />
-              <AppText
-                title={'or continue with'}
-                textAlignment={'center'}
-                textColor={AppColors.GRAY}
-                textSize={2}
-              />
-              <View
-                style={{
-                  backgroundColor: AppColors.GRAY,
-                  width: responsiveWidth(24),
-                  height: responsiveHeight(0.1),
-                }}
-              />
-            </View>
-
-            <LineBreak space={4} />
-
-            <FlatList
-              data={socialIcons}
-              horizontal
-              contentContainerStyle={{
-                flex: 1,
                 justifyContent: 'center',
-                gap: 20,
+                gap: 10,
               }}
-              renderItem={({item}) => {
-                return (
-                  <TouchableOpacity
-                    style={{
-                      borderWidth: 1,
-                      borderColor: AppColors.appBgColor,
-                      width: responsiveWidth(18),
-                      height: responsiveHeight(8),
-                      borderRadius: 10,
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}>
-                    {item.icon}
-                  </TouchableOpacity>
-                );
-              }}
-            />
-            <LineBreak space={2} />
-            <View style={{flexDirection: 'row', gap: 10, alignItems: 'center'}}>
+              onPress={() => setRememberMe(!rememberMe)}>
+              <View
+                style={{
+                  height: 22,
+                  width: 22,
+                  borderWidth: 2,
+                  borderRadius: 6,
+                  borderColor: AppColors.BTNCOLOURS,
+                  backgroundColor: rememberMe
+                    ? AppColors.BTNCOLOURS
+                    : 'transparent',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}>
+                {rememberMe && (
+                  <FontAwesome
+                    name={'check'}
+                    size={12}
+                    color={AppColors.WHITE}
+                  />
+                )}
+              </View>
               <AppText
-                title={'D"ont have an account?'}
-                textAlignment={'center'}
-                textColor={AppColors.GRAY}
-                textSize={2}
+                title={'Remember me'}
+                textColor={AppColors.BLACK}
+                textSize={1.8}
               />
-              <TouchableOpacity onPress={() => navigateToRoute('SignUp')}>
+            </TouchableOpacity>
+
+            <LineBreak space={3} />
+
+            <View style={{alignItems: 'center'}}>
+              <AppButton
+                title={'Sign in'}
+                handlePress={handleSignIn}
+                textSize={1.8}
+                btnPadding={18}
+                btnWidth={90}
+                loading={isLoading}
+              />
+
+              <LineBreak space={2} />
+
+              <TouchableOpacity
+                onPress={() => navigateToRoute('ForgotPassword')}>
                 <AppText
-                  title={'Sign up'}
-                  textAlignment={'center'}
+                  title={'Forgot the password?'}
                   textColor={AppColors.BTNCOLOURS}
-                  textSize={2}
+                  textSize={1.8}
                   textFontWeight
                 />
               </TouchableOpacity>
+
+              <LineBreak space={4} />
+
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  width: '90%',
+                }}>
+                <View
+                  style={{flex: 1, height: 1, backgroundColor: AppColors.GRAY}}
+                />
+                <AppText
+                  title={' or continue with '}
+                  textColor={AppColors.GRAY}
+                  textSize={1.8}
+                />
+                <View
+                  style={{flex: 1, height: 1, backgroundColor: AppColors.GRAY}}
+                />
+              </View>
+
+              <LineBreak space={4} />
+
+              <View style={{flexDirection: 'row', gap: 20}}>
+                {/* <TouchableOpacity
+                  style={{
+                    borderWidth: 1,
+                    borderColor: '#EEE',
+                    width: responsiveWidth(18),
+                    height: responsiveHeight(7),
+                    borderRadius: 12,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}>
+                  <SVGXml
+                    icon={AppIcons.facebook_rounded}
+                    width={25}
+                    height={25}
+                  />
+                </TouchableOpacity> */}
+
+                <TouchableOpacity
+                  onPress={handleGoogleSignIn}
+                  style={{
+                    borderWidth: 1,
+                    borderColor: '#EEE',
+                    width: responsiveWidth(18),
+                    height: responsiveHeight(7),
+                    borderRadius: 12,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}>
+                  {gLoading ? (
+                    <ActivityIndicator size="small" color={AppColors.BLACK} />
+                  ) : (
+                    <SVGXml icon={AppIcons.google_pay} width={25} height={25} />
+                  )}
+                </TouchableOpacity>
+
+                {Platform.OS === 'ios' && (
+                  <TouchableOpacity
+                    style={{
+                      borderWidth: 1,
+                      borderColor: '#EEE',
+                      width: responsiveWidth(18),
+                      height: responsiveHeight(7),
+                      borderRadius: 12,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}>
+                    <SVGXml
+                      icon={AppIcons.black_apple}
+                      width={25}
+                      height={25}
+                    />
+                  </TouchableOpacity>
+                )}
+              </View>
+
+              <LineBreak space={4} />
+
+              <View style={{flexDirection: 'row', gap: 5, marginBottom: 20}}>
+                <AppText
+                  title={"Don't have an account?"}
+                  textColor={AppColors.GRAY}
+                  textSize={1.8}
+                />
+                <TouchableOpacity onPress={() => navigateToRoute('SignUp')}>
+                  <AppText
+                    title={'Sign up'}
+                    textColor={AppColors.BTNCOLOURS}
+                    textSize={1.8}
+                    textFontWeight
+                  />
+                </TouchableOpacity>
+              </View>
             </View>
-            <LineBreak space={2} />
           </View>
         </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 

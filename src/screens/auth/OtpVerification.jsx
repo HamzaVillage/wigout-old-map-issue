@@ -16,6 +16,8 @@ import {
   verifyOtpForResetPassword,
 } from '../../GlobalFunctions/auth';
 import {ShowToast} from '../../utils/api_content';
+import {store} from '../../redux/Store';
+import {setToken, setUserData} from '../../redux/Slices';
 
 const RESEND_TIME = 60;
 
@@ -23,10 +25,14 @@ const OtpVerification = () => {
   const {navigateToRoute} = useCustomNavigation();
   const email = useRoute()?.params?.email;
   const userId = useRoute()?.params?.userId;
+  const from = useRoute()?.params?.from;
+  const accessToken = useRoute()?.params?.accessToken;
   const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isResending, setIsResending] = useState(false);
   const [timer, setTimer] = useState(RESEND_TIME);
+
+  console.log('otp:-', otp);
 
   const handleVerifyOtp = async () => {
     if (!otp) {
@@ -34,10 +40,28 @@ const OtpVerification = () => {
     }
 
     setIsLoading(true);
-    const res = await verifyOtpForResetPassword({email, otp});
+
+    let data = {
+      // email: email,
+      token: accessToken,
+      OTP: otp,
+    };
+
+    const res = await verifyOtpForResetPassword(
+      // from === 'signUp' ? data :
+      {email, otp, token: accessToken},
+    );
+
+    console.log('res in otp verification:-', res);
     if (res.success) {
       ShowToast('success', res?.msg);
-      navigateToRoute('CreateNewPassword', {userId});
+      if (from === 'signUp') {
+        store.dispatch(setToken(res?.token));
+        store.dispatch(setUserData(res?.data));
+        // navigateToRoute('Login');
+      } else {
+        navigateToRoute('CreateNewPassword', {userId});
+      }
     } else {
       ShowToast('error', res?.msg || res?.message);
     }

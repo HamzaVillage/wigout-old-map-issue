@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "351663174027",
+    "project_id": "wigout-12bd3",
+    "storage_bucket": "wigout-12bd3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:351663174027:android:9a469d2e969ba081e43f8e",
+        "android_client_info": {
+          "package_name": "com.wigout"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "351663174027-nbo6a2ntr957jb8skfdkjspq4074vans.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.wigout",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "351663174027-9bfvj1am9c3gffblde070dpreubomoj7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBmjlOANPyt1z3tpeBUGc5H718S4QdOmto"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "351663174027-9bfvj1am9c3gffblde070dpreubomoj7.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

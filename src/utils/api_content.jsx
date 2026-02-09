@@ -16,8 +16,11 @@ export const endPoints = {
   resetPassword: '/api/user/resetPassword',
   forgotPassword: '/api/user/forgetPassword',
   signIn: '/api/user/login',
+  socialLogin: '/api/user/socialLogin',
   addNote: '/api/user/addNoteOnReview',
   deleteNote: '/api/user/deleteNote',
+  getAllNotifications: '/api/user/getNotifications',
+  notifyUser: '/api/user/notifyUserForNearbyReviewedPlaces',
 };
 
 export const ShowToast = (type: 'success' | 'error' | 'info', message) => {

@@ -1,6 +1,6 @@
 /* eslint-disable react-native/no-inline-styles */
 import React from 'react';
-import {View, Image, TouchableOpacity} from 'react-native';
+import {View, Image, TouchableOpacity, Platform} from 'react-native';
 import AppColors from '../../utils/AppColors';
 import AppHeader from '../../components/AppHeader';
 import LineBreak from '../../components/LineBreak';
@@ -41,7 +41,7 @@ const GetStarted = () => {
           />
           <LineBreak space={2} />
 
-          <View>
+          {/* <View>
             <AppButton
               title={'Continue with Facebook'}
               btnBackgroundColor={AppColors.WHITE}
@@ -62,8 +62,10 @@ const GetStarted = () => {
                 </View>
               }
             />
-          </View>
+          </View> */}
+
           <LineBreak space={2} />
+
           <View>
             <AppButton
               title={'Continue with Google'}
@@ -82,25 +84,33 @@ const GetStarted = () => {
               }
             />
           </View>
+
           <LineBreak space={2} />
-          <View>
-            <AppButton
-              title={'Continue with Apple'}
-              btnBackgroundColor={AppColors.WHITE}
-              textColor={AppColors.BLACK}
-              textSize={1.8}
-              borderWidth={1}
-              btnPadding={15}
-              borderColor={AppColors.DARKGRAY}
-              btnWidth={90}
-              borderRadius={10}
-              leftIcon={
-                <View style={{paddingHorizontal: responsiveWidth(2)}}>
-                  <SVGXml icon={AppIcons.black_apple} width={20} height={20} />
-                </View>
-              }
-            />
-          </View>
+
+          {Platform.OS === 'ios' && (
+            <View>
+              <AppButton
+                title={'Continue with Apple'}
+                btnBackgroundColor={AppColors.WHITE}
+                textColor={AppColors.BLACK}
+                textSize={1.8}
+                borderWidth={1}
+                btnPadding={15}
+                borderColor={AppColors.DARKGRAY}
+                btnWidth={90}
+                borderRadius={10}
+                leftIcon={
+                  <View style={{paddingHorizontal: responsiveWidth(2)}}>
+                    <SVGXml
+                      icon={AppIcons.black_apple}
+                      width={20}
+                      height={20}
+                    />
+                  </View>
+                }
+              />
+            </View>
+          )}
 
           <LineBreak space={4} />
 
