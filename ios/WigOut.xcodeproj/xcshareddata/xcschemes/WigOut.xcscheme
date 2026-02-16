@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "WigOut.app"
-               BlueprintName = "WigOut"
-               ReferencedContainer = "container:WigOut.xcodeproj">
+               BuildableName = "Wigout.app"
+               BlueprintName = "Wigout"
+               ReferencedContainer = "container:Wigout.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,9 +33,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "00E356ED1AD99517003FC87E"
-               BuildableName = "WigOutTests.xctest"
-               BlueprintName = "WigOutTests"
-               ReferencedContainer = "container:WigOut.xcodeproj">
+               BuildableName = "WigoutTests.xctest"
+               BlueprintName = "WigoutTests"
+               ReferencedContainer = "container:Wigout.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
@@ -55,9 +55,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "WigOut.app"
-            BlueprintName = "WigOut"
-            ReferencedContainer = "container:WigOut.xcodeproj">
+            BuildableName = "Wigout.app"
+            BlueprintName = "Wigout"
+            ReferencedContainer = "container:Wigout.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -72,9 +72,9 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "WigOut.app"
-            BlueprintName = "WigOut"
-            ReferencedContainer = "container:WigOut.xcodeproj">
+            BuildableName = "Wigout.app"
+            BlueprintName = "Wigout"
+            ReferencedContainer = "container:Wigout.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

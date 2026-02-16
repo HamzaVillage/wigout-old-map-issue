@@ -85,7 +85,7 @@ const Login = () => {
         console.log('FCM Token:', newFcmToken);
         setFcmToken(newFcmToken);
       } catch (err) {
-        console.error('Error fetching FCM token:', err);
+        console.log('Error fetching FCM token:', err);
       }
     };
     fetchFcmToken();

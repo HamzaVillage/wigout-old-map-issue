@@ -175,7 +175,9 @@ const SetLocation = ({navigation}) => {
 
         <LocationModal
           value={currentLocation.address || 'Enter your location manually'}
-          onChangeText={text => setLocationName(text)}
+          onChangeText={text =>
+            dipatch(setCurrentLocation({...currentLocation, address: text}))
+          }
           handlePress={() => handleLocationContinue()}
           loading={isLoading}
           fetchCurrentLocation={() => fetchCurrentLocation()}

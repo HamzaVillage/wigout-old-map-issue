@@ -18,30 +18,39 @@ import {
 } from './src/services/BackgroundLocationService';
 import {notifyUserForNearbyReviewedPlaces} from './src/GlobalFunctions/main';
 import notifee from '@notifee/react-native'; // ✅ Added notifee import
+import {requestLocationPermission} from './src/utils/Permissions';
 
-// const latitude = '37.414429';
-// const longitude = '122.081155';
+const latitude = '37.4191213';
+const longitude = '-122.0932968';
 
 const BackgroundManager = () => {
   const token = useSelector((state: any) => state?.user?.token);
   const location = useSelector((state: any) => state?.user?.current_location);
 
   useEffect(() => {
-    if (token) {
-      // ✅ Immediate hit when active/on login
-      if (location?.latitude) {
-        notifyUserForNearbyReviewedPlaces(
-          token,
-          location?.latitude,
-          location?.longitude,
-        );
-      }
+    const startService = async () => {
+      if (token) {
+        // ✅ Immediate hit when active/on login
+        if (location?.latitude) {
+          notifyUserForNearbyReviewedPlaces(
+            token,
+            location?.latitude,
+            location?.longitude,
+          );
+        }
 
-      startBackgroundService();
-      return () => {};
-    } else {
-      stopBackgroundService();
-    }
+        const permissionGranted = await requestLocationPermission();
+        if (permissionGranted) {
+          startBackgroundService();
+        } else {
+          console.log('Location permission not granted, service not started.');
+        }
+      } else {
+        stopBackgroundService();
+      }
+    };
+
+    startService();
   }, [token]);
 
   return null;

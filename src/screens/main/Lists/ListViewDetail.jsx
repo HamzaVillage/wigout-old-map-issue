@@ -15,6 +15,7 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 const ListViewDetail = ({route}) => {
   const {placeDetails} = route.params;
 
+  console.log('placeDetails:-', placeDetails);
   return (
     <View style={{flex: 1, backgroundColor: AppColors.WHITE}}>
       <ScrollView style={{flex: 1}}>

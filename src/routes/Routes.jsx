@@ -9,6 +9,7 @@ import {setCurrentLocation} from '../redux/Slices';
 import LatLngIntoAddress from '../GlobalFunctions/other/LatLngIntoAddress';
 import FetchNearbyPlaces from '../ApiCalls/Main/FetchNearbyPlaces';
 import SetLocation from '../screens/auth/AccountSetup/SetLocation';
+import EnterAddressManually from '../screens/main/MapCommonScreens/EnterAddressManually';
 
 const Stack = createStackNavigator();
 const Routes = () => {
@@ -39,6 +40,10 @@ const Routes = () => {
         ) : (
           <Stack.Screen name="Auth" component={Auth} />
         )}
+        <Stack.Screen
+          name="EnterAddressManually"
+          component={EnterAddressManually}
+        />
       </Stack.Navigator>
       <Toast />
     </>
