@@ -8,7 +8,7 @@ export const Google_Places_Images = `https://maps.googleapis.com/maps/api/place/
 // export const baseUrl = 'https://appsdemo.pro/WIGOut-Backend';
 export const baseUrl = 'https://wigout.apiforapp.link';
 export const webClientId =
-  '59552515763-c0uktqide325je1lmdq5vo0gftlilgqf.apps.googleusercontent.com';
+  '59552515763-7pfcehum5to04ag3gno1gu1an7kvb2si.apps.googleusercontent.com';
 // export const webClientId =
 //   '351663174027-9bfvj1am9c3gffblde070dpreubomoj7.apps.googleusercontent.com';
 
