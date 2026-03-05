@@ -173,7 +173,7 @@ const Explore = ({navigation}) => {
           containerPaddingVertical={1}
           containerborderRadius={25}
           cardContainerBackgroundColor={AppColors.WHITE}
-          bottomPadding={1}
+          bottomPadding={0.1}
           dateNumOfLines={1}
           dateMaxWidth={true ? 'auto' : 35}
           locationNumOfLines={1}

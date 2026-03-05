@@ -1,19 +1,14 @@
-import React, {useEffect} from 'react';
+import React from 'react';
 import {createStackNavigator} from '@react-navigation/stack';
 import Auth, {CreateProfileRoute} from './Auth';
 import Main from './Main';
 import Toast from 'react-native-toast-message';
-import {useDispatch, useSelector} from 'react-redux';
-import {GetCurrentLocation} from '../GlobalFunctions/other/GetCurrentLocation';
-import {setCurrentLocation} from '../redux/Slices';
-import LatLngIntoAddress from '../GlobalFunctions/other/LatLngIntoAddress';
-import FetchNearbyPlaces from '../ApiCalls/Main/FetchNearbyPlaces';
+import {useSelector} from 'react-redux';
 import SetLocation from '../screens/auth/AccountSetup/SetLocation';
 import EnterAddressManually from '../screens/main/MapCommonScreens/EnterAddressManually';
 
 const Stack = createStackNavigator();
 const Routes = () => {
-  const dispatch = useDispatch();
   const token = useSelector(state => state?.user?.token);
   const userData = useSelector(state => state?.user?.userData);
   const current_location = useSelector(state => state?.user?.current_location);

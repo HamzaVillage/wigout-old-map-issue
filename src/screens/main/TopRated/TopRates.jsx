@@ -43,9 +43,9 @@ const TopRated = ({navigation}) => {
           address={item.vicinity}
           CardImg={item.photos?.[0]?.photo_reference}
           cardContainerWidth={92}
-          containerHeight={250}
+          containerHeight={230}
           imageHeight={140}
-          cardWidth={35}
+          cardWidth={40}
           titleFontSize={2}
           locationFontSize={1.4}
           containerPaddingVertical={1.5}

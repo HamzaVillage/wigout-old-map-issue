@@ -12,6 +12,7 @@ import AppText from '../../../components/AppTextComps/AppText';
 import LineBreak from '../../../components/LineBreak';
 import {
   responsiveFontSize,
+  responsiveHeight,
   responsiveWidth,
 } from '../../../utils/Responsive_Dimensions';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -71,13 +72,13 @@ const secondProfileMenus = [
     rightArrow,
     navTo: 'LinkedAccounts',
   },
-  {
-    id: 6,
-    icon: renderIcon(Octicons, 'verified'),
-    title: 'Security',
-    rightArrow,
-    navTo: 'Security',
-  },
+  // {
+  //   id: 6,
+  //   icon: renderIcon(Octicons, 'verified'),
+  //   title: 'Security',
+  //   rightArrow,
+  //   navTo: 'Security',
+  // },
   // {
   //   id: 7,
   //   icon: renderIcon(Entypo, 'language'),
@@ -101,7 +102,7 @@ const secondProfileMenus = [
   },
   {
     id: 10,
-    icon: renderIcon(FontAwesome5, 'users', responsiveFontSize(2)),
+    icon: renderIcon(Ionicons, 'people-outline', responsiveFontSize(2.5)),
     title: 'Invite Friends',
     rightArrow,
     navTo: 'InviteFriends',
@@ -180,6 +181,9 @@ const Profile = () => {
                 style={{
                   flexDirection: 'row',
                   justifyContent: 'space-between',
+                  borderBottomWidth: 1,
+                  borderBottomColor: AppColors.appBgColor,
+                  paddingBottom: responsiveHeight(1),
                 }}
                 onPress={() => {
                   if (item.navTo) {

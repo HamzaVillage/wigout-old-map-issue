@@ -279,13 +279,13 @@ const HomeDetails = ({route}) => {
               />
             </View>
             <LineBreak space={2} />
-            <TouchableOpacity activeOpacity={0.8}>
+            <View style={styles.mapPlaceholder}>
               <Image
                 source={AppImages.USER_LOCATION}
                 style={styles.mapPlaceholder}
                 resizeMode="contain"
               />
-            </TouchableOpacity>
+            </View>
           </View>
 
           {/* Review Input */}

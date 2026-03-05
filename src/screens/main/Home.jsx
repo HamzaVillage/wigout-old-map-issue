@@ -49,7 +49,7 @@ const Home = () => {
           </TouchableOpacity>
           <View style={{gap: 2}}>
             <AppText
-              title="Good Morning 👋"
+              title="Greeting 👋"
               textColor={AppColors.GRAY}
               textSize={1.7}
             />
@@ -101,7 +101,7 @@ const Home = () => {
                 address={item?.vicinity}
                 CardImg={item?.photos?.[0]?.photo_reference}
                 bottomPadding={0.1}
-                cardWidth={35}
+                cardWidth={35.3}
                 cardContainerWidth={75}
                 isHeartIconMoveToEnd
                 locationMaxWidth={60}
@@ -143,22 +143,22 @@ const Home = () => {
           ) : null
         }
         renderItem={({item}) => (
-          <View style={{paddingHorizontal: responsiveWidth(2.5)}}>
+          <View>
             <RecommendedCard
               item={item}
               name={item?.name}
               address={item?.vicinity}
               CardImg={item?.photos?.[0]?.photo_reference}
               cardContainerWidth={43}
-              cardWidth={19}
+              cardWidth={20}
               titleFontSize={2}
               dateFontSize={1.5}
               locationFontSize={1.3}
               containerPaddingHorizontal={2}
               textContainerPaddingHorizontal={2}
-              containerPaddingVertical={1}
+              containerPaddingVertical={0}
               containerborderRadius={25}
-              bottomPadding={1}
+              bottomPadding={0.5}
               dateNumOfLines={1}
               dateMaxWidth={35}
               locationNumOfLines={1}

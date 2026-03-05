@@ -80,7 +80,7 @@ const JournalHome = ({navigation}) => {
             />
             <View>
               <AppText
-                title={'Good Morning 👋'}
+                title={'Greeting 👋'}
                 textColor={AppColors.GRAY}
                 textSize={1.6}
               />
@@ -92,7 +92,9 @@ const JournalHome = ({navigation}) => {
               />
             </View>
           </View>
-          <TouchableOpacity style={styles.notificationBtn}>
+          <TouchableOpacity
+            onPress={() => navigateToRoute('Notifications')}
+            style={styles.notificationBtn}>
             <Ionicons
               name="notifications-outline"
               size={24}

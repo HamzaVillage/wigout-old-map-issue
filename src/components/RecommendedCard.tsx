@@ -96,6 +96,7 @@ const RecommendedCard = ({
   return (
     <>
       <TouchableOpacity
+        activeOpacity={0.7}
         onPress={cardOnPress}
         style={{
           height: containerHeight ? containerHeight : 'auto',
@@ -104,7 +105,7 @@ const RecommendedCard = ({
             : 'auto',
           borderWidth: cardContainerBackgroundColor ? 0 : 1,
           borderRadius: containerborderRadius ? containerborderRadius : 40,
-          borderColor: AppColors.LIGHTGRAY,
+          borderColor: AppColors.inputBlur,
           backgroundColor: AppColors.WHITE,
           elevation: 5,
         }}>
@@ -119,24 +120,25 @@ const RecommendedCard = ({
             gap: containerGap ? containerGap : 0,
             paddingVertical: containerPaddingVertical
               ? responsiveHeight(containerPaddingVertical)
-              : responsiveHeight(2),
+              : responsiveHeight(0),
             paddingHorizontal: containerPaddingHorizontal
               ? responsiveWidth(containerPaddingHorizontal)
-              : responsiveWidth(4),
+              : responsiveWidth(2),
           }}>
           <Image
             source={{uri: `${Google_Places_Images}${CardImg}`}}
             style={{
-              alignSelf: 'center',
-              width: cardWidth
-                ? responsiveHeight(cardWidth)
-                : responsiveWidth(70),
-              borderRadius: containerborderRadius ? containerborderRadius : 32,
               height: imageHeight
                 ? imageHeight
                 : cardWidth
                 ? responsiveHeight(cardWidth)
                 : responsiveHeight(27),
+              width: cardWidth
+                ? responsiveHeight(cardWidth)
+                : responsiveWidth(70),
+              borderRadius: containerborderRadius ? containerborderRadius : 32,
+              alignSelf: 'center',
+              backgroundColor: AppColors.inputBlur,
             }}
           />
 
@@ -173,7 +175,7 @@ const RecommendedCard = ({
             style={{
               paddingHorizontal: textContainerPaddingHorizontal
                 ? responsiveWidth(textContainerPaddingHorizontal)
-                : responsiveWidth(3),
+                : responsiveWidth(2),
               gap: 10,
             }}>
             <AppText
@@ -214,6 +216,7 @@ const RecommendedCard = ({
                   flexDirection: 'row',
                   gap: 5,
                   alignItems: 'center',
+                  paddingBottom: 5,
                 }}>
                 <Entypo
                   name={'location-pin'}
