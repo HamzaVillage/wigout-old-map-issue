@@ -1,5 +1,3 @@
-/* eslint-disable react/no-unstable-nested-components */
-/* eslint-disable react-native/no-inline-styles */
 import React from 'react';
 import {View, ScrollView, FlatList, TouchableOpacity} from 'react-native';
 import LineBreak from '../../../components/LineBreak';

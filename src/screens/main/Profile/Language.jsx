@@ -1,5 +1,3 @@
-/* eslint-disable react-native/no-inline-styles */
-/* eslint-disable react/no-unstable-nested-components */
 import React, {useState, useCallback} from 'react';
 import {View, StyleSheet, FlatList, TouchableOpacity} from 'react-native';
 import AppHeader from '../../../components/AppHeader';

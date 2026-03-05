@@ -98,15 +98,15 @@ const RecommendedCard = ({
       <TouchableOpacity
         onPress={cardOnPress}
         style={{
-          borderWidth: cardContainerBackgroundColor ? 0 : 1,
-          borderColor: AppColors.LIGHTGRAY,
-          elevation: 5,
-          backgroundColor: AppColors.WHITE,
-          borderRadius: containerborderRadius ? containerborderRadius : 40,
+          height: containerHeight ? containerHeight : 'auto',
           width: cardContainerWidth
             ? responsiveWidth(cardContainerWidth)
             : 'auto',
-          height: containerHeight ? containerHeight : 'auto',
+          borderWidth: cardContainerBackgroundColor ? 0 : 1,
+          borderRadius: containerborderRadius ? containerborderRadius : 40,
+          borderColor: AppColors.LIGHTGRAY,
+          backgroundColor: AppColors.WHITE,
+          elevation: 5,
         }}>
         <View
           style={{

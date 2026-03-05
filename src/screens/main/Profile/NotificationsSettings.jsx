@@ -1,6 +1,3 @@
-/* eslint-disable react-native/no-inline-styles */
-/* eslint-disable react/no-unstable-nested-components */
-
 import {useState} from 'react';
 import {
   View,

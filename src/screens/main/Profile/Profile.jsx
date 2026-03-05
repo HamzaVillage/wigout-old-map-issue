@@ -1,7 +1,3 @@
-/* eslint-disable quotes */
-/* eslint-disable eqeqeq */
-/* eslint-disable react/no-unstable-nested-components */
-/* eslint-disable react-native/no-inline-styles */
 import React, {useEffect, useState} from 'react';
 import {
   View,
@@ -9,18 +5,13 @@ import {
   Image,
   TouchableOpacity,
   FlatList,
-  Alert,
 } from 'react-native';
-import BackgroundScreen from '../../../components/AppTextComps/BackgroundScreen';
 import AppHeader from '../../../components/AppHeader';
 import AppColors from '../../../utils/AppColors';
 import AppText from '../../../components/AppTextComps/AppText';
-import AppImages from '../../../assets/images/AppImages';
 import LineBreak from '../../../components/LineBreak';
-import BioCard from '../../../components/BioCard';
 import {
   responsiveFontSize,
-  responsiveHeight,
   responsiveWidth,
 } from '../../../utils/Responsive_Dimensions';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -29,14 +20,12 @@ import Entypo from 'react-native-vector-icons/Entypo';
 import Octicons from 'react-native-vector-icons/Octicons';
 import Feather from 'react-native-vector-icons/Feather';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
-import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import {useNavigation} from '@react-navigation/native';
 import LogoutModal from '../../../components/LogoutModal';
 import {useDispatch, useSelector} from 'react-redux';
 import {clearToken} from '../../../redux/Slices';
-import { baseUrl } from '../../../utils/api_content';
-import { userData } from './../../../utils/LocalData';
+import {baseUrl} from '../../../utils/api_content';
 
 const iconSize = responsiveFontSize(2.5);
 const arrowSize = responsiveFontSize(3);
@@ -140,7 +129,6 @@ const Profile = () => {
   // useEffect(() => {
   //   dispatch(clearToken());
   // }, [])
-  
 
   return (
     <ScrollView style={{flex: 1, backgroundColor: AppColors.WHITE}}>
@@ -200,7 +188,7 @@ const Profile = () => {
                     setShowLogoutModal(true);
                   }
                 }}>
-                <View style={{flexDirection: 'row', gap: 15, }}>
+                <View style={{flexDirection: 'row', gap: 15}}>
                   {item.icon}
                   <AppText
                     title={item.title}

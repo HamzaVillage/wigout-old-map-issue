@@ -1,8 +1,5 @@
-/* eslint-disable react-native/no-inline-styles */
-/* eslint-disable react/no-unstable-nested-components */
 import React, {useState} from 'react';
 import {View, FlatList, StyleSheet, TouchableOpacity} from 'react-native';
-import BackgroundScreen from '../../../components/AppTextComps/BackgroundScreen';
 import {useNavigation} from '@react-navigation/native';
 import AppHeader from '../../../components/AppHeader';
 import LineBreak from '../../../components/LineBreak';

@@ -1,7 +1,5 @@
-/* eslint-disable eqeqeq */
-/* eslint-disable react-native/no-inline-styles */
 import React, {useState} from 'react';
-import {View, ScrollView, FlatList, Image, Text} from 'react-native';
+import {View, ScrollView, FlatList, Image} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import AppHeader from '../../../components/AppHeader';
 import LineBreak from '../../../components/LineBreak';

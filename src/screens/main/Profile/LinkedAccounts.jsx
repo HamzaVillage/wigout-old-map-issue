@@ -1,5 +1,3 @@
-/* eslint-disable react-native/no-inline-styles */
-/* eslint-disable react/no-unstable-nested-components */
 import React, {useState} from 'react';
 import {View, FlatList, StyleSheet, TouchableOpacity} from 'react-native';
 import {useNavigation} from '@react-navigation/native';

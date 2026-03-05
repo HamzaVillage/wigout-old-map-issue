@@ -1,4 +1,3 @@
-/* eslint-disable react-native/no-inline-styles */
 import React, {useEffect, useRef, useState} from 'react';
 import {
   View,
@@ -7,10 +6,8 @@ import {
   ImageBackground,
   KeyboardAvoidingView,
 } from 'react-native';
-import {useNavigation} from '@react-navigation/native';
 import AppHeader from '../../../components/AppHeader';
 import LineBreak from '../../../components/LineBreak';
-import AppImages from '../../../assets/images/AppImages';
 import AppColors from '../../../utils/AppColors';
 import {
   responsiveFontSize,
@@ -20,7 +17,6 @@ import {
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import AppTextInput from '../../../components/AppTextInput';
-import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import PhoneInputScreen from '../../../components/PhoneInput';
 import {useDispatch, useSelector} from 'react-redux';
 import {baseUrl, ShowToast} from '../../../utils/api_content';
@@ -29,8 +25,8 @@ import moment from 'moment';
 import {Picker} from '@react-native-picker/picker';
 import AppButton from '../../../components/AppButton';
 import {DateTimePickerModal} from 'react-native-modal-datetime-picker';
-import { updateProfile } from '../../../GlobalFunctions/main';
-import { UpdateProfile } from '../../../redux/Slices';
+import {updateProfile} from '../../../GlobalFunctions/main';
+import {UpdateProfile} from '../../../redux/Slices';
 
 const EditProfile = () => {
   const phoneRef = useRef(null);
@@ -76,7 +72,7 @@ const EditProfile = () => {
       id: userData?._id,
       fullName: fullName,
       nickName: nickName,
-      image: image ? image : `${baseUrl}/${userData?.profileImage}` ,
+      image: image ? image : `${baseUrl}/${userData?.profileImage}`,
       email: email,
       number: number,
       gender: gender,
@@ -89,7 +85,7 @@ const EditProfile = () => {
     } else {
       ShowToast('error', res?.msg || res?.message);
     }
-      setIsLoading(false);
+    setIsLoading(false);
   };
 
   useEffect(() => {
