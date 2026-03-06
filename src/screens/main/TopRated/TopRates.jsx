@@ -10,6 +10,7 @@ import {
   responsiveWidth,
 } from '../../../utils/Responsive_Dimensions';
 import AppText from '../../../components/AppTextComps/AppText';
+import HomeCard from '../../../components/HomeCard';
 
 const TopRated = ({navigation}) => {
   const dispatch = useDispatch();
@@ -37,7 +38,7 @@ const TopRated = ({navigation}) => {
   const renderItem = ({item}) => {
     return (
       <View style={{marginBottom: responsiveHeight(2)}}>
-        <RecommendedCard
+        {/* <RecommendedCard
           item={item}
           name={item.name}
           address={item.vicinity}
@@ -50,6 +51,17 @@ const TopRated = ({navigation}) => {
           locationFontSize={1.4}
           containerPaddingVertical={1.5}
           containerborderRadius={20}
+          cardOnPress={() =>
+            navigation.navigate('HomeDetails', {placeDetails: item})
+          }
+        /> */}
+
+        <HomeCard
+          name={item?.name}
+          address={item?.vicinity}
+          CardImg={item?.photos?.[0]?.photo_reference}
+          cardHeight={30}
+          cardWidth={92}
           cardOnPress={() =>
             navigation.navigate('HomeDetails', {placeDetails: item})
           }

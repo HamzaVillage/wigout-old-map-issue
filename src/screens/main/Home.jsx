@@ -1,5 +1,11 @@
-import React, {useState} from 'react';
-import {View, TouchableOpacity, FlatList, StyleSheet} from 'react-native';
+import React, {useState, useEffect, useRef} from 'react';
+import {
+  View,
+  TouchableOpacity,
+  FlatList,
+  StyleSheet,
+  Animated,
+} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import {useSelector} from 'react-redux';
 
@@ -13,8 +19,8 @@ import {
   responsiveHeight,
   responsiveWidth,
 } from '../../utils/Responsive_Dimensions';
-import RecommendedCard from '../../components/RecommendedCard';
 import {baseUrl} from '../../utils/api_content';
+import HomeCard from '../../components/HomeCard';
 
 const Home = () => {
   const {navigateToRoute} = useCustomNavigation();
@@ -22,6 +28,11 @@ const Home = () => {
   const fetchedLocations = useSelector(
     state => state?.user?.places_nearby || [],
   );
+
+  // Animation values
+  const headerAnim = useRef(new Animated.Value(0)).current;
+  const recommendedAnim = useRef(new Animated.Value(0)).current;
+  const nearbyAnim = useRef(new Animated.Value(0)).current;
 
   // Flow control states
   const [includeShowBranding, setIncludeShowBranding] = useState(true);
@@ -31,12 +42,47 @@ const Home = () => {
     item => item?.rating > 4,
   );
 
+  useEffect(() => {
+    // Start animations sequentially
+    Animated.sequence([
+      Animated.timing(headerAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(recommendedAnim, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+      Animated.timing(nearbyAnim, {
+        toValue: 1,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
+
   // console.log('fetchedLocations:-', fetchedLocations);
   const renderHeader = () => (
     <View>
       <LineBreak space={3} />
       {/* Profile and Greeting Header */}
-      <View style={styles.headerContainer}>
+      <Animated.View
+        style={[
+          styles.headerContainer,
+          {
+            opacity: headerAnim,
+            transform: [
+              {
+                translateY: headerAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [-20, 0],
+                }),
+              },
+            ],
+          },
+        ]}>
         <View style={styles.profileSection}>
           <TouchableOpacity>
             <FastImage
@@ -68,13 +114,25 @@ const Home = () => {
           style={styles.notificationBtn}>
           <SVGXml width="25" height="25" icon={AppIcons.notification_black} />
         </TouchableOpacity>
-      </View>
+      </Animated.View>
 
       <LineBreak space={3} />
 
       {/* Recommended Horizontal Section */}
       {includeShowBranding && (
-        <View style={{paddingHorizontal: responsiveWidth(5)}}>
+        <Animated.View
+          style={{
+            paddingHorizontal: responsiveWidth(5),
+            opacity: recommendedAnim,
+            transform: [
+              {
+                translateY: recommendedAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [20, 0],
+                }),
+              },
+            ],
+          }}>
           <View style={styles.sectionHeader}>
             <AppText
               title="Recommended"
@@ -91,20 +149,16 @@ const Home = () => {
             data={recommendedLocations}
             horizontal
             showsHorizontalScrollIndicator={false}
-            keyExtractor={(item, index) => `rec-${index}`}
+            keyExtractor={(_, index) => `rec-${index}`}
             ListEmptyComponent={<AppText title="No Recommendation found" />}
             contentContainerStyle={{gap: 12, marginBottom: responsiveHeight(2)}}
             renderItem={({item}) => (
-              <RecommendedCard
-                item={item}
+              <HomeCard
                 name={item?.name}
                 address={item?.vicinity}
                 CardImg={item?.photos?.[0]?.photo_reference}
-                bottomPadding={0.1}
-                cardWidth={35.3}
-                cardContainerWidth={75}
-                isHeartIconMoveToEnd
-                locationMaxWidth={60}
+                cardHeight={30}
+                cardWidth={75}
                 cardOnPress={() =>
                   navigateToRoute('HomeDetails', {placeDetails: item})
                 }
@@ -120,7 +174,7 @@ const Home = () => {
             textFontWeight
           />
           <LineBreak space={2} />
-        </View>
+        </Animated.View>
       )}
     </View>
   );
@@ -142,34 +196,28 @@ const Home = () => {
             </View>
           ) : null
         }
-        renderItem={({item}) => (
-          <View>
-            <RecommendedCard
-              item={item}
+        renderItem={({item, index}) => (
+          <Animated.View
+            style={{
+              opacity: nearbyAnim,
+              transform: [
+                {
+                  translateY: nearbyAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [30, 0],
+                  }),
+                },
+              ],
+            }}>
+            <HomeCard
               name={item?.name}
               address={item?.vicinity}
               CardImg={item?.photos?.[0]?.photo_reference}
-              cardContainerWidth={43}
-              cardWidth={20}
-              titleFontSize={2}
-              dateFontSize={1.5}
-              locationFontSize={1.3}
-              containerPaddingHorizontal={2}
-              textContainerPaddingHorizontal={2}
-              containerPaddingVertical={0}
-              containerborderRadius={25}
-              bottomPadding={0.5}
-              dateNumOfLines={1}
-              dateMaxWidth={35}
-              locationNumOfLines={1}
-              locationMaxWidth={25}
-              titleMaxWidth={35}
-              titleNumOfLines={1}
               cardOnPress={() =>
                 navigateToRoute('HomeDetails', {placeDetails: item})
               }
             />
-          </View>
+          </Animated.View>
         )}
       />
     </View>
