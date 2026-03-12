@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import {View, ScrollView, FlatList, Image} from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import AppHeader from '../../../components/AppHeader';
+import ScreenWrapper from '../../../components/ScreenWrapper';
 import LineBreak from '../../../components/LineBreak';
 import AppColors from '../../../utils/AppColors';
 import LineTab from '../../../components/LineTab';
@@ -98,8 +99,9 @@ const VisitHistory = () => {
   const [isSelectedTab, setIsSelectedTab] = useState({id: 1});
 
   return (
-    <ScrollView
-      contentContainerStyle={{flexGrow: 1, backgroundColor: AppColors.WHITE}}>
+    <ScreenWrapper>
+      <ScrollView
+        contentContainerStyle={{flexGrow: 1}}>
       <AppHeader
         onBackPress={() => navigation.goBack()}
         heading={'Visit History'}
@@ -256,7 +258,8 @@ const VisitHistory = () => {
           />
         </View>
       )}
-    </ScrollView>
+      </ScrollView>
+    </ScreenWrapper>
   );
 };
 

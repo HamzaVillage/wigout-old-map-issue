@@ -4,6 +4,7 @@ import AppHeader from '../../../components/AppHeader';
 import {useNavigation} from '@react-navigation/native';
 import LineBreak from '../../../components/LineBreak';
 import AppText from '../../../components/AppTextComps/AppText';
+import ScreenWrapper from '../../../components/ScreenWrapper';
 import AppColors from '../../../utils/AppColors';
 import {
   responsiveFontSize,
@@ -68,7 +69,8 @@ const Language = () => {
   );
 
   return (
-    <View style={{flex: 1, backgroundColor: AppColors.WHITE}}>
+    <ScreenWrapper>
+      <View style={{flex: 1}}>
       <AppHeader onBackPress={() => navigation.goBack()} heading="Language" />
       <LineBreak space={3} />
 
@@ -101,7 +103,8 @@ const Language = () => {
           renderItem={renderItem}
         />
       </View>
-    </View>
+      </View>
+    </ScreenWrapper>
   );
 };
 

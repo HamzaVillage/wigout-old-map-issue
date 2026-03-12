@@ -11,18 +11,27 @@ export const updateProfile = async ({
   date,
 }: any) => {
   try {
-    let fields = new FormData();
-    fields.append('userId', id);
-    fields.append('fullName', fullName);
-    fields.append('nickName', nickName);
-    fields.append('DOB', date);
-    fields.append('phone', number);
-    fields.append('gender', gender);
-    fields.append('profileImage', {
-      uri: image,
-      name: 'image.jpg',
-      type: 'image/jpeg',
-    });
+    let data = new FormData();
+    data.append('userId', id);
+    data.append('fullName', fullName);
+    data.append('nickName', nickName);
+    data.append('DOB', date);
+    data.append('phone', number);
+    data.append('gender', gender);
+
+    // Only upload the image if it's a new local file
+    if (
+      image &&
+      (image.startsWith('file://') ||
+        image.startsWith('content://') ||
+        image.startsWith('/'))
+    ) {
+      data.append('profileImage', {
+        uri: image,
+        name: 'image.jpg',
+        type: 'image/jpeg',
+      } as any);
+    }
 
     let config = {
       method: 'post',
@@ -31,12 +40,12 @@ export const updateProfile = async ({
       headers: {
         'Content-Type': 'multipart/form-data',
       },
-      data: fields,
+      data: data,
     };
 
-    const data = await axios.request(config);
+    const res = await axios.request(config);
 
-    return data?.data;
+    return res?.data;
   } catch (error) {
     return {
       success: false,

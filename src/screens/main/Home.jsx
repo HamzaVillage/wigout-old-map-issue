@@ -21,6 +21,8 @@ import {
 } from '../../utils/Responsive_Dimensions';
 import {baseUrl} from '../../utils/api_content';
 import HomeCard from '../../components/HomeCard';
+import ScreenWrapper from '../../components/ScreenWrapper';
+import Entypo from 'react-native-vector-icons/Entypo';
 
 const Home = () => {
   const {navigateToRoute} = useCustomNavigation();
@@ -63,7 +65,6 @@ const Home = () => {
     ]).start();
   }, []);
 
-  // console.log('fetchedLocations:-', fetchedLocations);
   const renderHeader = () => (
     <View>
       <LineBreak space={3} />
@@ -109,11 +110,19 @@ const Home = () => {
             />
           </View>
         </View>
-        <TouchableOpacity
-          onPress={() => navigateToRoute('Notifications')}
-          style={styles.notificationBtn}>
-          <SVGXml width="25" height="25" icon={AppIcons.notification_black} />
-        </TouchableOpacity>
+        <View style={{flexDirection: 'row', gap: 10}}>
+          {/* <TouchableOpacity
+            onPress={() => navigateToRoute('SetLocation')}
+            style={styles.notificationBtn}>
+            <Entypo name="location-pin" size={24} color={AppColors.darkBlue} />
+          </TouchableOpacity> */}
+
+          <TouchableOpacity
+            onPress={() => navigateToRoute('Notifications')}
+            style={styles.notificationBtn}>
+            <SVGXml width="25" height="25" icon={AppIcons.notification_black} />
+          </TouchableOpacity>
+        </View>
       </Animated.View>
 
       <LineBreak space={3} />
@@ -179,14 +188,16 @@ const Home = () => {
     </View>
   );
 
+  console.log('fetchedLocations:-', fetchedLocations);
+  console.log('recommendedLocations:-', recommendedLocations);
   return (
-    <View style={{flex: 1, backgroundColor: AppColors.WHITE}}>
+    <ScreenWrapper>
       {/* Main Container using FlatList for better performance */}
       <FlatList
         data={includeShowBranding ? fetchedLocations : []}
         ListHeaderComponent={renderHeader}
         numColumns={2}
-        keyExtractor={(item, index) => `nearby-${index}`}
+        keyExtractor={(_, index) => `nearby-${index}`}
         columnWrapperStyle={styles.columnWrapper}
         contentContainerStyle={{paddingBottom: responsiveHeight(4)}}
         ListEmptyComponent={
@@ -220,7 +231,7 @@ const Home = () => {
           </Animated.View>
         )}
       />
-    </View>
+    </ScreenWrapper>
   );
 };
 

@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native';
 import AppColors from '../../../utils/AppColors';
+import ScreenWrapper from '../../../components/ScreenWrapper';
 import LineBreak from '../../../components/LineBreak';
 import AppHeader from '../../../components/AppHeader';
 import {
@@ -91,7 +92,8 @@ const Lists = ({navigation}) => {
   };
 
   return (
-    <ScrollView style={{flex: 1, backgroundColor: AppColors.WHITE}}>
+    <ScreenWrapper>
+      <ScrollView style={{flex: 1}}>
       <AppHeader onBackPress heading={'Lists'} />
 
       <LineBreak space={3} />
@@ -218,7 +220,8 @@ const Lists = ({navigation}) => {
           />
         </View>
       </View>
-    </ScrollView>
+      </ScrollView>
+    </ScreenWrapper>
   );
 };
 

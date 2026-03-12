@@ -11,6 +11,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
+import ScreenWrapper from '../../../components/ScreenWrapper';
 import AppColors from '../../../utils/AppColors';
 import AppText from '../../../components/AppTextComps/AppText';
 import LineBreak from '../../../components/LineBreak';
@@ -111,7 +112,8 @@ const HelpMeDecide = () => {
   );
 
   return (
-    <SafeAreaView style={{flex: 1, backgroundColor: AppColors.WHITE}}>
+    <ScreenWrapper>
+      <SafeAreaView style={{flex: 1}}>
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
@@ -300,7 +302,8 @@ const HelpMeDecide = () => {
           />
         </View>
       </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </ScreenWrapper>
   );
 };
 

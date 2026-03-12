@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import AppHeader from '../../../components/AppHeader';
+import ScreenWrapper from '../../../components/ScreenWrapper';
 import LineBreak from '../../../components/LineBreak';
 import AppImages from '../../../assets/images/AppImages';
 import {
@@ -94,8 +95,9 @@ const InviteFriends = () => {
   const navigation = useNavigation();
 
   return (
-    <ScrollView
-      contentContainerStyle={{flexGrow: 1, backgroundColor: AppColors.WHITE}}>
+    <ScreenWrapper>
+      <ScrollView
+        contentContainerStyle={{flexGrow: 1}}>
       <AppHeader
         onBackPress={() => navigation.goBack()}
         heading={'Invite Friends'}
@@ -166,7 +168,8 @@ const InviteFriends = () => {
           );
         }}
       />
-    </ScrollView>
+      </ScrollView>
+    </ScreenWrapper>
   );
 };
 

@@ -11,8 +11,8 @@ type BgProps = {
 const BackgroundScreen = ({children, stylesPorp}: BgProps) => {
   return (
     <ImageBackground
-      source={AppImages.BG}
-      style={[{flex: 1, padding: 20}, stylesPorp]}>
+      source={AppImages.imageBg}
+      style={[{flex: 1}, stylesPorp]}>
       {children}
     </ImageBackground>
   );

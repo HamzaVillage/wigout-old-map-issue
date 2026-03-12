@@ -12,6 +12,7 @@ import Entypo from 'react-native-vector-icons/Entypo';
 import LineBreak from '../../../components/LineBreak';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import AppImages from '../../../assets/images/AppImages';
+import ScreenWrapper from '../../../components/ScreenWrapper';
 import RecommendedCard from '../../../components/RecommendedCard';
 import {oneData} from '../../../utils/LocalData';
 import MapView from 'react-native-map-clustering';
@@ -30,7 +31,8 @@ const Explore = ({navigation}) => {
   const fetchedLocations = useSelector(state => state?.user?.places_nearby);
 
   return (
-    <View style={{flex: 1}}>
+    <ScreenWrapper>
+      <View style={{flex: 1}}>
       <MapView
         ref={mapRef}
         provider={PROVIDER_GOOGLE}
@@ -185,7 +187,8 @@ const Explore = ({navigation}) => {
           containerGap={true ? 5 : 0}
         />
       </View>
-    </View>
+      </View>
+    </ScreenWrapper>
   );
 };
 

@@ -3,14 +3,14 @@ import {baseUrl, endPoints} from '../utils/api_content';
 
 export const signUp = async ({email, password, fcmToken}: any) => {
   try {
-    const data = await axios.post(`${baseUrl}${endPoints.signUp}`, {
+    const res = await axios.post(`${baseUrl}${endPoints.signUp}`, {
       email: email.toString()?.toLowerCase(),
       password: password.toString(),
       FCMToken: fcmToken,
     });
-    console.log('DATA in signUp:-', data);
+    console.log('DATA in signUp:-', res?.data);
 
-    return data?.data;
+    return res?.data;
   } catch (error) {
     return {
       success: false,

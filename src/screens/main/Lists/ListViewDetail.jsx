@@ -1,4 +1,5 @@
 import {View, Text, TouchableOpacity, ScrollView, Image} from 'react-native';
+import ScreenWrapper from '../../../components/ScreenWrapper';
 import React from 'react';
 import AppColors from '../../../utils/AppColors';
 import LineBreak from '../../../components/LineBreak';
@@ -17,7 +18,8 @@ const ListViewDetail = ({route}) => {
 
   console.log('placeDetails:-', placeDetails);
   return (
-    <View style={{flex: 1, backgroundColor: AppColors.WHITE}}>
+    <ScreenWrapper>
+      <View style={{flex: 1}}>
       <ScrollView style={{flex: 1}}>
         {placeDetails.photos?.length > 0 && (
           <ImageIntroSlider images={placeDetails.photos} />
@@ -205,7 +207,8 @@ const ListViewDetail = ({route}) => {
         </View>
         <LineBreak space={2} />
       </ScrollView>
-    </View>
+      </View>
+    </ScreenWrapper>
   );
 };
 

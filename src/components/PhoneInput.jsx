@@ -1,6 +1,5 @@
-/* eslint-disable react-native/no-inline-styles */
 import React, {useEffect, useRef, useState} from 'react';
-import {View, StyleSheet} from 'react-native';
+import {StyleSheet} from 'react-native';
 import PhoneInput from 'react-native-phone-input';
 import AppColors from '../utils/AppColors';
 import {
@@ -14,7 +13,6 @@ const PhoneInputScreen = ({phoneRef, defaultVal}) => {
 
   useEffect(() => {
     if (phoneRef.current) {
-      // console.log("phoneRef.current.getPickerData()",phoneRef.current.getPickerData())
       setPickerData(phoneRef.current.getPickerData());
     }
   }, []);
@@ -23,38 +21,32 @@ const PhoneInputScreen = ({phoneRef, defaultVal}) => {
     countryPickerRef.current?.open();
   };
 
-  const selectCountry = country => {
-    phoneRef.current?.selectCountry(country.iso2);
-  };
-
   return (
-    <View>
-      <PhoneInput
-        ref={phoneRef}
-        onPressFlag={onPressFlag}
-        initialCountry={'us'}
-        initialValue={defaultVal}
-        style={{
-          paddingHorizontal: responsiveWidth(7),
-          height: responsiveHeight(7),
-          borderRadius: 12,
-          backgroundColor: AppColors.inputBg,
-        }}
-        textStyle={{color: AppColors.BLACK, marginLeft: 10}}
-        autoFormat
-        textProps={{
-          placeholder: '+1 000 000 000',
-        }}
-      />
-
-      {/* <CountryPicker
-        ref={countryPickerRef}
-        data={pickerData}
-        onChange={(country) => selectCountry(country)}
-        cancelText="Cancel"
-      /> */}
-    </View>
+    <PhoneInput
+      ref={phoneRef}
+      onPressFlag={onPressFlag}
+      initialCountry={'us'}
+      initialValue={defaultVal}
+      style={styles.container}
+      textStyle={styles.textStyle}
+      autoFormat
+      textProps={{
+        placeholder: '+1 000 000 000',
+      }}
+    />
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    paddingHorizontal: responsiveWidth(5),
+    height: responsiveHeight(6),
+    borderRadius: 12,
+    backgroundColor: AppColors.inputBackground,
+    borderWidth: 1,
+    borderColor: AppColors.inputBorder,
+  },
+  textStyle: {color: AppColors.BLACK, marginLeft: 10},
+});
 
 export default PhoneInputScreen;

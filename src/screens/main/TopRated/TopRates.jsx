@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {View, FlatList, ActivityIndicator, SafeAreaView} from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import AppHeader from '../../../components/AppHeader';
+import ScreenWrapper from '../../../components/ScreenWrapper';
 import RecommendedCard from '../../../components/RecommendedCard';
 import AppColors from '../../../utils/AppColors';
 import FetchNearbyPlaces from '../../../ApiCalls/Main/FetchNearbyPlaces';
@@ -71,7 +72,8 @@ const TopRated = ({navigation}) => {
   };
 
   return (
-    <SafeAreaView style={{flex: 1, backgroundColor: AppColors.WHITE}}>
+    <ScreenWrapper>
+      <SafeAreaView style={{flex: 1}}>
       <AppHeader heading="Top Rated Restaurants" />
       <View
         style={{
@@ -102,7 +104,8 @@ const TopRated = ({navigation}) => {
           </View>
         )}
       </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </ScreenWrapper>
   );
 };
 

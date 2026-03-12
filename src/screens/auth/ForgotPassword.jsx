@@ -17,6 +17,7 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AppButton from '../../components/AppButton';
 import {useCustomNavigation} from '../../utils/Hooks';
+import ScreenWrapper from '../../components/ScreenWrapper';
 
 const data = [
   {
@@ -50,93 +51,98 @@ const ForgotPassword = () => {
   const [isSelected, setIsSelected] = useState({shown: 'via_sms', id: 1});
 
   return (
-    <ScrollView style={{flex: 1, backgroundColor: AppColors.WHITE}}>
-      <AppHeader onBackPress heading={'Forgot Password'} />
+    <ScreenWrapper>
+      <ScrollView style={{flex: 1}}>
+        <AppHeader onBackPress heading={'Forgot Password'} />
 
-      <LineBreak space={8} />
+        <LineBreak space={8} />
 
-      <View style={{paddingHorizontal: responsiveWidth(5)}}>
-        <Image
-          source={AppImages.MOBILE}
-          style={{width: responsiveWidth(90), height: responsiveHeight(30)}}
-          resizeMode="contain"
-        />
+        <View style={{paddingHorizontal: responsiveWidth(5)}}>
+          <Image
+            source={AppImages.MOBILE}
+            style={{width: responsiveWidth(90), height: responsiveHeight(30)}}
+            resizeMode="contain"
+          />
 
-        <LineBreak space={3} />
+          <LineBreak space={3} />
 
-        <AppText
-          title={
-            'Select which contact details should we use to reset your password'
-          }
-          textColor={AppColors.BLACK}
-          textSize={2.1}
-        />
+          <AppText
+            title={
+              'Select which contact details should we use to reset your password'
+            }
+            textColor={AppColors.BLACK}
+            textSize={2.1}
+          />
 
-        <LineBreak space={3} />
+          <LineBreak space={3} />
 
-        <FlatList
-          data={data}
-          contentContainerStyle={{gap: 15}}
-          renderItem={({item}) => {
-            return (
-              <TouchableOpacity
-                style={{
-                  borderWidth: 3,
-                  borderColor:
-                    (isSelected.shown == 'via_sms' && isSelected.id == item.id) ||  (isSelected.shown == 'via_email' && isSelected.id == item.id)
-                      ? AppColors.BTNCOLOURS
-                      : AppColors.LIGHTGRAY,
-                  paddingHorizontal: responsiveWidth(4),
-                  paddingVertical: responsiveHeight(2),
-                  borderRadius: 30,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 15,
-                }}
-                onPress={() => {
-                  if (item.id == 1) {
-                    setIsSelected({shown: 'via_sms', id: item.id});
-                  } else {
-                    setIsSelected({shown: 'via_email', id: item.id});
-                  }
-                }}>
-                <View
+          <FlatList
+            data={data}
+            contentContainerStyle={{gap: 15}}
+            renderItem={({item}) => {
+              return (
+                <TouchableOpacity
                   style={{
-                    backgroundColor: AppColors.LIGHT_BTNCOLOURS,
-                    borderRadius: 100,
-                    padding: responsiveWidth(5),
+                    borderWidth: 3,
+                    borderColor:
+                      (isSelected.shown == 'via_sms' &&
+                        isSelected.id == item.id) ||
+                      (isSelected.shown == 'via_email' &&
+                        isSelected.id == item.id)
+                        ? AppColors.BTNCOLOURS
+                        : AppColors.LIGHTGRAY,
+                    paddingHorizontal: responsiveWidth(4),
+                    paddingVertical: responsiveHeight(2),
+                    borderRadius: 30,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 15,
+                  }}
+                  onPress={() => {
+                    if (item.id == 1) {
+                      setIsSelected({shown: 'via_sms', id: item.id});
+                    } else {
+                      setIsSelected({shown: 'via_email', id: item.id});
+                    }
                   }}>
-                  {item.icon}
-                </View>
-                <View style={{gap: 5}}>
-                  <AppText
-                    title={item.title}
-                    textColor={AppColors.GRAY}
-                    textSize={1.6}
-                  />
-                  <AppText
-                    title={item.message}
-                    textColor={AppColors.BLACK}
-                    textSize={1.9}
-                    textFontWeight
-                  />
-                </View>
-              </TouchableOpacity>
-            );
-          }}
-        />
+                  <View
+                    style={{
+                      backgroundColor: AppColors.LIGHT_BTNCOLOURS,
+                      borderRadius: 100,
+                      padding: responsiveWidth(5),
+                    }}>
+                    {item.icon}
+                  </View>
+                  <View style={{gap: 5}}>
+                    <AppText
+                      title={item.title}
+                      textColor={AppColors.GRAY}
+                      textSize={1.6}
+                    />
+                    <AppText
+                      title={item.message}
+                      textColor={AppColors.BLACK}
+                      textSize={1.9}
+                      textFontWeight
+                    />
+                  </View>
+                </TouchableOpacity>
+              );
+            }}
+          />
 
-        <LineBreak space={4} />
+          <LineBreak space={4} />
 
-        <AppButton
-          title={'Continue'}
-          textColor={AppColors.WHITE}
-          textSize={2}
-          btnPadding={15}
-          handlePress={() => navigateToRoute('EmailForForgotPassword')}
-        />
-      </View>
-    </ScrollView>
+          <AppButton
+            title={'Continue'}
+            textColor={AppColors.WHITE}
+            textSize={2}
+            btnPadding={15}
+            handlePress={() => navigateToRoute('EmailForForgotPassword')}
+          />
+        </View>
+      </ScrollView>
+    </ScreenWrapper>
   );
 };
 

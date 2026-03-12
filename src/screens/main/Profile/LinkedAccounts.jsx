@@ -4,6 +4,7 @@ import {useNavigation} from '@react-navigation/native';
 import AppHeader from '../../../components/AppHeader';
 import LineBreak from '../../../components/LineBreak';
 import AppText from '../../../components/AppTextComps/AppText';
+import ScreenWrapper from '../../../components/ScreenWrapper';
 import AppColors from '../../../utils/AppColors';
 import {
   responsiveFontSize,
@@ -46,7 +47,8 @@ const LinkedAccounts = () => {
     </View>
   );
   return (
-    <View style={{flex: 1, backgroundColor: AppColors.WHITE}}>
+    <ScreenWrapper>
+      <View style={{flex: 1}}>
       <AppHeader
         onBackPress={() => navigation.goBack()}
         heading="Linked Accounts"
@@ -58,7 +60,8 @@ const LinkedAccounts = () => {
         ItemSeparatorComponent={() => <LineBreak space={3} />}
         renderItem={renderItem}
       />
-    </View>
+      </View>
+    </ScreenWrapper>
   );
 };
 

@@ -11,6 +11,7 @@ import {useSelector} from 'react-redux';
 import {getAllNotifications} from '../../GlobalFunctions/main';
 import LineBreak from '../../components/LineBreak';
 import AppHeader from '../../components/AppHeader';
+import ScreenWrapper from '../../components/ScreenWrapper';
 import AppColors from '../../utils/AppColors';
 import {
   responsiveFontSize,
@@ -99,7 +100,8 @@ const Notifications = ({navigation}) => {
   console.log('notifications:-', notifications);
 
   return (
-    <View style={styles.container}>
+    <ScreenWrapper>
+      <View style={{flex: 1}}>
       <LineBreak space={3} />
       <AppHeader
         onBackPress={() => navigation.goBack()}
@@ -174,14 +176,14 @@ const Notifications = ({navigation}) => {
           )}
         />
       )}
-    </View>
+      </View>
+    </ScreenWrapper>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: AppColors.WHITE,
   },
   loaderContainer: {
     flex: 1,

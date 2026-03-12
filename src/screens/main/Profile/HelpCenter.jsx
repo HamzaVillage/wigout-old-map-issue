@@ -23,6 +23,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Entypo from 'react-native-vector-icons/Entypo';
 import LineTab from '../../../components/LineTab';
+import ScreenWrapper from '../../../components/ScreenWrapper';
 
 const tabsData = [
   {id: 1, title: 'FAQ'},
@@ -104,14 +105,15 @@ const HelpCenter = () => {
   const [isSelectedCategorie, SetIsSelectedCategorie] = useState({id: 1});
 
   return (
-    <View style={{flex: 1}}>
-      <AppHeader
-        onBackPress={() => navigation.goBack()}
-        heading={'Help Center'}
-      />
-      <LineBreak space={4} />
+    <ScreenWrapper>
+      <View style={{flex: 1}}>
+        <AppHeader
+          onBackPress={() => navigation.goBack()}
+          heading={'Help Center'}
+        />
+        <LineBreak space={4} />
 
-      <View style={{paddingHorizontal: responsiveWidth(5)}}>
+        <View style={{paddingHorizontal: responsiveWidth(5)}}>
         <LineTab
           data={tabsData}
           isSelectedTab={isSelectedTab}
@@ -160,10 +162,11 @@ const HelpCenter = () => {
               return (
                 <TouchableOpacity
                   style={{
-                    backgroundColor: AppColors.WHITE,
+                    borderRadius: 25,
+                    borderWidth: 1,
+                    borderColor: AppColors.appBgColor,
                     paddingHorizontal: responsiveWidth(5),
                     paddingVertical: responsiveHeight(3),
-                    borderRadius: 25,
                   }}>
                   <View
                     style={{
@@ -192,7 +195,8 @@ const HelpCenter = () => {
           />
         </ScrollView>
       )}
-    </View>
+      </View>
+    </ScreenWrapper>
   );
 };
 

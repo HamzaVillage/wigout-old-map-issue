@@ -12,6 +12,7 @@ import AppColors from '../../../utils/AppColors';
 import FontAwesome6 from 'react-native-vector-icons/FontAwesome6';
 import Entypo from 'react-native-vector-icons/Entypo';
 import AppButton from '../../../components/AppButton';
+import ScreenWrapper from '../../../components/ScreenWrapper';
 
 const data = [
   {id: 1, title: 'Remember me'},
@@ -57,7 +58,8 @@ const Security = () => {
     </View>
   );
   return (
-    <View style={{flex: 1, backgroundColor: AppColors.WHITE}}>
+    <ScreenWrapper>
+      <View style={{flex: 1}}>
       <AppHeader onBackPress={() => navigation.goBack()} heading="Security" />
       <LineBreak space={4} />
 
@@ -90,7 +92,8 @@ const Security = () => {
         )}
       />
       <LineBreak space={2} />
-    </View>
+      </View>
+    </ScreenWrapper>
   );
 };
 

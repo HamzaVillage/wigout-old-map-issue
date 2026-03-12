@@ -9,6 +9,7 @@ import {
   SafeAreaView,
   ActivityIndicator,
 } from 'react-native';
+import ScreenWrapper from '../../../components/ScreenWrapper';
 import AppColors from '../../../utils/AppColors';
 import AppText from '../../../components/AppTextComps/AppText';
 import AppTextInput from '../../../components/AppTextInput';
@@ -62,14 +63,17 @@ const JournalHome = ({navigation}) => {
 
   if (loader) {
     return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color={AppColors.BTNCOLOURS} />
-      </View>
+      <ScreenWrapper>
+        <View style={styles.center}>
+          <ActivityIndicator size="large" color={AppColors.BTNCOLOURS} />
+        </View>
+      </ScreenWrapper>
     );
   }
 
   return (
-    <SafeAreaView style={{flex: 1, backgroundColor: AppColors.WHITE}}>
+    <ScreenWrapper>
+      <SafeAreaView style={{flex: 1}}>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
@@ -200,7 +204,8 @@ const JournalHome = ({navigation}) => {
 
         <LineBreak space={4} />
       </ScrollView>
-    </SafeAreaView>
+      </SafeAreaView>
+    </ScreenWrapper>
   );
 };
 

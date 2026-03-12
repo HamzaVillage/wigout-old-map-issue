@@ -3,6 +3,7 @@ import {View, ScrollView, FlatList, TouchableOpacity} from 'react-native';
 import LineBreak from '../../../components/LineBreak';
 import {useNavigation} from '@react-navigation/native';
 import AppHeader from '../../../components/AppHeader';
+import ScreenWrapper from '../../../components/ScreenWrapper';
 import {
   responsiveFontSize,
   responsiveHeight,
@@ -29,7 +30,8 @@ const Payments = () => {
   const navigation = useNavigation();
 
   return (
-    <ScrollView style={{flex: 1}}>
+    <ScreenWrapper>
+      <ScrollView style={{flex: 1}}>
       <AppHeader
         onBackPress={() => navigation.goBack()}
         heading="Payments"
@@ -51,10 +53,11 @@ const Payments = () => {
             return (
               <TouchableOpacity
                 style={{
-                  backgroundColor: AppColors.WHITE,
+                  borderRadius: 25,
+                  borderWidth: 1,
+                  borderColor: AppColors.appBgColor,
                   paddingHorizontal: responsiveWidth(5),
                   paddingVertical: responsiveHeight(3),
-                  borderRadius: 25,
                 }}>
                 <View
                   style={{
@@ -97,7 +100,8 @@ const Payments = () => {
         />
         <LineBreak space={2} />
       </View>
-    </ScrollView>
+      </ScrollView>
+    </ScreenWrapper>
   );
 };
 

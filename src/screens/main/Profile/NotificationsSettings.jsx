@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import LineBreak from '../../../components/LineBreak';
 import AppHeader from '../../../components/AppHeader';
+import ScreenWrapper from '../../../components/ScreenWrapper';
 import {useNavigation} from '@react-navigation/native';
 import AppColors from '../../../utils/AppColors';
 import AppText from '../../../components/AppTextComps/AppText';
@@ -57,7 +58,8 @@ const NotificationsSettings = () => {
   );
 
   return (
-    <ScrollView style={{flex: 1, backgroundColor: AppColors.WHITE}}>
+    <ScreenWrapper>
+      <ScrollView style={{flex: 1}}>
       <LineBreak space={1} />
       <AppHeader
         onBackPress={() => navigation.goBack()}
@@ -70,7 +72,8 @@ const NotificationsSettings = () => {
         ItemSeparatorComponent={() => <LineBreak space={3} />}
         renderItem={renderItem}
       />
-    </ScrollView>
+      </ScrollView>
+    </ScreenWrapper>
   );
 };
 

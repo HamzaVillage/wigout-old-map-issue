@@ -1,96 +1,99 @@
-/* eslint-disable react-native/no-inline-styles */
-import React, {useState} from 'react';
+import React, {useState, useCallback} from 'react';
 import {
   View,
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/Ionicons'; // Install this library if not already
+import Icon from 'react-native-vector-icons/Ionicons';
+import Foundation from 'react-native-vector-icons/Foundation';
+
 import AppTextInput from './AppTextInput';
 import AppButton from './AppButton';
 import AppColors from '../utils/AppColors';
+import AppText from './AppTextComps/AppText';
+import LineBreak from './LineBreak';
+
 import {
   responsiveFontSize,
   responsiveHeight,
   responsiveWidth,
 } from '../utils/Responsive_Dimensions';
-import AppText from './AppTextComps/AppText';
-import LineBreak from './LineBreak';
-import {useNavigation} from '@react-navigation/native';
-import Foundation from 'react-native-vector-icons/Foundation';
-type ModalProps = {
-  value?: any;
-  onChangeText?: any;
-  handlePress?: any;
-  loading?: any;
-  fetchCurrentLocation?: any;
-  locationLoading?: any;
-};
+
+interface ModalProps {
+  value: string;
+  onChangeText: (text: string) => void;
+  handlePress: () => void;
+  loading?: boolean;
+  fetchCurrentLocation: () => void;
+  locationLoading?: boolean;
+}
 
 const LocationModal = ({
   value,
   onChangeText,
   handlePress,
-  loading,
+  loading = false,
   fetchCurrentLocation,
-  locationLoading,
+  locationLoading = false,
 }: ModalProps) => {
-  const navigation = useNavigation();
   const [isEditing, setIsEditing] = useState(false);
+
+  const toggleEditing = useCallback(() => {
+    setIsEditing(prev => !prev);
+  }, []);
+
   return (
     <View style={styles.modal}>
-      <View>
-        <LineBreak space={0.7} />
+      {/* Top Grabber/Handle for Bottom Sheet Look */}
+      <View style={styles.grabber} />
 
-        <View
-          style={{
-            backgroundColor: AppColors.WHITE,
-            borderRadius: 100,
-            height: responsiveHeight(0.5),
-            width: responsiveWidth(10),
-            alignSelf: 'center',
-          }}
+      <LineBreak space={2} />
+
+      <View style={styles.content}>
+        <AppText
+          title="Location"
+          textSize={2.5}
+          textColor={AppColors.BLACK}
+          textAlignment="center"
+          textFontWeight
         />
-        <LineBreak space={3} />
-        <View style={{gap: 20}}>
-          <AppText
-            title={'Location'}
-            textSize={2.5}
-            textColor={AppColors.BLACK}
-            textAlignment={'center'}
-            textFontWeight
-          />
 
-          {locationLoading == true ? (
-            <ActivityIndicator size={'large'} color={AppColors.BLUE} />
+        <LineBreak space={1} />
+
+        {/* Fetch Location Action */}
+        <View style={styles.actionContainer}>
+          {locationLoading ? (
+            <ActivityIndicator size="small" color={AppColors.BLUE} />
           ) : (
             <TouchableOpacity
-              onPress={() => fetchCurrentLocation()}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 10,
-              }}>
+              onPress={fetchCurrentLocation}
+              style={styles.fetchButton}
+              activeOpacity={0.7}>
               <Foundation name="target-two" size={20} color={AppColors.BLUE} />
               <AppText
-                title={'Fetch Current Location'}
+                title="Use Current Location"
                 textColor={AppColors.BLUE}
                 textSize={1.8}
-                textAlignment={'center'}
               />
             </TouchableOpacity>
           )}
+        </View>
 
+        <LineBreak space={1} />
+
+        {/* Location Display or Input */}
+        <View style={styles.inputSection}>
           {isEditing ? (
             <AppTextInput
-              inputPlaceHolder={'Enter your location manually'}
+              placeholder="Enter location manually"
               value={value === 'Enter your location manually' ? '' : value}
               onChangeText={onChangeText}
-              inputWidth={73}
+              borderColor={AppColors.primaryColor}
+              inputWidth={75}
+              autoFocus
               rightIcon={
-                <TouchableOpacity onPress={() => setIsEditing(false)}>
+                <TouchableOpacity onPress={toggleEditing}>
                   <Icon
                     name="close-circle"
                     size={responsiveFontSize(2.5)}
@@ -101,63 +104,100 @@ const LocationModal = ({
             />
           ) : (
             <TouchableOpacity
-              onPress={() => setIsEditing(true)}
-              style={{
-                borderTopWidth: 1,
-                borderBottomWidth: 1,
-                borderBottomColor: AppColors.appBgColor,
-                borderTopColor: AppColors.appBgColor,
-                paddingVertical: responsiveHeight(2),
-                width: responsiveWidth(80),
-                alignSelf: 'center',
-              }}>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  alignSelf: 'center',
-                }}>
+              onPress={toggleEditing}
+              style={styles.displayBox}
+              activeOpacity={0.6}>
+              <View style={styles.displayTextContainer}>
                 <AppText
                   textSize={1.8}
-                  title={value}
-                  textAlignment={'center'}
+                  title={value || 'Select Location'}
+                  textAlignment="center"
+                  numberOfLines={1}
                 />
                 <Icon
                   name="location-sharp"
                   size={responsiveFontSize(2)}
                   color={AppColors.BLACK}
+                  style={styles.locationIcon}
                 />
               </View>
             </TouchableOpacity>
           )}
-          <AppButton
-            title={'Continue'}
-            textColor={AppColors.WHITE}
-            textSize={2}
-            btnPadding={18}
-            handlePress={handlePress}
-            loading={loading}
-          />
-
-          <LineBreak space={1} />
         </View>
+
+        <LineBreak space={3} />
+
+        <AppButton
+          title="Continue"
+          handlePress={handlePress}
+          loading={loading}
+          btnPadding={18}
+        />
       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'flex-end',
-  },
   modal: {
     backgroundColor: AppColors.WHITE,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    height: responsiveHeight(40),
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    minHeight: responsiveHeight(40),
     width: responsiveWidth(100),
     paddingHorizontal: responsiveWidth(5),
+    paddingBottom: responsiveHeight(4),
+    // Shadow for iOS
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: -3},
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    // Elevation for Android
+    elevation: 10,
+  },
+  grabber: {
+    backgroundColor: '#E0E0E0',
+    borderRadius: 10,
+    height: 5,
+    width: 40,
+    alignSelf: 'center',
+    marginTop: 10,
+  },
+  content: {
+    width: '100%',
+  },
+  actionContainer: {
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fetchButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  inputSection: {
+    width: '100%',
+    alignItems: 'center',
+    minHeight: responsiveHeight(8),
+    justifyContent: 'center',
+  },
+  displayBox: {
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: AppColors.appBgColor,
+    paddingVertical: 15,
+    width: responsiveWidth(85),
+    justifyContent: 'center',
+  },
+  displayTextContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 5,
+  },
+  locationIcon: {
+    marginLeft: 5,
   },
 });
 

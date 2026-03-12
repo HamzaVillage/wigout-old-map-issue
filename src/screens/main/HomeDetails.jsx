@@ -38,6 +38,7 @@ import {
 import {setPlaceDetail} from '../../redux/Slices';
 import {AddReviews} from '../../ApiCalls/Main/Reviews/ReviewsApiCall';
 import ShowError from '../../utils/ShowError';
+import ScreenWrapper from '../../components/ScreenWrapper';
 
 const HomeDetails = ({route}) => {
   const {placeDetails} = route.params;
@@ -164,7 +165,7 @@ const HomeDetails = ({route}) => {
   }
 
   return (
-    <View style={styles.container}>
+    <ScreenWrapper>
       <ScrollView showsVerticalScrollIndicator={false}>
         {images.length > 0 && <ImageIntroSlider images={images} />}
 
@@ -357,12 +358,12 @@ const HomeDetails = ({route}) => {
           />
         </View>
       </Modal>
-    </View>
+    </ScreenWrapper>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {flex: 1, backgroundColor: AppColors.WHITE},
+  container: {flex: 1},
   center: {flex: 1, justifyContent: 'center', alignItems: 'center'},
   contentPadding: {paddingHorizontal: 20},
   sectionBorder: {

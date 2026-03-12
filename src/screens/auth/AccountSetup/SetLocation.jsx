@@ -24,6 +24,7 @@ import MapView, {
   PROVIDER_GOOGLE,
 } from 'react-native-maps';
 import {useDispatch, useSelector} from 'react-redux';
+import ScreenWrapper from '../../../components/ScreenWrapper';
 import LatLngIntoAddress from '../../../GlobalFunctions/other/LatLngIntoAddress';
 import {GetCurrentLocation} from '../../../GlobalFunctions/other/GetCurrentLocation';
 import AppText from '../../../components/AppTextComps/AppText';
@@ -43,8 +44,8 @@ const SetLocation = ({navigation}) => {
   const fetchNearbyPlaces = useSelector(state => state?.user?.places_nearby);
 
   const mapRef = useRef(null);
+  const dispatch = useDispatch();
 
-  const dipatch = useDispatch();
   useEffect(() => {
     if (mapRef.current) {
       mapRef.current.animateToRegion(
@@ -77,8 +78,9 @@ const SetLocation = ({navigation}) => {
       location.latitude,
       location.longitude,
     );
+    console.log('_LatLngIntoAddress:-', _LatLngIntoAddress);
 
-    dipatch(
+    dispatch(
       setCurrentLocation({
         latitude: location.latitude,
         longitude: location.longitude,
@@ -86,7 +88,7 @@ const SetLocation = ({navigation}) => {
       }),
     );
     setLocationLoading(false);
-    const res = await FetchNearbyPlaces(location, dipatch);
+    const res = await FetchNearbyPlaces(location, dispatch);
     setAllNearbyPlaces(res);
   };
 
@@ -95,9 +97,9 @@ const SetLocation = ({navigation}) => {
       return ShowToast('error', 'Location is required');
     }
 
-    const fetchResponnse = await FetchNearbyPlaces(currentLocation, dipatch);
+    const fetchResponnse = await FetchNearbyPlaces(currentLocation, dispatch);
 
-    console.log('fetchResponnse', fetchResponnse);
+    console.log('fetchResponnse:-', fetchResponnse);
 
     if (userData?.isCreated == true) {
       // Alert.alert("calling")
@@ -135,12 +137,15 @@ const SetLocation = ({navigation}) => {
     }
   };
 
+  // console.log('currentLocation:-', currentLocation);
+  // console.log('Address:-', currentLocation?.address);
+
   return (
     <KeyboardAvoidingView style={{flex: 1}} behavior="padding">
+      {/* <ScreenWrapper> */}
       <View style={{flex: 1}}>
         <View
           style={{
-            backgroundColor: AppColors.WHITE,
             paddingBottom: responsiveHeight(4),
             paddingTop: responsiveHeight(2),
           }}>
@@ -176,7 +181,7 @@ const SetLocation = ({navigation}) => {
         <LocationModal
           value={currentLocation.address || 'Enter your location manually'}
           onChangeText={text =>
-            dipatch(setCurrentLocation({...currentLocation, address: text}))
+            dispatch(setCurrentLocation({...currentLocation, address: text}))
           }
           handlePress={() => handleLocationContinue()}
           loading={isLoading}
@@ -190,6 +195,7 @@ const SetLocation = ({navigation}) => {
           </View>
         </ImageBackground> */}
       </View>
+      {/* </ScreenWrapper> */}
     </KeyboardAvoidingView>
   );
 };

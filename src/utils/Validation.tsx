@@ -50,7 +50,7 @@ export const fillProfileValidation = (
   }
 
   if (!date) {
-    return ShowToast('error', 'Date is required');
+    return ShowToast('error', 'Date of Birth is required');
   }
 
   if (!email) {

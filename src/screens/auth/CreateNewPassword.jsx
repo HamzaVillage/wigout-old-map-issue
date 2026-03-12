@@ -22,6 +22,7 @@ import AppTextInput from '../../components/AppTextInput';
 import AppButton from '../../components/AppButton';
 import CongratulationsModal from '../../components/CongratulationsModal';
 import {useCustomNavigation} from '../../utils/Hooks';
+import ScreenWrapper from '../../components/ScreenWrapper';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import {resetPassword} from '../../GlobalFunctions/auth';
 import {useRoute} from '@react-navigation/native';
@@ -78,7 +79,8 @@ const CreateNewPassword = () => {
 
   return (
     <KeyboardAvoidingView style={{flex: 1}} behavior="padding">
-      <ScrollView style={{flex: 1, backgroundColor: AppColors.WHITE}}>
+      <ScreenWrapper>
+        <ScrollView style={{flex: 1}}>
         <AppHeader onBackPress heading={'Create New Password'} />
 
         <CongratulationsModal
@@ -247,7 +249,8 @@ const CreateNewPassword = () => {
             handlePress={() => handleCreateNewPassword()}
           />
         </View>
-      </ScrollView>
+        </ScrollView>
+      </ScreenWrapper>
     </KeyboardAvoidingView>
   );
 };

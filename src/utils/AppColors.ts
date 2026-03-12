@@ -24,6 +24,10 @@ type Colors = {
     inputBg: string
     inputBlur: string
     LIGHT_BTNCOLOURS: string
+    inputBorder: string
+    inputBackground: string
+    primaryColor: string
+    graysh: string
   };
 
 const AppColors: Colors = {
@@ -52,6 +56,10 @@ const AppColors: Colors = {
     lowGreen: '#587B58',
     inputBg: '#fafafa',
     inputBlur: '#f2f1fe',
+    inputBorder: 'rgba(255,255,255,0.4)',
+    inputBackground: 'rgba(255,255,255,0.60)',
+    primaryColor: "#47082E",
+    graysh: "#D3D3D3",
   };
 
 export default AppColors;

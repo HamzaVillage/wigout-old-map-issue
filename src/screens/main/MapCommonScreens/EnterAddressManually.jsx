@@ -8,6 +8,7 @@ import {
   Pressable,
   TouchableOpacity,
 } from 'react-native';
+import ScreenWrapper from '../../../components/ScreenWrapper';
 import React, { useRef, useState } from 'react';
 
 import { Google_API_KEY, Google_Base_Url } from '../../../utils/api_content';
@@ -78,7 +79,8 @@ const EnterAddressManually = ({ navigation }) => {
   };
 
   return (
-    <View style={{ padding: 20 }}>
+    <ScreenWrapper>
+      <View style={{ padding: 20, flex: 1 }}>
       <TextInput
         autoCapitalize="none"
         ref={inputRef}
@@ -140,7 +142,8 @@ const EnterAddressManually = ({ navigation }) => {
           </ScrollView>
         </View>
       )}
-    </View>
+      </View>
+    </ScreenWrapper>
   );
 };
 

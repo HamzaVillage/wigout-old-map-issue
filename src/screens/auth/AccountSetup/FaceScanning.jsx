@@ -9,15 +9,15 @@ import LineBreak from '../../../components/LineBreak';
 import AppButton from '../../../components/AppButton';
 import CongratulationsModal from '../../../components/CongratulationsModal';
 import {useCustomNavigation} from '../../../utils/Hooks';
+import ScreenWrapper from '../../../components/ScreenWrapper';
 
 const FaceScanning = () => {
   const {navigateToRoute} = useCustomNavigation();
   const [showCongratsModal, setShowCongratsModal] = useState(false);
 
   return (
-    <ImageBackground
-      source={AppImages.FACE_SCAN}
-      style={{flex: 1, padding: 20}}>
+    <ScreenWrapper>
+      <View style={{flex: 1, padding: 20}}>
       <AppHeader onBackPress backIconColor={AppColors.WHITE} />
 
       <LineBreak space={5} />
@@ -77,7 +77,8 @@ const FaceScanning = () => {
           btnPadding={15}
         />
       </View>
-    </ImageBackground>
+      </View>
+    </ScreenWrapper>
   );
 };
 

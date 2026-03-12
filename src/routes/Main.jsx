@@ -83,8 +83,8 @@ function MyTabs() {
         tabBarActiveTintColor: AppColors.WHITE,
         tabBarStyle: {
           height: responsiveHeight(10),
-          borderTopLeftRadius: 20,
-          borderTopRightRadius: 20,
+          // borderTopLeftRadius: 20,
+          // borderTopRightRadius: 20,
           paddingTop: responsiveHeight(1.5),
           backgroundColor: AppColors.BTNCOLOURS,
         },

@@ -10,6 +10,7 @@ import {
 } from '../utils/Responsive_Dimensions';
 import AppText from './AppTextComps/AppText';
 import {Google_Places_Images} from '../utils/api_content';
+import AppImages from '../assets/images/AppImages';
 
 type cardProps = {
   name?: string;

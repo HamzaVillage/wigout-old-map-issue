@@ -10,6 +10,7 @@ import {
   Alert,
   TouchableOpacity,
 } from 'react-native';
+import ScreenWrapper from '../../../components/ScreenWrapper';
 import AppColors from '../../../utils/AppColors';
 import AppText from '../../../components/AppTextComps/AppText';
 import {useCustomNavigation} from '../../../utils/Hooks';
@@ -189,7 +190,8 @@ const SpinTheWheel = ({route}) => {
   });
 
   return (
-    <SafeAreaView style={{flex: 1, backgroundColor: AppColors.WHITE}}>
+    <ScreenWrapper>
+      <SafeAreaView style={{flex: 1}}>
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
@@ -262,7 +264,8 @@ const SpinTheWheel = ({route}) => {
           </View>
         </View>
       </View>
-    </SafeAreaView>
+      </SafeAreaView>
+    </ScreenWrapper>
   );
 };
 

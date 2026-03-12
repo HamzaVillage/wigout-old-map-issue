@@ -8,13 +8,15 @@ import AppText from '../../../components/AppTextComps/AppText';
 import {OtpInput} from 'react-native-otp-entry';
 import {responsiveWidth} from '../../../utils/Responsive_Dimensions';
 import {useCustomNavigation} from '../../../utils/Hooks';
+import ScreenWrapper from '../../../components/ScreenWrapper';
 import LineBreak from '../../../components/LineBreak';
 
 const CreateNewPin = () => {
   const {navigateToRoute} = useCustomNavigation();
 
   return (
-    <View style={{flex: 1, backgroundColor: AppColors.WHITE}}>
+    <ScreenWrapper>
+      <View style={{flex: 1}}>
       <AppHeader onBackPress heading={'Create New PIN'} />
 
       <View
@@ -41,7 +43,7 @@ const CreateNewPin = () => {
             onTextChange={text => console.log(text)}
             theme={{
               pinCodeContainerStyle: {
-                backgroundColor: AppColors.WHITE,
+                backgroundColor: 'transparent',
                 borderRadius: 15,
                 width: responsiveWidth(19.5),
               },
@@ -65,7 +67,8 @@ const CreateNewPin = () => {
         />
       </View>
       <LineBreak space={4} />
-    </View>
+      </View>
+    </ScreenWrapper>
   );
 };
 
