@@ -1,6 +1,7 @@
 import React from 'react';
 import {ImageBackground, StyleSheet, View} from 'react-native';
 import AppImages from '../assets/images/AppImages';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
 /**
  * ScreenWrapper provides a consistent background image across the application.
@@ -11,10 +12,10 @@ import AppImages from '../assets/images/AppImages';
 const ScreenWrapper = ({children, style}) => {
   return (
     <ImageBackground
-      source={AppImages.imageBg}
+      source={AppImages.imageBG2}
       style={styles.background}
       resizeMode="cover">
-      <View style={[styles.container, style]}>{children}</View>
+      <SafeAreaView style={[styles.container, style]}>{children}</SafeAreaView>
     </ImageBackground>
   );
 };

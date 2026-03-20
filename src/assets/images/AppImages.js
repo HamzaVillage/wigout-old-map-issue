@@ -54,4 +54,5 @@ export default AppImages = {
   app_name: require('./app_name.png'),
   imageBg: require('./imageBg.png'),
   userPH: require('./userPH.png'),
+  imageBG2: require('./imageBG2.png'),
 };

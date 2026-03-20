@@ -276,17 +276,17 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingVertical: 10,
     overflow: 'hidden',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOffset: {width: 0, height: 2},
-        shadowOpacity: 0.05,
-        shadowRadius: 10,
-      },
-      android: {
-        elevation: 3,
-      },
-    }),
+    // ...Platform.select({
+    //   ios: {
+    //     shadowColor: '#000',
+    //     shadowOffset: {width: 0, height: 2},
+    //     shadowOpacity: 0.05,
+    //     shadowRadius: 10,
+    //   },
+    //   android: {
+    //     elevation: 3,
+    //   },
+    // }),
   },
   menuItem: {
     flexDirection: 'row',
