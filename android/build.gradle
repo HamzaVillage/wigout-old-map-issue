@@ -5,7 +5,8 @@ buildscript {
         compileSdkVersion = 35
         targetSdkVersion = 35
         cmakeVersion = "3.22.1"
-        ndkVersion = "26.1.10909125"
+        // ndkVersion = "26.1.10909125"
+        ndkVersion = "27.1.12297006"
         kotlinVersion = "2.0.21"    
         googlePlayServicesVersion = "21.0.1"
     }
