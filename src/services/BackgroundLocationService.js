@@ -36,6 +36,7 @@ const veryIntensiveTask = async taskDataArguments => {
       const token = state?.user?.token;
 
       if (token) {
+        console.log('User Data in Background Service:', state?.user?.userData);
         getCurrentLocationAndNotify(token);
       } else {
         console.log('No token found in Redux store, skipping API call.');
@@ -57,8 +58,8 @@ const getCurrentLocationAndNotify = token => {
       // Call the API
       const res = await notifyUserForNearbyReviewedPlaces(
         token,
-        latitude.toString(),
-        longitude.toString(),
+        latitude,
+        longitude,
       );
       console.log('Notify API Response:', res);
     },

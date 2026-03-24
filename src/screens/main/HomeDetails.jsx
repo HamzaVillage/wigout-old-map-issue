@@ -14,6 +14,7 @@ import Modal from 'react-native-modal';
 import FastImage from 'react-native-fast-image';
 import Entypo from 'react-native-vector-icons/Entypo';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import {useDispatch, useSelector} from 'react-redux';
 
@@ -37,6 +38,11 @@ import {
 } from '../../utils/api_content';
 import {setPlaceDetail} from '../../redux/Slices';
 import {AddReviews} from '../../ApiCalls/Main/Reviews/ReviewsApiCall';
+import {
+  AddWishList,
+  GetWishList,
+  RemoveWishList,
+} from '../../ApiCalls/Main/WishList_API/WishListAPI';
 import ShowError from '../../utils/ShowError';
 import ScreenWrapper from '../../components/ScreenWrapper';
 
@@ -50,13 +56,29 @@ const HomeDetails = ({route}) => {
   const [typeReview, setTypeReview] = useState('');
   const [buttonLoader, setButtonLoader] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
+  const [isWishList, setIsWishList] = useState(false);
+  const [wishlistLoader, setWishlistLoader] = useState(false);
 
   useEffect(() => {
     const id = placeDetails?.place_id || placeDetails?.placeId;
     if (id) {
       getMorePlaceInfo(id);
+      checkIfInWishList(id);
     }
-  }, [placeDetails]);
+  }, [placeDetails, token]);
+
+  const checkIfInWishList = async id => {
+    try {
+      const res = await GetWishList(token);
+      const wishlistData = res?.wishLists || res?.data || res;
+      if (wishlistData && Array.isArray(wishlistData)) {
+        const isInWishlist = wishlistData.some(item => item.placeId === id);
+        setIsWishList(isInWishlist);
+      }
+    } catch (error) {
+      console.log('Error checking wishlist:', error);
+    }
+  };
 
   const getMorePlaceInfo = async id => {
     try {
@@ -156,6 +178,52 @@ const HomeDetails = ({route}) => {
     }
   };
 
+  const toggleWishlist = async () => {
+    if (!morePlaceDetails && !placeDetails) return;
+
+    setWishlistLoader(true);
+    const placeId =
+      morePlaceDetails?.place_id ||
+      placeDetails?.place_id ||
+      placeDetails?.placeId;
+
+    try {
+      if (isWishList) {
+        const res = await RemoveWishList(token, {placeId});
+        console.log('res in RemoveWishList in toggleWishlist:-', res);
+        if (res?.success) {
+          setIsWishList(false);
+          ShowError(res?.msg || 'Removed from wishlist', 2000);
+        }
+      } else {
+        const data = {
+          placeId: placeId,
+          name: morePlaceDetails?.name || placeDetails?.name,
+          address: morePlaceDetails?.formatted_address || placeDetails?.address,
+          image: morePlaceDetails?.photos?.[0]?.photo_reference || '',
+          rating: morePlaceDetails?.rating || placeDetails?.rating,
+          userRatingsTotal:
+            morePlaceDetails?.user_ratings_total ||
+            placeDetails?.user_ratings_total ||
+            0,
+          notes: '',
+          isVisited: false,
+        };
+        const res = await AddWishList(token, data);
+        console.log('res in AddWishList in toggleWishlist:-', res);
+        if (res?.success) {
+          setIsWishList(true);
+          ShowError(res?.msg || 'Added to wishlist', 2000);
+        }
+      }
+    } catch (error) {
+      console.log('Wishlist toggle error:', error);
+      ShowError('Something went wrong', 2000);
+    } finally {
+      setWishlistLoader(false);
+    }
+  };
+
   if (loading) {
     return (
       <View style={styles.center}>
@@ -172,12 +240,33 @@ const HomeDetails = ({route}) => {
         <LineBreak space={2} />
 
         <View style={styles.contentPadding}>
-          <AppText
-            title={morePlaceDetails?.name || placeDetails?.name || 'No Name'}
-            textColor={AppColors.BLACK}
-            textSize={3}
-            textFontWeight
-          />
+          <View style={styles.titleRow}>
+            <View style={{width: responsiveWidth(80)}}>
+              <AppText
+                title={
+                  morePlaceDetails?.name || placeDetails?.name || 'No Name'
+                }
+                textColor={AppColors.BLACK}
+                textSize={3}
+                textFontWeight
+              />
+            </View>
+
+            <TouchableOpacity
+              style={styles.wishlistBtn}
+              onPress={toggleWishlist}
+              disabled={wishlistLoader}>
+              {wishlistLoader ? (
+                <ActivityIndicator size="small" color={AppColors.BTNCOLOURS} />
+              ) : (
+                <FontAwesome
+                  name={isWishList ? 'bookmark' : 'bookmark-o'}
+                  size={24}
+                  color={AppColors.BTNCOLOURS}
+                />
+              )}
+            </TouchableOpacity>
+          </View>
 
           <LineBreak space={2} />
 
@@ -400,6 +489,18 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingTop: 20,
     paddingBottom: 10,
+  },
+  titleRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  wishlistBtn: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: AppColors.WHITE,
+    height: 40,
+    width: 40,
+    borderRadius: 30,
   },
 });
 

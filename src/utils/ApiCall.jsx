@@ -1,4 +1,3 @@
-import {View, Text, Alert} from 'react-native';
 import React from 'react';
 import axios from 'axios';
 import BASE_URL from './BASE_URL';

@@ -22,7 +22,7 @@ import {
 import {baseUrl} from '../../utils/api_content';
 import HomeCard from '../../components/HomeCard';
 import ScreenWrapper from '../../components/ScreenWrapper';
-import Entypo from 'react-native-vector-icons/Entypo';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
 const Home = () => {
   const {navigateToRoute} = useCustomNavigation();
@@ -116,6 +116,16 @@ const Home = () => {
             style={styles.notificationBtn}>
             <Entypo name="location-pin" size={24} color={AppColors.darkBlue} />
           </TouchableOpacity> */}
+
+          <TouchableOpacity
+            onPress={() => navigateToRoute('WishList')}
+            style={styles.notificationBtn}>
+            <FontAwesome
+              name="bookmark"
+              size={20}
+              color={AppColors.BTNCOLOURS}
+            />
+          </TouchableOpacity>
 
           <TouchableOpacity
             onPress={() => navigateToRoute('Notifications')}
@@ -256,8 +266,12 @@ const styles = StyleSheet.create({
   notificationBtn: {
     borderWidth: 1,
     borderColor: AppColors.WHITE,
-    padding: responsiveWidth(2),
-    borderRadius: 100,
+    // padding: responsiveWidth(2),
+    height: 40,
+    width: 40,
+    borderRadius: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   sectionHeader: {
     flexDirection: 'row',

@@ -28,6 +28,8 @@ import AppImages from '../../../assets/images/AppImages';
 import AppButton from '../../../components/AppButton';
 import {useSelector} from 'react-redux';
 import {GetReviews} from '../../../ApiCalls/Main/Reviews/ReviewsApiCall';
+import {GetWishList} from '../../../ApiCalls/Main/WishList_API/WishListAPI';
+import {Google_Places_Images} from '../../../utils/api_content';
 
 const HelpMeDecide = () => {
   const {goBack} = useCustomNavigation();
@@ -44,14 +46,16 @@ const HelpMeDecide = () => {
 
   const fetchMyLikes = async () => {
     setLoading(true);
-    const response = await GetReviews(token);
-    if (response?.reviews) {
-      const likedPlaces = response.reviews.filter(
-        res => res.actionType === 'Go Again',
-      );
-      setMyLikes(likedPlaces);
+    try {
+      const response = await GetWishList(token);
+      if (response?.success) {
+        setMyLikes(response.wishLists || []);
+      }
+    } catch (error) {
+      console.log('Error fetching wishlist in HelpMeDecide:', error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const addToSpinner = item => {
@@ -61,9 +65,13 @@ const HelpMeDecide = () => {
     }
     const newOption = {
       id: item._id,
-      name: item.restaurantName,
+      name: item.name || item.restaurantName,
       category: 'Saved Place',
-      image: item.photos?.[0] ? {uri: item.photos[0]} : AppImages.resturant,
+      image: item.image
+        ? {uri: `${Google_Places_Images}${item.image}`}
+        : item.photos?.[0]
+        ? {uri: `${Google_Places_Images}${item.photos[0]}`}
+        : AppImages.resturant,
       fullData: item,
     };
     setSelectedOptions([...selectedOptions, newOption]);
@@ -114,194 +122,205 @@ const HelpMeDecide = () => {
   return (
     <ScreenWrapper>
       <SafeAreaView style={{flex: 1}}>
-      <View style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <BackIcon onBackPress={() => goBack()} iconColor={AppColors.BLACK} />
-          <AppText
-            title={'Help Me Decide'}
-            textColor={AppColors.BLACK}
-            textSize={2.5}
-            textFontWeight
-          />
-          <View style={{width: 40}} />
-        </View>
-
-        <LineBreak space={2} />
-        <AppText
-          title={'Select places from your likes or add custom options'}
-          textColor={AppColors.GRAY}
-          textSize={1.4}
-          paddingHorizontal={7}
-        />
-
-        <LineBreak space={3} />
-
-        <ScrollView
-          contentContainerStyle={{paddingHorizontal: 20, paddingBottom: 100}}
-          showsVerticalScrollIndicator={false}>
-          {/* Add Custom Option */}
-          <View style={styles.customOptionSection}>
+        <View style={styles.container}>
+          {/* Header */}
+          <View style={styles.header}>
+            <BackIcon
+              onBackPress={() => goBack()}
+              iconColor={AppColors.BLACK}
+            />
             <AppText
-              title={'Add custom option:'}
+              title={'Help Me Decide'}
+              textColor={AppColors.BLACK}
+              textSize={2.5}
+              textFontWeight
+            />
+            <View style={{width: 40}} />
+          </View>
+
+          <LineBreak space={2} />
+          <AppText
+            title={'Select places from your likes or add custom options'}
+            textColor={AppColors.GRAY}
+            textSize={1.4}
+            paddingHorizontal={7}
+          />
+
+          <LineBreak space={3} />
+
+          <ScrollView
+            contentContainerStyle={{paddingHorizontal: 20, paddingBottom: 100}}
+            showsVerticalScrollIndicator={false}>
+            {/* Add Custom Option */}
+            <View style={styles.customOptionSection}>
+              <AppText
+                title={'Add custom option:'}
+                textColor={AppColors.BLACK}
+                textSize={1.6}
+                textFontWeight
+              />
+              <LineBreak space={1} />
+              <View style={styles.inputRow}>
+                <TextInput
+                  style={styles.customInput}
+                  placeholder="Enter option name"
+                  placeholderTextColor={AppColors.GRAY}
+                  value={customOption}
+                  onChangeText={setCustomOption}
+                />
+                <TouchableOpacity
+                  style={styles.addBtn}
+                  onPress={addCustomOption}>
+                  <Ionicons name="add" size={24} color={AppColors.WHITE} />
+                  <AppText
+                    title={'Add'}
+                    textColor={AppColors.WHITE}
+                    textSize={1.6}
+                  />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <LineBreak space={3} />
+
+            <AppText
+              title={`Your selected options (${selectedOptions.length}):`}
               textColor={AppColors.BLACK}
               textSize={1.6}
               textFontWeight
             />
-            <LineBreak space={1} />
-            <View style={styles.inputRow}>
-              <TextInput
-                style={styles.customInput}
-                placeholder="Enter option name"
-                placeholderTextColor={AppColors.GRAY}
-                value={customOption}
-                onChangeText={setCustomOption}
-              />
-              <TouchableOpacity style={styles.addBtn} onPress={addCustomOption}>
-                <Ionicons name="add" size={24} color={AppColors.WHITE} />
-                <AppText
-                  title={'Add'}
-                  textColor={AppColors.WHITE}
-                  textSize={1.6}
-                />
-              </TouchableOpacity>
-            </View>
-          </View>
+            <LineBreak space={2} />
 
-          <LineBreak space={3} />
-
-          <AppText
-            title={`Your selected options (${selectedOptions.length}):`}
-            textColor={AppColors.BLACK}
-            textSize={1.6}
-            textFontWeight
-          />
-          <LineBreak space={2} />
-
-          {selectedOptions.map(item => (
-            <View key={item.id} style={styles.placeItem}>
-              <View
-                style={{flexDirection: 'row', alignItems: 'center', gap: 12}}>
-                <Image source={item.image} style={styles.placeImage} />
-                <View>
-                  <AppText
-                    title={item.name}
-                    textColor={AppColors.BLACK}
-                    textSize={1.6}
-                    textFontWeight
-                  />
-                  <AppText
-                    title={item.category}
-                    textColor={AppColors.GRAY}
-                    textSize={1.2}
-                  />
-                </View>
-              </View>
-              <TouchableOpacity
-                style={styles.deleteBtn}
-                onPress={() => removeOption(item.id)}>
-                <MaterialIcons
-                  name="delete-outline"
-                  size={20}
-                  color="#F44336"
-                />
-              </TouchableOpacity>
-            </View>
-          ))}
-
-          <LineBreak space={3} />
-          <AppText
-            title={'Choose from your likes:'}
-            textColor={AppColors.BLACK}
-            textSize={1.6}
-            textFontWeight
-          />
-          <LineBreak space={2} />
-          <LineBreak space={2} />
-
-          {loading ? (
-            <ActivityIndicator size="small" color={AppColors.BTNCOLOURS} />
-          ) : myLikes.length > 0 ? (
-            myLikes.map(item => {
-              const isSelected = selectedOptions.some(
-                opt => opt.id === item._id,
-              );
-              return (
-                <View key={item._id} style={styles.placeItem}>
-                  <View
-                    style={{
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      gap: 12,
-                    }}>
-                    <Image
-                      source={{uri: item.photos?.[0]}}
-                      style={styles.placeImage}
-                    />
-                    <View>
-                      <AppText
-                        title={item.restaurantName}
-                        textColor={AppColors.BLACK}
-                        textSize={1.6}
-                        textFontWeight
-                      />
-                      <AppText
-                        title={'Saved Place'}
-                        textColor={AppColors.GRAY}
-                        textSize={1.2}
-                      />
-                    </View>
-                  </View>
-                  <TouchableOpacity
-                    style={[
-                      styles.addBtnSmall,
-                      isSelected && {backgroundColor: AppColors.GRAY},
-                    ]}
-                    disabled={isSelected}
-                    onPress={() => addToSpinner(item)}>
+            {selectedOptions.map(item => (
+              <View key={item.id} style={styles.placeItem}>
+                <View
+                  style={{flexDirection: 'row', alignItems: 'center', gap: 12}}>
+                  <Image source={item.image} style={styles.placeImage} />
+                  <View>
                     <AppText
-                      title={isSelected ? 'Added' : 'Add'}
-                      textColor={AppColors.WHITE}
-                      textSize={1.4}
+                      title={item.name}
+                      textColor={AppColors.BLACK}
+                      textSize={1.6}
+                      textFontWeight
                     />
-                  </TouchableOpacity>
+                    <AppText
+                      title={item.category}
+                      textColor={AppColors.GRAY}
+                      textSize={1.2}
+                    />
+                  </View>
                 </View>
-              );
-            })
-          ) : (
-            <AppText
-              title={'No likes yet. Add some places to your likes list first!'}
-              textColor={AppColors.GRAY}
-              textSize={1.4}
-            />
-          )}
-        </ScrollView>
+                <TouchableOpacity
+                  style={styles.deleteBtn}
+                  onPress={() => removeOption(item.id)}>
+                  <MaterialIcons
+                    name="delete-outline"
+                    size={20}
+                    color="#F44336"
+                  />
+                </TouchableOpacity>
+              </View>
+            ))}
 
-        {/* Bottom Button */}
-        <View style={styles.bottomButtonContainer}>
-          <AppButton
-            title={'Spin the Wheel!'}
-            handlePress={() => {
-              if (selectedOptions.length < 2) {
-                Alert.alert('Info', 'Please select at least 2 options.');
-                return;
-              }
-              navigateToRoute('SpinTheWheel', {options: selectedOptions});
-            }}
-            // disabled={selectedOptions.length < 2}
-            btnBackgroundColor={AppColors.BTNCOLOURS}
-            btnWidth={90}
-            leftIcon={
-              <Ionicons
-                name="aperture-outline"
-                size={24}
-                color={AppColors.WHITE}
-                style={{marginRight: 10}}
+            <LineBreak space={3} />
+            <AppText
+              title={'Choose from your Wishlist:'}
+              textColor={AppColors.BLACK}
+              textSize={1.6}
+              textFontWeight
+            />
+            <LineBreak space={2} />
+            <LineBreak space={2} />
+
+            {loading ? (
+              <ActivityIndicator size="small" color={AppColors.BTNCOLOURS} />
+            ) : myLikes.length > 0 ? (
+              myLikes.map(item => {
+                const isSelected = selectedOptions.some(
+                  opt => opt.id === item._id,
+                );
+                return (
+                  <View key={item._id} style={styles.placeItem}>
+                    <View
+                      style={{
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 12,
+                      }}>
+                      <Image
+                        source={
+                          item.image
+                            ? {uri: `${Google_Places_Images}${item.image}`}
+                            : AppImages.resturant
+                        }
+                        style={styles.placeImage}
+                      />
+                      <View>
+                        <AppText
+                          title={item.name || item.restaurantName}
+                          textColor={AppColors.BLACK}
+                          textSize={1.6}
+                          textFontWeight
+                        />
+                        <AppText
+                          title={'Saved Place'}
+                          textColor={AppColors.GRAY}
+                          textSize={1.2}
+                        />
+                      </View>
+                    </View>
+                    <TouchableOpacity
+                      style={[
+                        styles.addBtnSmall,
+                        isSelected && {backgroundColor: AppColors.GRAY},
+                      ]}
+                      disabled={isSelected}
+                      onPress={() => addToSpinner(item)}>
+                      <AppText
+                        title={isSelected ? 'Added' : 'Add'}
+                        textColor={AppColors.WHITE}
+                        textSize={1.4}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                );
+              })
+            ) : (
+              <AppText
+                title={
+                  'No likes yet. Add some places to your likes list first!'
+                }
+                textColor={AppColors.GRAY}
+                textSize={1.4}
               />
-            }
-          />
+            )}
+          </ScrollView>
+
+          {/* Bottom Button */}
+          <View style={styles.bottomButtonContainer}>
+            <AppButton
+              title={'Spin the Wheel!'}
+              handlePress={() => {
+                if (selectedOptions.length < 2) {
+                  Alert.alert('Info', 'Please select at least 2 options.');
+                  return;
+                }
+                navigateToRoute('SpinTheWheel', {options: selectedOptions});
+              }}
+              // disabled={selectedOptions.length < 2}
+              btnBackgroundColor={AppColors.BTNCOLOURS}
+              btnWidth={90}
+              leftIcon={
+                <Ionicons
+                  name="aperture-outline"
+                  size={24}
+                  color={AppColors.WHITE}
+                  style={{marginRight: 10}}
+                />
+              }
+            />
+          </View>
         </View>
-      </View>
       </SafeAreaView>
     </ScreenWrapper>
   );
@@ -361,6 +380,8 @@ const styles = StyleSheet.create({
     width: 45,
     height: 45,
     borderRadius: 8,
+    resizeMode: 'cover',
+    backgroundColor: AppColors.graysh,
   },
   deleteBtn: {
     width: 36,

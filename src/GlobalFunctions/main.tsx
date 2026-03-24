@@ -72,27 +72,34 @@ export const getAllNotifications = async (token: string) => {
 
 export const notifyUserForNearbyReviewedPlaces = async (
   token: string,
-  latitude: string,
-  longitude: string,
+  latitude: number,
+  longitude: number,
 ) => {
   const data = {
     latitude: latitude,
     longitude: longitude,
   };
+  console.log('API Request Data (notifyUser):-', data);
   try {
     const response = await axios.post(
       `${baseUrl}${endPoints.notifyUser}`,
       data,
       {
         headers: {
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
       },
     );
     console.log('Notify API Response:-', response?.data);
     return response?.data;
-  } catch (error) {
-    console.log('Notify API Error:-', error);
+  } catch (error: any) {
+    console.log('Notify API Error Details:-', {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+      url: error.config?.url,
+    });
     return {
       success: false,
       message: error?.response?.data?.message || error.message,

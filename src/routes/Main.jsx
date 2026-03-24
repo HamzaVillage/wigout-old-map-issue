@@ -1,7 +1,7 @@
 /* eslint-disable react/no-unstable-nested-components */
 import React from 'react';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createStackNavigator } from '@react-navigation/stack';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import {createStackNavigator} from '@react-navigation/stack';
 import {
   responsiveFontSize,
   responsiveHeight,
@@ -35,6 +35,7 @@ import MyHates from '../screens/main/Journal/MyHates';
 import HelpMeDecide from '../screens/main/Journal/HelpMeDecide';
 import TopRated from '../screens/main/TopRated/TopRates';
 import SpinTheWheel from '../screens/main/Journal/SpinTheWheel';
+import WishList from '../screens/main/WishList';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -43,7 +44,7 @@ const Main = () => {
   return (
     <Stack.Navigator
       initialRouteName="Main"
-      screenOptions={{ headerShown: false }}>
+      screenOptions={{headerShown: false}}>
       <Stack.Screen name="Main" component={MyTabs} />
       <Stack.Screen name="Notifications" component={Notifications} />
       <Stack.Screen name="HomeDetails" component={HomeDetails} />
@@ -70,6 +71,7 @@ const Main = () => {
       <Stack.Screen name="MyHates" component={MyHates} />
       <Stack.Screen name="HelpMeDecide" component={HelpMeDecide} />
       <Stack.Screen name="SpinTheWheel" component={SpinTheWheel} />
+      <Stack.Screen name="WishList" component={WishList} />
     </Stack.Navigator>
   );
 };
@@ -77,9 +79,9 @@ const Main = () => {
 function MyTabs() {
   return (
     <Tab.Navigator
-      screenOptions={({ route }) => ({
+      screenOptions={({route}) => ({
         headerShown: false,
-        tabBarLabelStyle: { fontSize: responsiveFontSize(1.4) },
+        tabBarLabelStyle: {fontSize: responsiveFontSize(1.4)},
         tabBarActiveTintColor: AppColors.WHITE,
         tabBarStyle: {
           height: responsiveHeight(10),
@@ -88,7 +90,7 @@ function MyTabs() {
           paddingTop: responsiveHeight(1.5),
           backgroundColor: AppColors.BTNCOLOURS,
         },
-        tabBarIcon: ({ focused, color, size }) => {
+        tabBarIcon: ({focused, color, size}) => {
           let iconName;
 
           if (route.name === 'Home') {
@@ -97,7 +99,7 @@ function MyTabs() {
             iconName = focused ? 'person' : 'person-outline';
           } else if (route.name === 'Top Rated') {
             iconName = focused ? 'clipboard-list' : 'clipboard-list';
-          } else if (route.name === 'Wishlist') {
+          } else if (route.name === 'My Likes') {
             iconName = focused ? 'heart' : 'heart-outline';
           } else if (route.name === 'Discover') {
             iconName = focused ? 'explore' : 'explore';
@@ -114,7 +116,7 @@ function MyTabs() {
       })}>
       <Tab.Screen name="Home" component={Home} />
       <Tab.Screen name="Discover" component={Explore} />
-      <Tab.Screen name="Wishlist" component={JournalHome} />
+      <Tab.Screen name="My Likes" component={JournalHome} />
       <Tab.Screen name="Top Rated" component={TopRated} />
       <Tab.Screen name="Profile" component={Profile} />
     </Tab.Navigator>
