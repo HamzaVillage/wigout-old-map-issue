@@ -57,11 +57,13 @@ export const createProfile = async ({
     // fields.append('longitude', '-73.9855');
     // fields.append('latitude', '40.7580');
     fields.append('locationName', locationName);
-    fields.append('profileImage', {
-      uri: image,
-      name: 'image.jpg',
-      type: 'image/jpeg',
-    });
+    if (image) {
+      fields.append('profileImage', {
+        uri: image,
+        name: 'image.jpg',
+        type: 'image/jpeg',
+      });
+    }
 
     let config = {
       method: 'post',

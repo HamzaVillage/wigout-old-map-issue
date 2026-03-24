@@ -23,7 +23,7 @@ const Splash = () => {
         setTimeout(() => {
           if (hasSeenOnBoarding === 'true') {
             // User has seen OnBoarding before, skip to GetStarted
-            navigateToRoute('Login');
+            navigateToRoute('GetStarted'); // Login
           } else {
             // First time user, show OnBoarding
             navigateToRoute('OnBoarding');

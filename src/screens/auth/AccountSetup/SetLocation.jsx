@@ -114,7 +114,7 @@ const SetLocation = ({navigation}) => {
       }
     } else {
       setIsLoading(true);
-      const res = await createProfile({
+      let payload = {
         id: data?.userId,
         fullName: data?.fullName,
         nickName: data?.nickName,
@@ -123,7 +123,9 @@ const SetLocation = ({navigation}) => {
         locationName: currentLocation.address,
         gender: data?.gender,
         date: data?.date,
-      });
+      };
+      console.log('payload:-', payload);
+      const res = await createProfile(payload);
 
       if (res?.success) {
         ShowToast('success', 'Profile Created Successfully');
@@ -131,6 +133,7 @@ const SetLocation = ({navigation}) => {
         store.dispatch(setUserData(res?.data));
       } else {
         ShowToast('error', res?.msg || res?.message);
+        console.log('else in create profile:-', res);
       }
 
       setIsLoading(false);

@@ -29,25 +29,25 @@ export const signUpAndSignInFormValidation = (
 };
 
 export const fillProfileValidation = (
-  image: string,
+  // image: string,
   fullName: string,
-  nickName: string,
+  // nickName: string,
   date: string,
   email: string,
   number: string,
   gender: string,
 ) => {
-  if (!image) {
-    return ShowToast('error', 'Image is required');
-  }
+  // if (!image) {
+  //   return ShowToast('error', 'Image is required');
+  // }
 
   if (!fullName) {
     return ShowToast('error', 'Full Name is required');
   }
 
-  if (!nickName) {
-    return ShowToast('error', 'Nick Name is required');
-  }
+  // if (!nickName) {
+  //   return ShowToast('error', 'Nick Name is required');
+  // }
 
   if (!date) {
     return ShowToast('error', 'Date of Birth is required');

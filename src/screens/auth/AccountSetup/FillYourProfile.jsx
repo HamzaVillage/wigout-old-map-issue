@@ -78,9 +78,9 @@ const FillYourProfile = () => {
     const number = phoneRef.current?.getValue?.() || '';
 
     const isValid = fillProfileValidation(
-      image,
+      // image,
       fullName,
-      nickName,
+      // nickName,
       date,
       userData?.email,
       number,
@@ -135,6 +135,9 @@ const FillYourProfile = () => {
             <DateTimePickerModal
               isVisible={isDatePickerVisible}
               maximumDate={new Date()}
+              minimumDate={
+                new Date(moment().subtract(100, 'years').format('YYYY-MM-DD'))
+              }
               mode="date"
               date={date || new Date()}
               onConfirm={d => {
