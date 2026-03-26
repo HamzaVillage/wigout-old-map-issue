@@ -16,7 +16,7 @@ import {useCustomNavigation} from '../../utils/Hooks';
 
 const ONBOARDING_KEY = '@hasSeenOnBoarding';
 
-const OnBoarding = () => {
+const OnBoarding = ({onComplete}) => {
   const AppIntroSliderRef = useRef(null);
   const {navigateToRoute} = useCustomNavigation();
 
@@ -24,11 +24,19 @@ const OnBoarding = () => {
     try {
       // Mark OnBoarding as completed
       await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
-      navigateToRoute('GetStarted');
+      if (onComplete) {
+        onComplete();
+      } else {
+        navigateToRoute('GetStarted');
+      }
     } catch (error) {
       console.error('Error saving OnBoarding status:', error);
       // Navigate anyway even if storage fails
-      navigateToRoute('GetStarted');
+      if (onComplete) {
+        onComplete();
+      } else {
+        navigateToRoute('GetStarted');
+      }
     }
   };
 

@@ -12,34 +12,19 @@ import {useCustomNavigation} from '../../utils/Hooks';
 
 const ONBOARDING_KEY = '@hasSeenOnBoarding';
 
-const Splash = () => {
+const Splash = ({onComplete}) => {
   const {navigateToRoute} = useCustomNavigation();
 
   useEffect(() => {
-    const checkOnBoardingStatus = async () => {
-      try {
-        const hasSeenOnBoarding = await AsyncStorage.getItem(ONBOARDING_KEY);
-
-        setTimeout(() => {
-          if (hasSeenOnBoarding === 'true') {
-            // User has seen OnBoarding before, skip to GetStarted
-            navigateToRoute('GetStarted'); // Login
-          } else {
-            // First time user, show OnBoarding
-            navigateToRoute('OnBoarding');
-          }
-        }, 1500);
-      } catch (error) {
-        console.error('Error checking OnBoarding status:', error);
-        // On error, default to showing OnBoarding
-        setTimeout(() => {
-          navigateToRoute('OnBoarding');
-        }, 1500);
+    setTimeout(() => {
+      if (onComplete) {
+        onComplete();
+      } else {
+        // Fallback or default behavior
+        navigateToRoute('OnBoarding');
       }
-    };
-
-    checkOnBoardingStatus();
-  }, [navigateToRoute]);
+    }, 1500);
+  }, [navigateToRoute, onComplete]);
 
   return (
     <View
