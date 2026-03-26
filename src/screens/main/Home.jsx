@@ -45,21 +45,21 @@ const Home = () => {
   );
 
   useEffect(() => {
-    // Start animations sequentially
-    Animated.sequence([
+    // Start animations staggered for better perceived performance
+    Animated.stagger(150, [
       Animated.timing(headerAnim, {
         toValue: 1,
-        duration: 600,
+        duration: 400,
         useNativeDriver: true,
       }),
       Animated.timing(recommendedAnim, {
         toValue: 1,
-        duration: 500,
+        duration: 400,
         useNativeDriver: true,
       }),
       Animated.timing(nearbyAnim, {
         toValue: 1,
-        duration: 500,
+        duration: 400,
         useNativeDriver: true,
       }),
     ]).start();

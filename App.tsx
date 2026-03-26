@@ -64,12 +64,6 @@ const App = () => {
 
     // Initialize Notifications
     const initNotifications = async () => {
-      // ✅ Explicit Notifee permission request for Android 13+
-      await notifee.requestPermission();
-
-      const granted = await requestUserPermission();
-      console.log('Notification Permission Granted:', granted);
-
       const unsubscribeMessaging = listenForForegroundMessages();
       const unsubscribeNotifee = registerNotifeeForegroundHandler();
 

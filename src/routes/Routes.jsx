@@ -12,14 +12,10 @@ import Splash from '../screens/auth/Splash';
 const Stack = createStackNavigator();
 const Routes = () => {
   const [showSplash, setShowSplash] = useState(true);
-  const [showOnboarding, setShowOnboarding] = useState(false);
   const token = useSelector(state => state?.user?.token);
   const userData = useSelector(state => state?.user?.userData);
   const current_location = useSelector(state => state?.user?.current_location);
-  
-  // console.log('TOKEN in Routes:-', token);
-  // console.log('userData:-', userData);
-  // console.log('current_location:-', current_location);
+  const isFirstTime = useSelector(state => state?.user?.isFirstTime);
 
   return (
     <>
@@ -31,20 +27,12 @@ const Routes = () => {
                 {...props}
                 onComplete={() => {
                   setShowSplash(false);
-                  setShowOnboarding(true);
                 }}
               />
             )}
           </Stack.Screen>
-        ) : showOnboarding ? (
-          <Stack.Screen name="OnBoarding">
-            {props => (
-              <OnBoarding
-                {...props}
-                onComplete={() => setShowOnboarding(false)}
-              />
-            )}
-          </Stack.Screen>
+        ) : isFirstTime ? (
+          <Stack.Screen name="OnBoarding" component={OnBoarding} />
         ) : token ? (
           <>
             {current_location?.latitude && userData?.isCreated == true ? (

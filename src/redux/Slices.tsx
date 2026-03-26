@@ -11,6 +11,7 @@ interface UserState {
   current_location: any;
   places_nearby: any[];
   Save_Place_Detail: any;
+  isFirstTime: boolean;
 }
 
 const initialState: UserState = {
@@ -24,8 +25,8 @@ const initialState: UserState = {
     address: '',
   },
   places_nearby: [],
-  Save_Place_Detail: null
-
+  Save_Place_Detail: null,
+  isFirstTime: true,
 };
 
 // Define return type of API response
@@ -33,6 +34,9 @@ interface LoginResponse {
   status: string;
   token: string;
   userData: object;
+  success: boolean;
+  message?: string;
+  data: any;
 }
 
 // Async Thunk with TypeScript
@@ -90,7 +94,10 @@ const authSlice = createSlice({
     },
     setPlaceDetail:  (state, action) => {
       state.Save_Place_Detail = action.payload
-    }
+    },
+    setIsFirstTime: (state, action: PayloadAction<boolean>) => {
+      state.isFirstTime = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -111,5 +118,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { clearToken, setUserData, setToken,UpdateProfile, setCurrentLocation,setNearbyPlaces,setPlaceDetail} = authSlice.actions;
+export const { clearToken, setUserData, setToken,UpdateProfile, setCurrentLocation,setNearbyPlaces,setPlaceDetail, setIsFirstTime} = authSlice.actions;
 export default authSlice.reducer;

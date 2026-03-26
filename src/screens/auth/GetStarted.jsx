@@ -31,6 +31,8 @@ import {
   responsiveHeight,
   responsiveWidth,
 } from '../../utils/Responsive_Dimensions';
+import notifee from '@notifee/react-native';
+import {requestUserPermission} from '../../utils/Notifications';
 
 const GetStarted = () => {
   const {navigateToRoute} = useCustomNavigation();
@@ -47,6 +49,17 @@ const GetStarted = () => {
       }
     };
     fetchToken();
+  }, []);
+
+  useEffect(() => {
+    const initNotificationsOnGetStarted = async () => {
+      // Explicit Notifee permission request for Android 13+
+      await notifee.requestPermission();
+      const granted = await requestUserPermission();
+      console.log('Notification Permission Granted on GetStarted:', granted);
+    };
+
+    initNotificationsOnGetStarted();
   }, []);
 
   const handleGoogleSignIn = useCallback(async () => {

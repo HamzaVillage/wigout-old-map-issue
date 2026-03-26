@@ -1,6 +1,8 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, {useRef} from 'react';
 import {ImageBackground, View} from 'react-native';
+import {useDispatch} from 'react-redux';
+import {setIsFirstTime} from '../../redux/Slices';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import AppIntroSlider from 'react-native-app-intro-slider';
 import AppImages from '../../assets/images/AppImages';
@@ -19,23 +21,22 @@ const ONBOARDING_KEY = '@hasSeenOnBoarding';
 const OnBoarding = ({onComplete}) => {
   const AppIntroSliderRef = useRef(null);
   const {navigateToRoute} = useCustomNavigation();
+  const dispatch = useDispatch();
 
   const handleOnBoardingComplete = async () => {
     try {
       // Mark OnBoarding as completed
       await AsyncStorage.setItem(ONBOARDING_KEY, 'true');
+      dispatch(setIsFirstTime(false));
       if (onComplete) {
         onComplete();
-      } else {
-        navigateToRoute('GetStarted');
       }
     } catch (error) {
       console.error('Error saving OnBoarding status:', error);
       // Navigate anyway even if storage fails
+      dispatch(setIsFirstTime(false));
       if (onComplete) {
         onComplete();
-      } else {
-        navigateToRoute('GetStarted');
       }
     }
   };
