@@ -23,7 +23,7 @@ import FastImage from 'react-native-fast-image';
 import {baseUrl, Google_Places_Images} from '../../../utils/api_content';
 import {cleanSingle} from 'react-native-image-crop-picker';
 
-const Explore = ({navigation}) => {
+const Discover = ({navigation}) => {
   const [showLocationModal, setShowLocationModal] = useState(false);
   const mapRef = useRef(null);
 
@@ -159,7 +159,7 @@ const Explore = ({navigation}) => {
         </View>
 
         {/* RECOMMENDED CARD */}
-        <View
+        {/* <View
           style={{
             position: 'absolute',
             zIndex: 10,
@@ -189,7 +189,7 @@ const Explore = ({navigation}) => {
             containerAlignItems={true ? 'center' : 'flex-start'}
             containerGap={true ? 5 : 0}
           />
-        </View>
+        </View> */}
       </View>
     </ScreenWrapper>
   );
@@ -222,4 +222,4 @@ const OptimizedMarker = memo(({place, coordinate, photoRef, navigation}) => {
   );
 });
 
-export default Explore;
+export default Discover;

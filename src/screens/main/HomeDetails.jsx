@@ -388,9 +388,7 @@ const HomeDetails = ({route}) => {
             />
             <LineBreak space={2} />
             <AppTextInput
-              inputPlaceHolder="Write your detailed review"
-              borderWidth={1}
-              borderColor={AppColors.GRAY}
+              placeholder="Write your detailed review"
               textAlignVertical="top"
               inputHeight={15}
               multiline
@@ -432,7 +430,11 @@ const HomeDetails = ({route}) => {
       </ScrollView>
 
       {/* Celebration Modal */}
-      <Modal isVisible={showCelebration} backdropOpacity={0.5}>
+      <Modal
+        isVisible={showCelebration}
+        animationIn="zoomIn"
+        animationOut="zoomOut"
+        backdropOpacity={0.5}>
         <View style={styles.modalContent}>
           <AppText
             title="Go Again!"
@@ -442,7 +444,7 @@ const HomeDetails = ({route}) => {
           />
           <FastImage
             source={require('../../assets/gif/celebrate.gif')}
-            style={{height: 200, width: '100%'}}
+            style={{height: 300, width: '100%'}}
             resizeMode={FastImage.resizeMode.contain}
           />
         </View>
@@ -485,7 +487,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: AppColors.WHITE,
+    // backgroundColor: AppColors.WHITE,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
     borderRadius: 20,
     paddingTop: 20,
     paddingBottom: 10,

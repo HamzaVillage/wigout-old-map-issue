@@ -222,85 +222,88 @@ const MyLikes = ({navigation, route}) => {
   return (
     <ScreenWrapper>
       <SafeAreaView style={{flex: 1}}>
-      <View style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <BackIcon onBackPress={() => goBack()} iconColor={AppColors.BLACK} />
-          <AppText
-            title={'My Likes'}
-            textColor={AppColors.BLACK}
-            textSize={2.8}
-            textFontWeight
-          />
-          <View style={{width: 40}} />
-        </View>
-
-        <LineBreak space={2} />
-        <AppText
-          title={`${filteredLikes.length} places you love`}
-          textColor={AppColors.GRAY}
-          textSize={1.6}
-          paddingHorizontal={5}
-        />
-
-        <LineBreak space={2} />
-
-        {/* Search Bar */}
-        <View style={styles.searchContainer}>
-          <AppTextInput
-            inputPlaceHolder={'Track your experiences'}
-            inputWidth={80}
-            value={searchQuery}
-            onChangeText={handleSearch}
-            logo={<Ionicons name="search" size={20} color={AppColors.GRAY} />}
-            rightIcon={
-              <MaterialIcons
-                name="tune"
-                size={20}
-                color={AppColors.BTNCOLOURS}
-              />
-            }
-          />
-        </View>
-
-        <LineBreak space={2} />
-
-        {/* List Content */}
-        <View style={{flex: 1}}>
-          {loader ? (
-            <View style={styles.center}>
-              <ActivityIndicator size="large" color={AppColors.BTNCOLOURS} />
-            </View>
-          ) : filteredLikes.length > 0 ? (
-            <FlatList
-              data={filteredLikes}
-              renderItem={renderItem}
-              keyExtractor={(item, index) => index.toString()}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{
-                paddingHorizontal: 20,
-                paddingBottom: responsiveHeight(5),
-              }}
+        <View style={styles.container}>
+          {/* Header */}
+          <View style={styles.header}>
+            <BackIcon
+              onBackPress={() => goBack()}
+              iconColor={AppColors.BLACK}
             />
-          ) : (
-            <View style={styles.emptyState}>
-              <Ionicons name="heart" size={100} color="#4CAF50" />
-              <LineBreak space={2} />
-              <AppText
-                title={
-                  searchQuery
-                    ? 'No results found'
-                    : 'No likes yet. Start adding places you love!'
-                }
-                textColor={AppColors.GRAY}
-                textSize={1.6}
-                textAlignment={'center'}
-                textwidth={70}
+            <AppText
+              title={'My Likes'}
+              textColor={AppColors.BLACK}
+              textSize={2.8}
+              textFontWeight
+            />
+            <View style={{width: 40}} />
+          </View>
+
+          <LineBreak space={2} />
+          <AppText
+            title={`${filteredLikes.length} places you love`}
+            textColor={AppColors.GRAY}
+            textSize={1.6}
+            paddingHorizontal={5}
+          />
+
+          <LineBreak space={2} />
+
+          {/* Search Bar */}
+          <View style={styles.searchContainer}>
+            <AppTextInput
+              inputPlaceHolder={'Track your experiences'}
+              inputWidth={80}
+              value={searchQuery}
+              onChangeText={handleSearch}
+              logo={<Ionicons name="search" size={20} color={AppColors.GRAY} />}
+              rightIcon={
+                <MaterialIcons
+                  name="tune"
+                  size={20}
+                  color={AppColors.BTNCOLOURS}
+                />
+              }
+            />
+          </View>
+
+          <LineBreak space={2} />
+
+          {/* List Content */}
+          <View style={{flex: 1}}>
+            {loader ? (
+              <View style={styles.center}>
+                <ActivityIndicator size="large" color={AppColors.BTNCOLOURS} />
+              </View>
+            ) : filteredLikes.length > 0 ? (
+              <FlatList
+                data={filteredLikes}
+                renderItem={renderItem}
+                keyExtractor={(item, index) => index.toString()}
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{
+                  paddingHorizontal: 20,
+                  paddingBottom: responsiveHeight(5),
+                }}
               />
-            </View>
-          )}
+            ) : (
+              <View style={styles.emptyState}>
+                <Ionicons name="heart" size={100} color="#4CAF50" />
+                <LineBreak space={2} />
+                <AppText
+                  title={
+                    searchQuery
+                      ? 'No results found'
+                      : 'No likes yet. Start adding places you love!'
+                  }
+                  textColor={AppColors.GRAY}
+                  textSize={1.6}
+                  textAlignment={'center'}
+                  textwidth={70}
+                />
+              </View>
+            )}
+          </View>
         </View>
-      </View>
       </SafeAreaView>
     </ScreenWrapper>
   );

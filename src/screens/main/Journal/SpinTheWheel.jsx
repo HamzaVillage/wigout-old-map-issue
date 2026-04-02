@@ -192,78 +192,81 @@ const SpinTheWheel = ({route}) => {
   return (
     <ScreenWrapper>
       <SafeAreaView style={{flex: 1}}>
-      <View style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <BackIcon onBackPress={() => goBack()} iconColor={AppColors.BLACK} />
-          <AppText
-            title={'Spin the Wheel'}
-            textColor={AppColors.BLACK}
-            textSize={2.5}
-            textFontWeight
-          />
-          <View style={{width: 40}} />
-        </View>
-
-        {/* <LineBreak space={5} /> */}
-
-        <View style={styles.wheelContainer}>
-          <TouchableOpacity
-            onPress={winner && !spinning ? handleWinnerPress : null}
-            activeOpacity={0.7}
-            disabled={!winner || spinning}>
-            <AppText
-              title={
-                spinning
-                  ? 'Spinning...'
-                  : winner
-                  ? `Selected: ${winner.name}`
-                  : 'Ready?'
-              }
-              textColor={AppColors.BTNCOLOURS}
-              textSize={3}
-              textFontWeight
-              textAlignment={'center'}
-              paddingBottom={10}
+        <View style={styles.container}>
+          {/* Header */}
+          <View style={styles.header}>
+            <BackIcon
+              onBackPress={() => goBack()}
+              iconColor={AppColors.BLACK}
             />
-            {winner && !spinning && winner.fullData && (
+            <AppText
+              title={'Spin the Wheel'}
+              textColor={AppColors.BLACK}
+              textSize={2.5}
+              textFontWeight
+            />
+            <View style={{width: 40}} />
+          </View>
+
+          {/* <LineBreak space={5} /> */}
+
+          <View style={styles.wheelContainer}>
+            <TouchableOpacity
+              onPress={winner && !spinning ? handleWinnerPress : null}
+              activeOpacity={0.7}
+              disabled={!winner || spinning}>
               <AppText
-                title={'(Tap to view details)'}
-                textColor={AppColors.GRAY}
-                textSize={1.5}
+                title={
+                  spinning
+                    ? 'Spinning...'
+                    : winner
+                    ? `Selected: ${winner.name}`
+                    : 'Ready?'
+                }
+                textColor={AppColors.BTNCOLOURS}
+                textSize={3}
+                textFontWeight
                 textAlignment={'center'}
                 paddingBottom={10}
               />
-            )}
-          </TouchableOpacity>
-
-          <View style={styles.wheelWrapper}>
-            {/* The Wheel */}
-            <Animated.View
-              style={{
-                transform: [{rotate: spin}],
-                width: WHEEL_SIZE,
-                height: WHEEL_SIZE,
-              }}>
-              <Svg width={WHEEL_SIZE} height={WHEEL_SIZE}>
-                {renderWheel()}
-                {/* Center Circle (White Hole) */}
-                <Path
-                  d={`M ${RADIUS} ${RADIUS} m -30, 0 a 30,30 0 1,0 60,0 a 30,30 0 1,0 -60,0`}
-                  fill="white"
+              {winner && !spinning && winner.fullData && (
+                <AppText
+                  title={'(Tap to view details)'}
+                  textColor={AppColors.GRAY}
+                  textSize={1.5}
+                  textAlignment={'center'}
+                  paddingBottom={10}
                 />
-              </Svg>
-            </Animated.View>
+              )}
+            </TouchableOpacity>
 
-            {/* Pointer / Indicator */}
-            {/* Placing a pointer at the top (0 degrees in polar calculation logic is -90 usually, but let's stick to visual) */}
-            {/* If we start Arc from -90 (Top), then pointer at Top is index 0 */}
+            <View style={styles.wheelWrapper}>
+              {/* The Wheel */}
+              <Animated.View
+                style={{
+                  transform: [{rotate: spin}],
+                  width: WHEEL_SIZE,
+                  height: WHEEL_SIZE,
+                }}>
+                <Svg width={WHEEL_SIZE} height={WHEEL_SIZE}>
+                  {renderWheel()}
+                  {/* Center Circle (White Hole) */}
+                  <Path
+                    d={`M ${RADIUS} ${RADIUS} m -30, 0 a 30,30 0 1,0 60,0 a 30,30 0 1,0 -60,0`}
+                    fill="white"
+                  />
+                </Svg>
+              </Animated.View>
 
-            {/* Let's add a visual pointer overlay */}
-            <View style={styles.pointer} />
+              {/* Pointer / Indicator */}
+              {/* Placing a pointer at the top (0 degrees in polar calculation logic is -90 usually, but let's stick to visual) */}
+              {/* If we start Arc from -90 (Top), then pointer at Top is index 0 */}
+
+              {/* Let's add a visual pointer overlay */}
+              <View style={styles.pointer} />
+            </View>
           </View>
         </View>
-      </View>
       </SafeAreaView>
     </ScreenWrapper>
   );
