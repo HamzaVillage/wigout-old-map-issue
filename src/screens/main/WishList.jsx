@@ -49,6 +49,7 @@ const WishList = ({navigation}) => {
           CardImg={item?.image}
           cardHeight={30}
           cardWidth={92}
+          category={item?.category || 'Restaurant'}
           cardOnPress={() =>
             navigation.navigate('HomeDetails', {placeDetails: item})
           }

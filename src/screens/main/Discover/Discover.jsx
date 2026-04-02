@@ -114,7 +114,7 @@ const Discover = ({navigation}) => {
                   color={AppColors.BTNCOLOURS}
                 />
                 <AppText
-                  title={'Location (within 1 km)'}
+                  title={'Location (within 100 Miles)'}
                   textColor={AppColors.BLACK}
                   textSize={1.7}
                 />

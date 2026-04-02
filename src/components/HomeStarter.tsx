@@ -149,7 +149,7 @@ const HomeStarter = ({
       )}
       {include && (
         <AppTextInput
-          inputPlaceHolder={'Type your anwer here'}
+          placeholder={'Type your anwer here'}
           borderWidth={1}
           borderColor={AppColors.appBgColor}
           placeholderTextColor={AppColors.appBgColor}

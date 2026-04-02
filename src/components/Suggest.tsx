@@ -40,7 +40,7 @@ const SuggestionInput = () => {
   return (
     <View>
       <AppTextInput
-        inputPlaceHolder={'Search'}
+        placeholder={'Search'}
         inputWidth={64}
         value={query}
         isFocused={isFocused.search}

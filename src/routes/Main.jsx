@@ -13,6 +13,7 @@ import AppColors from '../utils/AppColors';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
+import Foundation from 'react-native-vector-icons/Foundation';
 
 // Screens
 import Home from '../screens/main/Home';
@@ -62,9 +63,9 @@ const TAB_CONFIG = {
     unfocused: 'manage-search',
   },
   'Top Rated': {
-    lib: FontAwesome5,
-    focused: 'clipboard-list',
-    unfocused: 'clipboard-list',
+    lib: Foundation,
+    focused: 'clipboard-notes',
+    unfocused: 'clipboard-notes',
   },
   Profile: {
     lib: Ionicons,

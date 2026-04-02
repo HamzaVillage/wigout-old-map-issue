@@ -1,4 +1,3 @@
-/* eslint-disable jsx-quotes */
 /* eslint-disable react/no-unstable-nested-components */
 /* eslint-disable react-native/no-inline-styles */
 import React, {useState} from 'react';
@@ -185,7 +184,7 @@ const FilterModal = ({
                 <LineBreak space={2} />
 
                 <AppTextInput
-                  inputPlaceHolder={'New York, United States'}
+                  placeholder={'New York, United States'}
                   inputWidth={73}
                   rightIcon={
                     <MaterialIcons

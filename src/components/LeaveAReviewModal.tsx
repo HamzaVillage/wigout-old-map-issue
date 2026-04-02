@@ -152,13 +152,12 @@ const LeaveAReviewModal = ({
                 />
                 <LineBreak space={2} />
                 <AppTextInput
-                  inputPlaceHolder={
+                  placeholder={
                     'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi.'
                   }
                   inputWidth={73}
                   inputHeight={16}
                   textAlignVertical="top"
-                  placeholderTextfontWeight={'bold'}
                   containerBg={AppColors.BGCOLOURS}
                   placeholderTextColor={AppColors.BLACK}
                   multiline={true}

@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useCallback} from 'react';
 import {
   View,
   StyleSheet,
@@ -9,7 +9,21 @@ import {
   FlatList,
   Image,
   TextInput,
+  Modal,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withDelay,
+  Easing,
+  FadeIn,
+  FadeOut,
+  SlideInDown,
+  SlideOutDown,
+} from 'react-native-reanimated';
 import ScreenWrapper from '../../../components/ScreenWrapper';
 import AppColors from '../../../utils/AppColors';
 import AppText from '../../../components/AppTextComps/AppText';
@@ -30,8 +44,197 @@ import {
   GetReviews,
   RemoveReview,
 } from '../../../ApiCalls/Main/Reviews/ReviewsApiCall';
-import AppButton from '../../../components/AppButton';
 
+// ─── Animated Grid Item ───────────────────────────────────────────────────────
+const AnimatedGridItem = ({
+  item,
+  index,
+  editingItemId,
+  setEditingItemId,
+  onRemove,
+  onNavigate,
+  onOpenNote,
+}) => {
+  const translateY = useSharedValue(60);
+  const opacity = useSharedValue(0);
+
+  useEffect(() => {
+    const delay = index * 80;
+    translateY.value = withDelay(
+      delay,
+      withTiming(0, {duration: 450, easing: Easing.out(Easing.cubic)}),
+    );
+    opacity.value = withDelay(
+      delay,
+      withTiming(1, {duration: 450, easing: Easing.out(Easing.cubic)}),
+    );
+  }, []);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{translateY: translateY.value}],
+    opacity: opacity.value,
+  }));
+
+  const isEditing = editingItemId === item._id;
+
+  console.log('item.category:-', item);
+
+  return (
+    <Animated.View style={[styles.gridCard, animatedStyle]}>
+      {/* Image */}
+      <TouchableOpacity
+        activeOpacity={0.85}
+        onPress={() => onNavigate(item)}
+        style={styles.imageWrapper}>
+        <Image source={{uri: item?.photos?.[0]}} style={styles.placeImage} />
+        {/* Gradient Overlay */}
+        <View style={styles.imageOverlay} />
+
+        {/* Action Buttons on Image */}
+        <View style={styles.actionRow}>
+          <TouchableOpacity
+            style={[styles.iconBtn, isEditing && styles.iconBtnActive]}
+            onPress={() => onOpenNote(item)}>
+            <MaterialIcons
+              name="edit"
+              size={responsiveFontSize(1.8)}
+              color={isEditing ? AppColors.BTNCOLOURS : '#fff'}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.iconBtnDelete}
+            onPress={() => onRemove(item)}>
+            <MaterialIcons
+              name="delete-outline"
+              size={responsiveFontSize(1.8)}
+              color="#F44336"
+            />
+          </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
+
+      {/* Details */}
+      <View style={styles.cardDetails}>
+        <AppText
+          title={item.restaurantName}
+          textColor={AppColors.BLACK}
+          textSize={1.7}
+          textFontWeight
+          numberOfLines={1}
+        />
+        <View style={styles.categoryRow}>
+          <MaterialIcons
+            name="category"
+            size={responsiveFontSize(1.3)}
+            color={AppColors.BTNCOLOURS}
+          />
+          <AppText
+            title={item.category || 'Restaurant'}
+            textColor={AppColors.GRAY}
+            textSize={1.3}
+          />
+        </View>
+
+        {/* Notes preview */}
+        {item?.notes?.length > 0 && (
+          <View style={styles.noteBadge}>
+            <MaterialIcons
+              name="speaker-notes"
+              size={responsiveFontSize(1.2)}
+              color={AppColors.BTNCOLOURS}
+            />
+            <AppText
+              title={item.notes[item.notes.length - 1].noteText}
+              textColor={AppColors.GRAY}
+              textSize={1.1}
+              numberOfLines={1}
+            />
+          </View>
+        )}
+      </View>
+    </Animated.View>
+  );
+};
+
+// ─── Note Modal ───────────────────────────────────────────────────────────────
+const NoteModal = ({visible, item, onClose, onSave}) => {
+  const [note, setNote] = useState('');
+
+  const handleSave = () => {
+    onSave(item, note);
+    setNote('');
+  };
+
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="none"
+      onRequestClose={onClose}>
+      <Animated.View
+        entering={FadeIn.duration(200)}
+        exiting={FadeOut.duration(200)}
+        style={styles.modalBackdrop}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          style={{width: '100%', alignItems: 'center'}}>
+          <Animated.View
+            entering={SlideInDown.duration(350).easing(
+              Easing.out(Easing.cubic),
+            )}
+            exiting={SlideOutDown.duration(300)}
+            style={styles.modalCard}>
+            <View style={styles.modalHandle} />
+            <AppText
+              title={'Add a Note'}
+              textColor={AppColors.BLACK}
+              textSize={2.2}
+              textFontWeight
+            />
+            <LineBreak space={1} />
+            {item?.restaurantName ? (
+              <AppText
+                title={item.restaurantName}
+                textColor={AppColors.GRAY}
+                textSize={1.5}
+              />
+            ) : null}
+            <LineBreak space={2} />
+            <TextInput
+              style={styles.noteInput}
+              placeholder="Why do you love this place?"
+              placeholderTextColor={AppColors.GRAY}
+              multiline
+              value={note}
+              onChangeText={setNote}
+            />
+            <LineBreak space={1.5} />
+            <View style={styles.modalButtons}>
+              <TouchableOpacity style={styles.cancelBtn} onPress={onClose}>
+                <AppText
+                  title="Cancel"
+                  textColor={AppColors.BLACK}
+                  textSize={1.8}
+                  textAlignment="center"
+                />
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.saveBtn} onPress={handleSave}>
+                <AppText
+                  title="Save Note"
+                  textColor={AppColors.WHITE}
+                  textSize={1.8}
+                  textAlignment="center"
+                />
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        </KeyboardAvoidingView>
+      </Animated.View>
+    </Modal>
+  );
+};
+
+// ─── Main Screen ─────────────────────────────────────────────────────────────
 const MyLikes = ({navigation, route}) => {
   const {likesData} = route.params || {};
   const {goBack, navigateToRoute} = useCustomNavigation();
@@ -40,8 +243,9 @@ const MyLikes = ({navigation, route}) => {
   const [myLikes, setMyLikes] = useState(likesData || []);
   const [filteredLikes, setFilteredLikes] = useState(likesData || []);
   const [searchQuery, setSearchQuery] = useState('');
-  const [note, setNote] = useState('');
   const [editingItemId, setEditingItemId] = useState(null);
+  const [noteModalVisible, setNoteModalVisible] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
 
   useEffect(() => {
     if (likesData) {
@@ -82,123 +286,10 @@ const MyLikes = ({navigation, route}) => {
     }
   };
 
-  const renderItem = ({item}) => {
-    const isEditing = editingItemId === item._id;
-    // console.log('ITEM:-', item?.notes);
-    return (
-      <View style={styles.cardContainer}>
-        <View style={styles.cardHeader}>
-          <TouchableOpacity
-            activeOpacity={0.7}
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 12,
-              flex: 1,
-            }}
-            onPress={() =>
-              navigateToRoute('ListViewDetail', {placeDetails: item})
-            }>
-            <Image
-              source={{uri: item?.photos?.[0]}}
-              style={styles.placeImage}
-            />
-            <View style={{flex: 1}}>
-              <AppText
-                title={item.restaurantName}
-                textColor={AppColors.BLACK}
-                textSize={1.9}
-                textFontWeight
-              />
-              <AppText
-                title={'Restaurants'}
-                textColor={AppColors.GRAY}
-                textSize={1.5}
-              />
-            </View>
-          </TouchableOpacity>
-
-          <View style={styles.actionButtons}>
-            <TouchableOpacity
-              style={[
-                styles.editBtn,
-                isEditing && {backgroundColor: '#E8F5E9'},
-              ]}
-              onPress={() => setEditingItemId(isEditing ? null : item._id)}>
-              <MaterialIcons
-                name="edit"
-                size={20}
-                color={isEditing ? AppColors.BTNCOLOURS : AppColors.GRAY}
-              />
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => handleRemove(item)}
-              style={styles.deleteBtn}>
-              <MaterialIcons name="delete-outline" size={20} color="#F44336" />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {item?.notes?.length > 0 && (
-          <View style={styles.displayNote}>
-            {item.notes.map((note, index) => (
-              <AppText
-                key={index}
-                title={note.noteText}
-                textColor={AppColors.BLACK}
-                textSize={1.6}
-              />
-            ))}
-          </View>
-        )}
-
-        {isEditing && (
-          <View style={styles.noteSection}>
-            <TextInput
-              style={styles.noteInput}
-              placeholder="Add notes about why you love this place..."
-              placeholderTextColor={AppColors.GRAY}
-              multiline
-              value={note}
-              onChangeText={setNote}
-            />
-            <View style={styles.noteButtons}>
-              <TouchableOpacity
-                style={styles.saveBtn}
-                onPress={() => handleAddNote(item)}>
-                <AppText
-                  title="Save"
-                  textColor={AppColors.WHITE}
-                  textSize={1.8}
-                  textAlignment="center"
-                />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.cancelBtn}
-                onPress={() => setEditingItemId(null)}>
-                <AppText
-                  title="Cancel"
-                  textColor={AppColors.BLACK}
-                  textSize={1.8}
-                  textAlignment="center"
-                />
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
-      </View>
-    );
-  };
-
   const handleRemove = async item => {
-    let id = item?._id;
-    let data = {
-      reviewId: id,
-    };
-
+    let data = {reviewId: item?._id};
     setLoader(true);
     const res = await RemoveReview(data, token);
-    console.log('RES i RemoveReview:-', res);
     if (res?.success) {
       fetchMyLikes();
     } else {
@@ -206,18 +297,36 @@ const MyLikes = ({navigation, route}) => {
     }
   };
 
-  const handleAddNote = async item => {
-    let data = {
-      reviewId: item?._id,
-      noteText: note,
-    };
-    let res = await addNote(data, token);
-    console.log('RES:-', res);
-    setNote('');
-    fetchMyLikes();
-    // setEditingItemId(null);
-    // navigation.goBack();
+  const handleOpenNote = item => {
+    setSelectedItem(item);
+    setNoteModalVisible(true);
   };
+
+  const handleAddNote = async (item, noteText) => {
+    if (!noteText.trim()) {
+      setNoteModalVisible(false);
+      return;
+    }
+    let data = {reviewId: item?._id, noteText};
+    await addNote(data, token);
+    setNoteModalVisible(false);
+    fetchMyLikes();
+  };
+
+  const renderItem = useCallback(
+    ({item, index}) => (
+      <AnimatedGridItem
+        item={item}
+        index={index}
+        editingItemId={editingItemId}
+        setEditingItemId={setEditingItemId}
+        onRemove={handleRemove}
+        onNavigate={i => navigateToRoute('ListViewDetail', {placeDetails: i})}
+        onOpenNote={handleOpenNote}
+      />
+    ),
+    [editingItemId],
+  );
 
   return (
     <ScreenWrapper>
@@ -238,7 +347,7 @@ const MyLikes = ({navigation, route}) => {
             <View style={{width: 40}} />
           </View>
 
-          <LineBreak space={2} />
+          <LineBreak space={1.5} />
           <AppText
             title={`${filteredLikes.length} places you love`}
             textColor={AppColors.GRAY}
@@ -246,12 +355,12 @@ const MyLikes = ({navigation, route}) => {
             paddingHorizontal={5}
           />
 
-          <LineBreak space={2} />
+          <LineBreak space={1.5} />
 
           {/* Search Bar */}
           <View style={styles.searchContainer}>
             <AppTextInput
-              inputPlaceHolder={'Track your experiences'}
+              placeholder={'Search'}
               inputWidth={80}
               value={searchQuery}
               onChangeText={handleSearch}
@@ -268,7 +377,7 @@ const MyLikes = ({navigation, route}) => {
 
           <LineBreak space={2} />
 
-          {/* List Content */}
+          {/* Grid List */}
           <View style={{flex: 1}}>
             {loader ? (
               <View style={styles.center}>
@@ -279,21 +388,26 @@ const MyLikes = ({navigation, route}) => {
                 data={filteredLikes}
                 renderItem={renderItem}
                 keyExtractor={(item, index) => index.toString()}
+                numColumns={2}
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={{
-                  paddingHorizontal: 20,
-                  paddingBottom: responsiveHeight(5),
-                }}
+                columnWrapperStyle={styles.columnWrapper}
+                contentContainerStyle={styles.listContent}
               />
             ) : (
               <View style={styles.emptyState}>
-                <Ionicons name="heart" size={100} color="#4CAF50" />
+                <Animated.View entering={FadeIn.delay(200).duration(500)}>
+                  <Ionicons
+                    name="heart"
+                    size={80}
+                    color={AppColors.BTNCOLOURS}
+                  />
+                </Animated.View>
                 <LineBreak space={2} />
                 <AppText
                   title={
                     searchQuery
                       ? 'No results found'
-                      : 'No likes yet. Start adding places you love!'
+                      : 'No likes yet.\nStart adding places you love!'
                   }
                   textColor={AppColors.GRAY}
                   textSize={1.6}
@@ -305,10 +419,19 @@ const MyLikes = ({navigation, route}) => {
           </View>
         </View>
       </SafeAreaView>
+
+      {/* Note Modal */}
+      <NoteModal
+        visible={noteModalVisible}
+        item={selectedItem}
+        onClose={() => setNoteModalVisible(false)}
+        onSave={handleAddNote}
+      />
     </ScreenWrapper>
   );
 };
 
+// ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -322,91 +445,144 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     marginHorizontal: 20,
-    borderWidth: 1,
+    // borderWidth: 1,
     borderColor: '#E8F5E9',
     borderRadius: 10,
   },
-  cardContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#E8F5E9', // Light green
-    marginBottom: 15,
-    padding: 15,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 2},
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+  listContent: {
+    paddingHorizontal: responsiveWidth(3),
+    paddingBottom: responsiveHeight(5),
   },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  columnWrapper: {
     justifyContent: 'space-between',
+    marginBottom: responsiveHeight(1.5),
+  },
+  // ── Grid Card ──
+  gridCard: {
+    width: responsiveWidth(44),
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    borderRadius: 20,
+    overflow: 'hidden',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: {width: 0, height: 3},
+    shadowOpacity: 0.12,
+    shadowRadius: 6,
+    borderWidth: 2,
+    borderColor: '#E8F5E9',
+  },
+  imageWrapper: {
+    width: '100%',
+    height: responsiveHeight(14),
   },
   placeImage: {
-    width: 65,
-    height: 65,
-    borderRadius: 15,
+    width: '100%',
+    height: '100%',
     backgroundColor: '#F5F5F5',
   },
-  actionButtons: {
+  imageOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.22)',
+  },
+  actionRow: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
     flexDirection: 'row',
-    gap: 10,
+    gap: 6,
   },
-  editBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#F5F5F5',
+  iconBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(0,0,0,0.35)',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  deleteBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#FFEBEE',
+  iconBtnActive: {
+    backgroundColor: 'rgba(255,255,255,0.9)',
+  },
+  iconBtnDelete: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.85)',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  noteSection: {
-    backgroundColor: AppColors.WHITE,
-    padding: 15,
-    borderRadius: 15,
-    borderWidth: 1,
-    borderColor: '#E8F5E9',
-    marginTop: 15,
+  cardDetails: {
+    padding: 10,
+  },
+  categoryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 2,
+  },
+  noteBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 6,
+    backgroundColor: '#F0FAF2',
+    borderRadius: 8,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    elevation: 0.5,
+  },
+  // ── Modal ──
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  modalCard: {
+    width: '100%',
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    padding: 24,
+    paddingBottom: Platform.OS === 'ios' ? 36 : 24,
+  },
+  modalHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#D0D0D0',
+    alignSelf: 'center',
+    marginBottom: 16,
   },
   noteInput: {
-    height: 100,
+    height: 120,
     textAlignVertical: 'top',
     color: AppColors.BLACK,
     fontSize: responsiveFontSize(1.8),
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: '#E8F5E9',
-    borderRadius: 10,
-    padding: 10,
-    marginBottom: 15,
+    borderRadius: 14,
+    padding: 12,
+    backgroundColor: '#FAFAFA',
   },
-  noteButtons: {
+  modalButtons: {
     flexDirection: 'row',
     gap: 12,
   },
   saveBtn: {
-    backgroundColor: AppColors.BTNCOLOURS,
-    paddingVertical: 12,
-    paddingHorizontal: 25,
-    borderRadius: 15,
     flex: 1,
+    backgroundColor: AppColors.BTNCOLOURS,
+    paddingVertical: 14,
+    borderRadius: 16,
+    alignItems: 'center',
   },
   cancelBtn: {
-    backgroundColor: '#F5F5F5',
-    paddingVertical: 12,
-    paddingHorizontal: 25,
-    borderRadius: 15,
     flex: 1,
+    backgroundColor: '#F5F5F5',
+    paddingVertical: 14,
+    borderRadius: 16,
+    alignItems: 'center',
   },
+  // ── Empty / Loader ──
   emptyState: {
     flex: 1,
     justifyContent: 'center',
@@ -417,20 +593,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  displayNote: {
-    backgroundColor: '#F9F9F9',
-    padding: 10,
-    borderRadius: 10,
-    marginTop: 10,
-    borderLeftWidth: 3,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderRightWidth: 1,
-    borderLeftColor: AppColors.BTNCOLOURS,
-    borderRightColor: '#E8F5E9',
-    borderTopColor: '#E8F5E9',
-    borderBottomColor: '#E8F5E9',
   },
 });
 

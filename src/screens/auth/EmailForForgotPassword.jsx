@@ -63,7 +63,7 @@ const EmailForForgotPassword = () => {
           <View style={styles.body}>
             <LineBreak space={5} />
             <AppTextInput
-              inputPlaceHolder={'Email Address'}
+              placeholder={'Email Address'}
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"

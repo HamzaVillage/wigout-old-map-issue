@@ -2,6 +2,7 @@
 import React from 'react';
 import {View, TouchableOpacity, ImageBackground} from 'react-native';
 import Entypo from 'react-native-vector-icons/Entypo';
+import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import AppColors from '../utils/AppColors';
 import {
   responsiveFontSize,
@@ -19,6 +20,7 @@ type cardProps = {
   cardOnPress?: any;
   cardHeight?: any;
   cardWidth?: any;
+  category?: string;
 };
 
 const HomeCard = ({
@@ -28,6 +30,7 @@ const HomeCard = ({
   cardOnPress,
   cardHeight,
   cardWidth,
+  category = 'Restaurant',
 }: cardProps) => {
   return (
     <TouchableOpacity
@@ -68,6 +71,26 @@ const HomeCard = ({
             textFontWeight
             numberOfLines={1}
           />
+
+          <View
+            style={{
+              flexDirection: 'row',
+              gap: 2,
+              alignItems: 'center',
+              marginTop: 2,
+            }}>
+            <MaterialIcons
+              name={'category'}
+              size={responsiveFontSize(1.8)}
+              color={AppColors.WHITE}
+            />
+            <AppText
+              title={category}
+              textColor={AppColors.WHITE}
+              textSize={1.2}
+              numberOfLines={1}
+            />
+          </View>
 
           <View
             style={{

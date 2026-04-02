@@ -142,6 +142,25 @@ const HomeDetails = ({route}) => {
     ? Math.round((morePlaceDetails.rating / 5) * 100)
     : 0;
 
+  const getCategory = () => {
+    const types = morePlaceDetails?.types || placeDetails?.types || [];
+    if (types.length === 0) return 'Place';
+    const filterTypes = [
+      'point_of_interest',
+      'establishment',
+      'food',
+      'natural_feature',
+      'street_address',
+      'route',
+    ];
+    const meaningfulType =
+      types.find(t => !filterTypes.includes(t)) || types[0];
+    return meaningfulType
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
   const createReview = async type => {
     if (!morePlaceDetails) {
       ShowError('Please wait, details are loading...', 2000);
@@ -157,6 +176,7 @@ const HomeDetails = ({route}) => {
       reviewText: typeReview,
       actionType: type,
       photos: images,
+      category: getCategory(),
       latitude: morePlaceDetails?.geometry?.location?.lat,
       longitude: morePlaceDetails?.geometry?.location?.lng,
     };
@@ -166,7 +186,7 @@ const HomeDetails = ({route}) => {
       if (res.success) {
         if (type === 'Go Again') {
           setShowCelebration(true);
-          setTimeout(() => setShowCelebration(false), 2000);
+          setTimeout(() => setShowCelebration(false), 3000);
         }
         setTypeReview('');
       }
@@ -206,6 +226,7 @@ const HomeDetails = ({route}) => {
             morePlaceDetails?.user_ratings_total ||
             placeDetails?.user_ratings_total ||
             0,
+          category: getCategory(),
           notes: '',
           isVisited: false,
         };
@@ -409,22 +430,24 @@ const HomeDetails = ({route}) => {
           </View>
 
           {/* Action Buttons */}
-          <View style={styles.buttonRow}>
-            <AppButton
-              title="Avoid"
-              handlePress={() => createReview('Avoid')}
-              btnWidth={44}
-              btnBackgroundColor={AppColors.LIGHT_BTNCOLOURS}
-              loading={buttonLoader}
-            />
-            <AppButton
-              title="Go Again"
-              handlePress={() => createReview('Go Again')}
-              btnWidth={44}
-              btnBackgroundColor={AppColors.BTNCOLOURS}
-              loading={buttonLoader}
-            />
-          </View>
+          {!isWishList && (
+            <View style={styles.buttonRow}>
+              <AppButton
+                title="Avoid"
+                handlePress={() => createReview('Avoid')}
+                btnWidth={44}
+                btnBackgroundColor={AppColors.LIGHT_BTNCOLOURS}
+                loading={buttonLoader}
+              />
+              <AppButton
+                title="Go Again"
+                handlePress={() => createReview('Go Again')}
+                btnWidth={44}
+                btnBackgroundColor={AppColors.BTNCOLOURS}
+                loading={buttonLoader}
+              />
+            </View>
+          )}
         </View>
         <LineBreak space={4} />
       </ScrollView>
@@ -432,19 +455,14 @@ const HomeDetails = ({route}) => {
       {/* Celebration Modal */}
       <Modal
         isVisible={showCelebration}
-        animationIn="zoomIn"
-        animationOut="zoomOut"
-        backdropOpacity={0.5}>
-        <View style={styles.modalContent}>
-          <AppText
-            title="Go Again!"
-            textSize={3}
-            textAlignment="center"
-            textFontWeight
-          />
+        // animationIn="zoomIn"
+        // animationOut="zoomOut"
+        backdropOpacity={0.2}
+        style={{margin: 0}}>
+        <View style={styles.gifContainer}>
           <FastImage
-            source={require('../../assets/gif/celebrate.gif')}
-            style={{height: 300, width: '100%'}}
+            source={require('../../assets/gif/celebration.gif')}
+            style={{height: '100%', width: '100%'}}
             resizeMode={FastImage.resizeMode.contain}
           />
         </View>
@@ -488,10 +506,9 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     // backgroundColor: AppColors.WHITE,
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    borderRadius: 20,
-    paddingTop: 20,
-    paddingBottom: 10,
+    // borderRadius: 20,
+    // paddingTop: 20,
+    // paddingBottom: 10,
   },
   titleRow: {
     flexDirection: 'row',
@@ -504,6 +521,15 @@ const styles = StyleSheet.create({
     height: 40,
     width: 40,
     borderRadius: 30,
+  },
+  gifContainer: {
+    height: responsiveHeight(48),
+    width: responsiveWidth(100),
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 999,
   },
 });
 
