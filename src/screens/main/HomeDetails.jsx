@@ -12,11 +12,15 @@ import {
 import axios from 'axios';
 import Modal from 'react-native-modal';
 import FastImage from 'react-native-fast-image';
+import Sound from 'react-native-sound';
 import Entypo from 'react-native-vector-icons/Entypo';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import {useDispatch, useSelector} from 'react-redux';
+
+// Enable playback in silence mode
+Sound.setCategory('Playback');
 
 import ImageIntroSlider from '../../components/ImagesIntroSlider';
 import AppColors from '../../utils/AppColors';
@@ -54,10 +58,50 @@ const HomeDetails = ({route}) => {
   const [morePlaceDetails, setMoreInfoDetail] = useState(null);
   const [loading, setLoading] = useState(true);
   const [typeReview, setTypeReview] = useState('');
-  const [buttonLoader, setButtonLoader] = useState(false);
+  const [avoidLoader, setAvoidLoader] = useState(false);
+  const [goAgainLoader, setGoAgainLoader] = useState(false);
+  const [reviewLoader, setReviewLoader] = useState(false);
   const [showCelebration, setShowCelebration] = useState(false);
   const [isWishList, setIsWishList] = useState(false);
   const [wishlistLoader, setWishlistLoader] = useState(false);
+
+  // Sound ref
+  const celebrationSound = React.useRef(null);
+
+  useEffect(() => {
+    // Pre-load the sound from Android resources (res/raw/cloudcheering.mp3)
+    celebrationSound.current = new Sound(
+      'cloudcheering',
+      Sound.MAIN_BUNDLE,
+      error => {
+        if (error) {
+          console.log('failed to load the sound', error);
+        }
+      },
+    );
+
+    return () => {
+      if (celebrationSound.current) {
+        celebrationSound.current.release();
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (showCelebration) {
+      if (celebrationSound.current && celebrationSound.current.isLoaded()) {
+        celebrationSound.current.setVolume(1.0).play(success => {
+          if (!success) {
+            console.log('playback failed due to audio decoding errors');
+          }
+        });
+      }
+    } else {
+      if (celebrationSound.current && celebrationSound.current.isLoaded()) {
+        celebrationSound.current.stop();
+      }
+    }
+  }, [showCelebration]);
 
   useEffect(() => {
     const id = placeDetails?.place_id || placeDetails?.placeId;
@@ -167,7 +211,9 @@ const HomeDetails = ({route}) => {
       return;
     }
 
-    setButtonLoader(true);
+    if (type === 'Avoid') setAvoidLoader(true);
+    if (type === 'Go Again') setGoAgainLoader(true);
+    if (type === 'Review') setReviewLoader(true);
     const data = {
       placeId: morePlaceDetails?.place_id,
       restaurantName: morePlaceDetails?.name,
@@ -186,15 +232,19 @@ const HomeDetails = ({route}) => {
       if (res.success) {
         if (type === 'Go Again') {
           setShowCelebration(true);
-          setTimeout(() => setShowCelebration(false), 3000);
+          setTimeout(() => setShowCelebration(false), 4000);
         }
         setTypeReview('');
       }
-      ShowError(res.msg || 'Review processed', 2000);
+      if (!(res.success && type === 'Go Again')) {
+        ShowError(res.msg || 'Review processed', 2000);
+      }
     } catch (err) {
       ShowError('Failed to add review', 2000);
     } finally {
-      setButtonLoader(false);
+      setAvoidLoader(false);
+      setGoAgainLoader(false);
+      setReviewLoader(false);
     }
   };
 
@@ -417,12 +467,21 @@ const HomeDetails = ({route}) => {
               value={typeReview}
               rightIcon={
                 <View style={styles.inputAction}>
-                  <TouchableOpacity onPress={() => createReview('Review')}>
-                    <Ionicons
-                      name="send"
-                      size={responsiveFontSize(2.5)}
-                      color={AppColors.BTNCOLOURS}
-                    />
+                  <TouchableOpacity
+                    onPress={() => createReview('Review')}
+                    disabled={reviewLoader}>
+                    {reviewLoader ? (
+                      <ActivityIndicator
+                        size="small"
+                        color={AppColors.BTNCOLOURS}
+                      />
+                    ) : (
+                      <Ionicons
+                        name="send"
+                        size={responsiveFontSize(2.5)}
+                        color={AppColors.BTNCOLOURS}
+                      />
+                    )}
                   </TouchableOpacity>
                 </View>
               }
@@ -437,14 +496,14 @@ const HomeDetails = ({route}) => {
                 handlePress={() => createReview('Avoid')}
                 btnWidth={44}
                 btnBackgroundColor={AppColors.LIGHT_BTNCOLOURS}
-                loading={buttonLoader}
+                loading={avoidLoader}
               />
               <AppButton
                 title="Go Again"
                 handlePress={() => createReview('Go Again')}
                 btnWidth={44}
                 btnBackgroundColor={AppColors.BTNCOLOURS}
-                loading={buttonLoader}
+                loading={goAgainLoader}
               />
             </View>
           )}
