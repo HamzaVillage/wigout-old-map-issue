@@ -1,5 +1,4 @@
-/* eslint-disable react-native/no-inline-styles */
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   TouchableOpacity,
@@ -7,11 +6,13 @@ import {
   FlatList,
   Image,
   TextInput,
+  SafeAreaView,
+  Dimensions,
+  ActivityIndicator,
 } from 'react-native';
-import BackgroundScreen from '../../../components/AppTextComps/BackgroundScreen';
-import BackIcon from '../../../components/AppTextComps/BackIcon';
+import {useDispatch, useSelector} from 'react-redux';
+import Svg, {Defs, LinearGradient, Stop, Rect} from 'react-native-svg';
 import AppText from '../../../components/AppTextComps/AppText';
-import AppButton from '../../../components/AppButton';
 import AppColors from '../../../utils/AppColors';
 import {
   responsiveHeight,
@@ -20,191 +21,412 @@ import {
 } from '../../../utils/Responsive_Dimensions';
 import {useCustomNavigation} from '../../../utils/Hooks';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import AppTextInput from '../../../components/AppTextInput';
-import AppImages from '../../../assets/images/AppImages';
-import {useSelector} from 'react-redux';
+import BackgroundScreen from '../../../components/AppTextComps/BackgroundScreen';
+import {setIsListBuilt} from '../../../redux/Slices';
+import FetchNearbyPlaces from '../../../ApiCalls/Main/FetchNearbyPlaces';
+import {
+  AddWishList,
+  GetWishList,
+  RemoveWishList,
+} from '../../../ApiCalls/Main/WishList_API/WishListAPI';
+import {
+  AddReviews,
+  GetReviews,
+  RemoveReview,
+} from '../../../ApiCalls/Main/Reviews/ReviewsApiCall';
+import {Google_Places_Images} from '../../../utils/api_content';
+import ShowError from '../../../utils/ShowError';
+
+const {width} = Dimensions.get('window');
 
 const SearchForPlaces = () => {
   const {navigateToRoute, goBack} = useCustomNavigation();
-  const token = useSelector(state => state?.user?.token);
+  const dispatch = useDispatch();
+  const {token, current_location, places_nearby} = useSelector(
+    state => state.user,
+  );
+
   const [search, setSearch] = useState('');
   const [customPlace, setCustomPlace] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [likesCount, setLikesCount] = useState(0);
+  const [hatesCount, setHatesCount] = useState(0);
+  const [wishlistItems, setWishlistItems] = useState([]);
+  const [avoidItems, setAvoidItems] = useState([]);
 
-  const handleNext = () => {
-    if (token) {
-      navigateToRoute('FillYourProfile');
-    } else {
-      navigateToRoute('Login');
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      if (!token) return;
+      const [wishRes, revRes] = await Promise.all([
+        GetWishList(token),
+        GetReviews(token),
+      ]);
+
+      if (wishRes?.success) {
+        setWishlistItems(wishRes.wishLists || []);
+        setLikesCount(wishRes.wishLists?.length || 0);
+      }
+      if (revRes?.reviews) {
+        const avoided = revRes.reviews.filter(r => r.actionType === 'Avoid');
+        setAvoidItems(avoided);
+        setHatesCount(avoided.length);
+      }
+    };
+
+    fetchInitialData();
+  }, [token]);
+
+  useEffect(() => {
+    // Initial fetch on mount
+    if (current_location?.latitude) {
+      handleSearch('');
+    }
+  }, [current_location]);
+
+  const handleSearch = async query => {
+    setLoading(true);
+    // Passing empty string for 'type' so it searches all categories using the keyword
+    await FetchNearbyPlaces(current_location, dispatch, '', query);
+    setLoading(false);
+  };
+
+  const handleContinue = () => {
+    dispatch(setIsListBuilt(true));
+  };
+
+  const handleHeart = async item => {
+    const existing = wishlistItems.find(w => w.placeId === item.place_id);
+    if (existing) {
+      const res = await RemoveWishList(token, {placeId: item.place_id});
+
+      // Checking both standard and nested success flags/statuses
+      const status = res?.status || res?.response?.status;
+      const data = res?.data || res?.response?.data;
+      const isSuccess =
+        status === 200 ||
+        status === 204 ||
+        data?.success ||
+        data?.status === 'success';
+
+      console.log(
+        'RemoveWishList Final Check (Search):',
+        isSuccess,
+        status,
+        data,
+      );
+
+      if (isSuccess) {
+        setLikesCount(prev => prev - 1);
+        setWishlistItems(prev => prev.filter(w => w.placeId !== item.place_id));
+        ShowError('Removed from Wishlist', 2000);
+      } else {
+        console.log('Delete Wishlist failed (attempt 1):', status, data);
+        // Fallback attempt with ID if placeId fails
+        const resFallback = await RemoveWishList(token, {
+          wishListId: existing._id,
+        });
+        const fallbackStatus =
+          resFallback?.status || resFallback?.response?.status;
+        if (fallbackStatus === 200 || resFallback?.data?.success) {
+          setLikesCount(prev => prev - 1);
+          setWishlistItems(prev =>
+            prev.filter(w => w.placeId !== item.place_id),
+          );
+          ShowError('Removed from Wishlist', 2000);
+        }
+      }
+      return;
+    }
+
+    // Exclusivity: If it's in avoid list, remove it first
+    const existingAvoid = avoidItems.find(
+      a => a.placeId === item.place_id || a.restaurantName === item.name,
+    );
+    if (existingAvoid) {
+      const revRes = await RemoveReview({reviewId: existingAvoid._id}, token);
+      if (revRes?.success) {
+        setHatesCount(prev => prev - 1);
+        setAvoidItems(prev => prev.filter(a => a._id !== existingAvoid._id));
+      }
+    }
+
+    const data = {
+      placeId: item.place_id,
+      name: item.name,
+      address: item.vicinity || item.formatted_address,
+      image: item.photos?.[0]?.photo_reference || '',
+      rating: item.rating || 0,
+      userRatingsTotal: item.user_ratings_total || 0,
+      category: 'Search Result',
+      notes: '',
+      isVisited: false,
+    };
+    const res = await AddWishList(token, data);
+    if (res?.success) {
+      setLikesCount(prev => prev + 1);
+      setWishlistItems(prev => [
+        ...prev,
+        {_id: res.wishList?._id, placeId: item.place_id},
+      ]);
+      ShowError(res?.msg || 'Added to Wishlist', 2000);
     }
   };
 
-  const dummyPlaces = [
-    {
-      id: '1',
-      name: "Joe's Diner",
-      category: 'Restaurants',
-      image: AppImages.resturant,
-    },
-    {
-      id: '2',
-      name: 'The Grand Hotel',
-      category: 'Restaurants',
-      image: AppImages.resturant,
-    },
-    {
-      id: '3',
-      name: 'Starbucks',
-      category: 'Restaurants',
-      image: AppImages.resturant,
-    },
-    {
-      id: '4',
-      name: 'Target',
-      category: 'Restaurants',
-      image: AppImages.resturant,
-    },
-    {
-      id: '5',
-      name: 'Walmart',
-      category: 'Restaurants',
-      image: AppImages.resturant,
-    },
-  ];
+  const handleAvoid = async item => {
+    const existing = avoidItems.find(
+      a => a.placeId === item.place_id || a.restaurantName === item.name,
+    );
+    if (existing) {
+      const res = await RemoveReview({reviewId: existing._id}, token);
+      if (res?.success) {
+        setHatesCount(prev => prev - 1);
+        setAvoidItems(prev => prev.filter(a => a._id !== existing._id));
+        ShowError('Removed from Avoid List', 2000);
+      }
+      return;
+    }
 
-  const renderPlaceItem = ({item}) => (
-    <View style={styles.placeItem}>
-      <View style={{flexDirection: 'row', alignItems: 'center', flex: 1}}>
-        <Image source={item.image} style={styles.placeImage} />
-        <View style={{marginLeft: 10}}>
-          <AppText title={item.name} textSize={1.8} textFontWeight={true} />
+    // Exclusivity: If it's in wishlist, remove it first
+    const existingWish = wishlistItems.find(w => w.placeId === item.place_id);
+    if (existingWish) {
+      const resWish = await RemoveWishList(token, {placeId: item.place_id});
+      const status = resWish?.status || resWish?.response?.status;
+      if (status === 200 || status === 204 || resWish?.data?.success) {
+        setLikesCount(prev => prev - 1);
+        setWishlistItems(prev => prev.filter(w => w.placeId !== item.place_id));
+      }
+    }
+
+    const data = {
+      placeId: item.place_id,
+      restaurantName: item.name,
+      address: item.vicinity || item.formatted_address,
+      rating: item.rating || 0,
+      reviewText: 'Added from onboarding',
+      actionType: 'Avoid',
+      photos: item.photos?.[0]?.photo_reference
+        ? [`${Google_Places_Images}${item.photos[0].photo_reference}`]
+        : [],
+      category: 'Search Result',
+      latitude: item.geometry?.location?.lat,
+      longitude: item.geometry?.location?.lng,
+    };
+    const res = await AddReviews(token, data);
+    if (res?.success) {
+      setHatesCount(prev => prev + 1);
+      setAvoidItems(prev => [
+        ...prev,
+        {
+          _id: res.review?._id,
+          placeId: item.place_id,
+          restaurantName: item.name,
+        },
+      ]);
+      ShowError(res?.msg || 'Added to Avoid List', 2000);
+    }
+  };
+
+  const renderPlaceItem = ({item}) => {
+    const imageUrl = item.photos?.[0]?.photo_reference
+      ? `${Google_Places_Images}${item.photos[0].photo_reference}`
+      : null;
+
+    const isLiked = wishlistItems.some(w => w.placeId === item.place_id);
+    const isAvoided = avoidItems.some(
+      a => a.placeId === item.place_id || a.restaurantName === item.name,
+    );
+
+    return (
+      <View style={styles.placeItem}>
+        {imageUrl ? (
+          <Image source={{uri: imageUrl}} style={styles.placeImage} />
+        ) : (
+          <View
+            style={[
+              styles.placeImage,
+              {
+                backgroundColor: '#F0F0F0',
+                justifyContent: 'center',
+                alignItems: 'center',
+              },
+            ]}>
+            <Ionicons name="image-outline" size={24} color="#CCC" />
+          </View>
+        )}
+        <View style={{marginLeft: 15, flex: 1}}>
           <AppText
-            title={item.category}
+            title={item.name}
+            textSize={1.8}
+            textFontWeight={true}
+            textColor="#47082E"
+          />
+          <AppText
+            title={item.vicinity || 'Local Place'}
             textSize={1.4}
-            textColor={AppColors.GRAY}
+            textColor="#666"
           />
         </View>
+        <View style={styles.actionButtons}>
+          <TouchableOpacity
+            onPress={() => handleHeart(item)}
+            style={styles.circleActionBtnGreen}>
+            <Ionicons
+              name={isLiked ? 'heart' : 'heart-outline'}
+              size={20}
+              color={'#4CAF50'}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => handleAvoid(item)}
+            style={styles.circleActionBtnRed}>
+            <Ionicons
+              name={isAvoided ? 'thumbs-down' : 'thumbs-down-outline'}
+              size={20}
+              color={'#D32F2F'}
+            />
+          </TouchableOpacity>
+        </View>
       </View>
-      <View style={styles.actionButtons}>
-        <TouchableOpacity
-          style={[styles.actionBtn, {backgroundColor: '#A5D6A7'}]}>
-          <Ionicons name="heart-outline" size={18} color={AppColors.WHITE} />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.actionBtn, {backgroundColor: '#EF9A9A'}]}>
-          <Ionicons
-            name="thumbs-down-outline"
-            size={18}
-            color={AppColors.WHITE}
-          />
-        </TouchableOpacity>
-      </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <BackgroundScreen>
-      <View style={styles.container}>
+      <SafeAreaView style={styles.container}>
         <View style={styles.header}>
-          <BackIcon onBackPress={() => goBack()} iconColor={AppColors.BLACK} />
+          <TouchableOpacity onPress={() => goBack()}>
+            <Ionicons
+              name="arrow-back"
+              size={28}
+              color={AppColors.BTNCOLOURS}
+            />
+          </TouchableOpacity>
+          <View style={{width: 25}} />
           <AppText
             title={'Add Places to your Lists'}
-            textSize={2.5}
+            textSize={2.8}
             textColor={AppColors.BTNCOLOURS}
             textFontWeight={true}
             textAlignment="center"
+            style={{flex: 1, marginRight: 53}}
           />
         </View>
 
         <AppText
           title={'Select places you love or hate.\nYou can add notes later!'}
-          textSize={1.6}
-          textColor={AppColors.GRAY}
+          textSize={1.8}
+          textColor="#47082E"
           textAlignment="center"
-          lineHeight={2}
+          lineHeight={2.6}
+          style={{marginTop: 5}}
         />
 
-        <View style={{height: responsiveHeight(2)}} />
 
-        <AppTextInput
-          placeholder={'Where we going?'}
-          value={search}
-          onChangeText={setSearch}
-          inputWidth={70}
-          logo={
-            <Ionicons name="search-outline" size={20} color={AppColors.GRAY} />
-          }
-          rightIcon={
-            <TouchableOpacity>
-              <Ionicons
-                name="options-outline"
-                size={20}
-                color={AppColors.GRAY}
-              />
-            </TouchableOpacity>
-          }
-        />
-
-        <View style={{height: responsiveHeight(2)}} />
-
-        <View style={styles.customPlaceSection}>
-          <AppText
-            title={'Add a custom place:'}
-            textSize={1.6}
-            textFontWeight={true}
-            textColor={AppColors.BTNCOLOURS}
-          />
-          <View style={styles.customInputContainer}>
-            <TextInput
-              placeholder="Enter place name"
-              style={styles.customInput}
-              value={customPlace}
-              onChangeText={setCustomPlace}
+        <View style={styles.statsRow}>
+          <View style={styles.statChip}>
+            <Ionicons
+              name="heart"
+              size={16}
+              color="#4CAF50"
+              style={{marginRight: 6}}
             />
-            <View style={styles.actionButtons}>
-              <TouchableOpacity
-                style={[styles.actionBtn, {backgroundColor: '#A5D6A7'}]}>
-                <Ionicons
-                  name="heart-outline"
-                  size={18}
-                  color={AppColors.WHITE}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.actionBtn, {backgroundColor: '#EF9A9A'}]}>
-                <Ionicons
-                  name="thumbs-down-outline"
-                  size={18}
-                  color={AppColors.WHITE}
-                />
-              </TouchableOpacity>
-            </View>
+            <AppText
+              title={`${likesCount} Likes`}
+              textSize={1.4}
+              textColor="#4CAF50"
+              textFontWeight={true}
+            />
+          </View>
+          <View style={styles.statChip}>
+            <Ionicons
+              name="thumbs-down"
+              size={16}
+              color="#D32F2F"
+              style={{marginRight: 6}}
+            />
+            <AppText
+              title={`${hatesCount} Avoids`}
+              textSize={1.4}
+              textColor="#D32F2F"
+              textFontWeight={true}
+            />
           </View>
         </View>
 
-        <FlatList
-          data={dummyPlaces}
-          renderItem={renderPlaceItem}
-          keyExtractor={item => item.id}
-          contentContainerStyle={{paddingBottom: responsiveHeight(10)}}
-          showsVerticalScrollIndicator={false}
-        />
+        <View style={styles.searchBarContainer}>
+          <View style={styles.searchBarPill}>
+            <Ionicons name="search-outline" size={20} color="#47082E" />
+            <TextInput
+              placeholder="Where we going?"
+              placeholderTextColor="#666"
+              style={styles.searchInput}
+              value={search}
+              onChangeText={text => {
+                setSearch(text);
+                if (text.length > 2) handleSearch(text);
+              }}
+              onSubmitEditing={() => handleSearch(search)}
+            />
+            <TouchableOpacity onPress={() => handleSearch(search)}>
+              <Ionicons name="options-outline" size={20} color="#47082E" />
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Custom place section removed as per user request */}
+
+        {loading ? (
+          <ActivityIndicator
+            size="large"
+            color={AppColors.BTNCOLOURS}
+            style={{marginTop: 20}}
+          />
+        ) : (
+          <FlatList
+            data={places_nearby}
+            renderItem={renderPlaceItem}
+            keyExtractor={item => item.place_id}
+            contentContainerStyle={{
+              paddingBottom: responsiveHeight(15),
+              paddingHorizontal: responsiveWidth(5),
+            }}
+            showsVerticalScrollIndicator={false}
+          />
+        )}
 
         <View style={styles.footer}>
-          <AppText
-            title={'0 likes, 0 hates'}
-            textSize={1.6}
-            textColor={AppColors.BTNCOLOURS}
-            textFontWeight={true}
-          />
-          <AppButton
-            title={'Continue'}
-            btnBackgroundColor={'#B04A3D'}
-            btnPadding={12}
-            btnWidth={35}
-            handlePress={handleNext}
-          />
+          <TouchableOpacity
+            activeOpacity={0.8}
+            onPress={handleContinue}
+            style={styles.continueButton}>
+            <Svg
+              height="58"
+              width={responsiveWidth(90)}
+              style={StyleSheet.absoluteFill}>
+              <Defs>
+                <LinearGradient id="btnGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <Stop offset="0%" stopColor="#EB864D" stopOpacity="1" />
+                  <Stop offset="100%" stopColor="#47082E" stopOpacity="1" />
+                </LinearGradient>
+              </Defs>
+              <Rect
+                x="0"
+                y="0"
+                width={responsiveWidth(90)}
+                height="58"
+                rx="29"
+                fill="url(#btnGrad)"
+              />
+            </Svg>
+            <AppText
+              title={'Continue'}
+              textSize={1.8}
+              textColor={AppColors.WHITE}
+              textFontWeight={true}
+            />
+          </TouchableOpacity>
         </View>
-      </View>
+      </SafeAreaView>
     </BackgroundScreen>
   );
 };
@@ -216,70 +438,147 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    paddingHorizontal: responsiveWidth(5),
+    paddingTop: responsiveHeight(2),
+  },
+  searchBarContainer: {
+    paddingHorizontal: responsiveWidth(5),
+    marginTop: 20,
     marginBottom: 10,
   },
-  customPlaceSection: {
-    marginBottom: 15,
-  },
-  customInputContainer: {
+  searchBarPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F1F8E9',
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    marginTop: 5,
-    borderWidth: 1,
-    borderColor: '#C8E6C9',
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    borderRadius: 30,
+    paddingHorizontal: 20,
+    height: 55,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.6)',
+  },
+  searchInput: {
+    flex: 1,
+    height: 45,
+    marginLeft: 12,
+    fontSize: responsiveFontSize(1.8),
+    color: '#47082E',
+    padding: 0,
+  },
+  customPlaceSection: {
+    paddingHorizontal: responsiveWidth(5),
+    marginTop: 10,
+    marginBottom: 15,
+  },
+  customInputRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    gap: 10,
+  },
+  customInputContainer: {
+    flex: 1,
+    height: 45,
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    borderRadius: 12,
+    paddingHorizontal: 15,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.6)',
+    justifyContent: 'center',
   },
   customInput: {
     flex: 1,
-    height: 40,
     fontSize: responsiveFontSize(1.6),
+    color: '#47082E',
+    padding: 0,
+  },
+  miniActionBtnGreen: {
+    width: 45,
+    height: 45,
+    borderRadius: 12,
+    backgroundColor: '#A5D6A7',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  miniActionBtnMaroon: {
+    width: 45,
+    height: 45,
+    borderRadius: 12,
+    backgroundColor: '#47082E',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   placeItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: AppColors.WHITE,
-    borderRadius: 15,
-    padding: 10,
-    marginBottom: 10,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: {width: 0, height: 1},
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    borderRadius: 20,
+    padding: 12,
+    marginBottom: 15,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.6)',
   },
   placeImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 10,
+    width: 65,
+    height: 65,
+    borderRadius: 15,
   },
   actionButtons: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 10,
   },
-  actionBtn: {
-    width: 35,
-    height: 35,
-    borderRadius: 8,
+  circleActionBtnGreen: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  circleActionBtnRed: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.3)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   footer: {
     position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    bottom: 30,
+    left: responsiveWidth(5),
+    right: responsiveWidth(5),
     alignItems: 'center',
-    paddingVertical: 15,
-    paddingHorizontal: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    justifyContent: 'center',
+  },
+  footerContent: {
+    alignItems: 'center',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+  },
+  continueButton: {
+    width: '100%',
+    height: 58,
+    borderRadius: 29,
+    justifyContent: 'center',
+    alignItems: 'center',
+    overflow: 'hidden',
+  },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 15,
+    marginBottom: 10,
+    marginTop: 15,
+  },
+  statChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.6)',
   },
 });
 

@@ -50,6 +50,14 @@ const JournalHome = ({navigation}) => {
   const [winner, setWinner] = useState(null);
   const wheelRef = useRef(null);
   const isFocused = useIsFocused();
+  const currentLocation = useSelector(state => state.user.current_location);
+
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
+  };
 
   const handleSpinEnd = selectedWinner => {
     setWinner(selectedWinner);
@@ -107,25 +115,43 @@ const JournalHome = ({navigation}) => {
           showsVerticalScrollIndicator={false}
           // Added RefreshControl here if you want pull-to-refresh later
         >
-          {/* Header */}
+          {/* Redesigned Header to match Explore page */}
           <View style={styles.header}>
             <View style={styles.userInfo}>
-              <Image
-                source={{uri: `${baseUrl}/${userData?.profileImage}`}}
-                style={styles.profileImage}
-              />
-              <View>
-                <AppText
-                  title={'Greeting 👋'}
-                  textColor={AppColors.GRAY}
-                  textSize={1.6}
+              <TouchableOpacity
+                onPress={() => navigateToRoute('Profile')}
+                activeOpacity={0.8}>
+                <Image
+                  source={{uri: `${baseUrl}/${userData?.profileImage}`}}
+                  style={styles.profileImage}
                 />
+              </TouchableOpacity>
+              <View style={{flex: 1}}>
                 <AppText
-                  title={userData?.fullName || 'User'}
+                  title={`${getGreeting()}, ${userData?.fullName || 'User'}`}
                   textColor={AppColors.BLACK}
-                  textSize={2.2}
-                  textFontWeight
+                  textSize={2}
+                  textFontWeight={true}
                 />
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => navigateToRoute('SetLocation')}
+                  style={styles.locationContainer}>
+                  <Ionicons
+                    name="location"
+                    size={14}
+                    color={AppColors.BTNCOLOURS}
+                  />
+                  <View style={{flexShrink: 1}}>
+                    <AppText
+                      title={currentLocation?.address || 'Add Location'}
+                      textColor={AppColors.GRAY}
+                      textSize={1.2}
+                      numberOfLines={1}
+                      style={styles.locationText}
+                    />
+                  </View>
+                </TouchableOpacity>
               </View>
             </View>
 
@@ -133,8 +159,8 @@ const JournalHome = ({navigation}) => {
               onPress={() => navigateToRoute('Notifications')}
               style={styles.notificationBtn}>
               <SVGXml
-                width="25"
-                height="25"
+                width="22"
+                height="22"
                 icon={AppIcons.notification_black}
               />
             </TouchableOpacity>
@@ -331,6 +357,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
+    flex: 1, // Crucial to prevent horizontal expansion
   },
   profileImage: {
     width: 50,
@@ -342,7 +369,17 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 30,
     borderWidth: 1,
-    borderColor: AppColors.LIGHTGRAY,
+    borderColor: AppColors.WHITE, // Matching the Explore style (white border on transparent)
+    backgroundColor: 'transparent',
+  },
+  locationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 2,
+  },
+  locationText: {
+    maxWidth: responsiveWidth(40), // Slightly reduced for perfect fit
   },
   cardsRow: {
     flexDirection: 'row',

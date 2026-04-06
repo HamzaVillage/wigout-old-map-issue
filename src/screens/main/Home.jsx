@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import FastImage from 'react-native-fast-image';
 import {useDispatch, useSelector} from 'react-redux';
-
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import AppColors from '../../utils/AppColors';
 import LineBreak from '../../components/LineBreak';
 import AppText from '../../components/AppTextComps/AppText';
@@ -115,6 +115,13 @@ const Home = () => {
     ]).start();
   }, []);
 
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
+  };
+
   const renderHeader = () => (
     <View>
       <LineBreak space={3} />
@@ -125,7 +132,7 @@ const Home = () => {
           {
             opacity: headerAnim.interpolate({
               inputRange: [0, 1],
-              outputRange: [0.3, 1], // Always keep 30% visible to avoid dim header
+              outputRange: [0.3, 1],
             }),
             transform: [
               {
@@ -138,7 +145,9 @@ const Home = () => {
           },
         ]}>
         <View style={styles.profileSection}>
-          <TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => navigateToRoute('Profile')}
+            activeOpacity={0.8}>
             <FastImage
               source={{
                 uri: `${baseUrl}/${userData?.profileImage}`,
@@ -147,29 +156,41 @@ const Home = () => {
               style={styles.profileImage}
             />
           </TouchableOpacity>
-          <View style={{gap: 2}}>
+          <View style={{flex: 1}}>
             <AppText
-              title="Greeting 👋"
-              textColor={AppColors.GRAY}
-              textSize={1.7}
-            />
-            <AppText
-              title={`${userData?.fullName ?? 'User'} ${
-                userData?.nickName ?? ''
-              }`}
+              title={`${getGreeting()}, ${userData?.fullName || 'User'}`}
               textColor={AppColors.BLACK}
-              textSize={2.2}
-              textFontWeight
+              textSize={2}
+              textFontWeight={true}
             />
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => navigateToRoute('SetLocation')}
+              style={styles.locationContainer}>
+              <Ionicons
+                name="location"
+                size={14}
+                color={AppColors.BTNCOLOURS}
+              />
+              <View style={{flexShrink: 1}}>
+                <AppText
+                  title={currentLocation?.address || 'Add Location'}
+                  textColor={AppColors.GRAY}
+                  textSize={1.2}
+                  numberOfLines={1}
+                  style={styles.locationText}
+                />
+              </View>
+            </TouchableOpacity>
           </View>
         </View>
-        <View style={{flexDirection: 'row', gap: 10}}>
+        <View style={{flexDirection: 'row', gap: 10, alignItems: 'center'}}>
           <TouchableOpacity
             onPress={() => navigateToRoute('WishList')}
             style={styles.notificationBtn}>
             <FontAwesome
               name="bookmark"
-              size={20}
+              size={18}
               color={AppColors.BTNCOLOURS}
             />
           </TouchableOpacity>
@@ -177,7 +198,7 @@ const Home = () => {
           <TouchableOpacity
             onPress={() => navigateToRoute('Notifications')}
             style={styles.notificationBtn}>
-            <SVGXml width="25" height="25" icon={AppIcons.notification_black} />
+            <SVGXml width="22" height="22" icon={AppIcons.notification_black} />
           </TouchableOpacity>
         </View>
       </Animated.View>
@@ -362,17 +383,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: responsiveWidth(5),
+    gap: 10,
   },
   profileSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 18,
+    gap: 12,
+    flex: 1, // Allow this section to take available space
+  },
+  locationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 2,
+  },
+  locationText: {
+    maxWidth: responsiveWidth(40), // Slightly reduced for perfect fit
   },
   profileImage: {
     width: 50,
     height: 50,
-    borderRadius: 100,
-    backgroundColor: AppColors.LIGHTGRAY, // Placeholder color
+    borderRadius: 25,
+    backgroundColor: AppColors.LIGHTGRAY,
   },
   notificationBtn: {
     borderWidth: 1,

@@ -13,7 +13,10 @@ export const ApiCall = async (method, endpoint, data, token = null) => {
       },
       data: data ? data : '',
     };
-    const res = await axios(config); // ✅ use axios or axios.request
+    console.log(`Making ${method} request to: ${config.url}`);
+    console.log(`Payload:`, JSON.stringify(data));
+    const res = await axios.request(config); // ✅ Use axios.request for broader compatibility with DELETE bodies
+    console.log(`Response received for ${endpoint}:`, res?.status);
     return res;
   } catch (error) {
     return error;
@@ -38,7 +41,7 @@ export const ApiCallWithUserId = async (
       data: data ? data : '',
     };
 
-    const res = await axios(config);
+    const res = await axios.request(config);
     return res.data;
   } catch (error) {
     console.log(`error api call by userid and api name is ${endpoint}`, error);

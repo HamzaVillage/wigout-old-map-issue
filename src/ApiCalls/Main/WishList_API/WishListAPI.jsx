@@ -24,11 +24,27 @@ export const AddWishList = async (token, data) => {
 
 export const RemoveWishList = async (token, data) => {
   try {
-    const res = await ApiCall('DELETE', 'wishlist', data, token);
-    console.log('res in RemoveWishList:-', res?.data);
+    const url = `wishlist?placeId=${data?.placeId}`; // Adding as Query Param for mobile compatibility
+    console.log('RemoveWishList started with data:', url, JSON.stringify(data));
+    
+    // Some mobile network stacks ignore bodies on DELETE, so we use both URL and Data
+    const res = await ApiCall('DELETE', url, data, token);
+    
+    // Check both standard response and axios error response
+    const status = res?.status || res?.response?.status;
+    const responseData = res?.data || res?.response?.data;
+    
+    console.log('res in RemoveWishList:-========', status, responseData);
 
-    return res?.data;
+    // If it's an error object returned from ApiCall, handle it
+    if (res instanceof Error && !res.response) {
+        console.error('Network Error in RemoveWishList:', res.message);
+        return { success: false, message: res.message };
+    }
+
+    return res;
   } catch (err) {
-    console.log('err in RemoveWishList:-', err);
+    console.log('Unexpected err in RemoveWishList:-', err);
+    return { data: { success: false } };
   }
 };

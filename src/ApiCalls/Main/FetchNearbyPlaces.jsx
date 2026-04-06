@@ -2,8 +2,8 @@ import axios from 'axios';
 import {Google_API_KEY, Google_Base_Url} from '../../utils/api_content';
 import {setNearbyPlaces} from '../../redux/Slices';
 
-const FetchNearbyPlaces = async (location, dispatch, type = 'restaurant') => {
-  let url = `${Google_Base_Url}place/nearbysearch/json?location=${location?.latitude},${location.longitude}&radius=100000&type=${type}&key=${Google_API_KEY}`;
+const FetchNearbyPlaces = async (location, dispatch, type = 'restaurant', keyword = '') => {
+  let url = `${Google_Base_Url}place/nearbysearch/json?location=${location?.latitude},${location.longitude}&radius=50000&type=${type}${keyword ? `&keyword=${keyword}` : ''}&key=${Google_API_KEY}`;
   console.log('url of FetchNearbyPlaces:-', url);
   try {
     let config = {

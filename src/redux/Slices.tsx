@@ -12,6 +12,7 @@ interface UserState {
   places_nearby: any[];
   Save_Place_Detail: any;
   isFirstTime: boolean;
+  isListBuilt: boolean;
 }
 
 const initialState: UserState = {
@@ -27,6 +28,7 @@ const initialState: UserState = {
   places_nearby: [],
   Save_Place_Detail: null,
   isFirstTime: true,
+  isListBuilt: false,
 };
 
 // Define return type of API response
@@ -70,6 +72,7 @@ const authSlice = createSlice({
     clearToken: (state) => {
       state.token = ''
       state.userData = {}
+      state.isListBuilt = false
     },
     setToken: (state, action) => {
       state.token = action.payload;
@@ -98,6 +101,9 @@ const authSlice = createSlice({
     setIsFirstTime: (state, action: PayloadAction<boolean>) => {
       state.isFirstTime = action.payload;
     },
+    setIsListBuilt: (state, action: PayloadAction<boolean>) => {
+      state.isListBuilt = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -118,5 +124,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { clearToken, setUserData, setToken,UpdateProfile, setCurrentLocation,setNearbyPlaces,setPlaceDetail, setIsFirstTime} = authSlice.actions;
+export const { clearToken, setUserData, setToken,UpdateProfile, setCurrentLocation,setNearbyPlaces,setPlaceDetail, setIsFirstTime, setIsListBuilt} = authSlice.actions;
 export default authSlice.reducer;

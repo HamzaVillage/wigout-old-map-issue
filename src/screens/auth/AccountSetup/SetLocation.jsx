@@ -60,15 +60,7 @@ const SetLocation = ({navigation}) => {
     }
   }, [currentLocation]);
 
-  useEffect(() => {
-    if (userData?.isCreated == true) {
-      if (allNearbyPlaces?.length > 0) {
-        navigateToRoute('Main', {
-          screen: 'Discover',
-        });
-      }
-    }
-  }, [allNearbyPlaces]);
+  // Removed automatic navigation trigger to BuildYourList as it causes errors in the main stack
 
   const fetchCurrentLocation = async () => {
     setLocationLoading(true);
@@ -102,13 +94,14 @@ const SetLocation = ({navigation}) => {
     console.log('fetchResponnse:-', fetchResponnse);
 
     if (userData?.isCreated == true) {
-      // Alert.alert("calling")
-
       try {
         setAllNearbyPlaces(fetchResponnse);
-        navigateToRoute('Main', {
-          screen: 'Discover',
-        });
+        // If in main app, just go back to show results for new location
+        if (navigation.canGoBack()) {
+          navigation.goBack();
+        } else {
+          navigateToRoute('BuildYourList');
+        }
       } catch (error) {
         console.log('Error in fetching nearby places', error);
       }

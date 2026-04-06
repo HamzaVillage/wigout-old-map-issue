@@ -1,9 +1,7 @@
-/* eslint-disable react-native/no-inline-styles */
-import React, {useEffect, useState, useMemo} from 'react';
+import React, {useEffect, useState, useMemo, useRef} from 'react';
 import {
   View,
   ScrollView,
-  Image,
   TouchableOpacity,
   ActivityIndicator,
   FlatList,
@@ -65,40 +63,81 @@ const HomeDetails = ({route}) => {
   const [isWishList, setIsWishList] = useState(false);
   const [wishlistLoader, setWishlistLoader] = useState(false);
 
-  // Sound ref
-  const celebrationSound = React.useRef(null);
+  // Sound refs with mounting guard
+  const celebrationSound = useRef(null);
+  const isSoundLoaded = useRef(false);
+  const isComponentMounted = useRef(true);
 
   useEffect(() => {
-    // Pre-load the sound from Android resources (res/raw/cloudcheering.mp3)
+    isComponentMounted.current = true;
+
+    // Pre-load the sound from Android resources
     celebrationSound.current = new Sound(
       'cloudcheering',
       Sound.MAIN_BUNDLE,
       error => {
         if (error) {
           console.log('failed to load the sound', error);
+        } else {
+          // Only mark as loaded if we haven't already unmounted
+          if (isComponentMounted.current) {
+            isSoundLoaded.current = true;
+          }
         }
       },
     );
 
     return () => {
-      if (celebrationSound.current) {
-        celebrationSound.current.release();
+      isComponentMounted.current = false;
+      const soundObj = celebrationSound.current;
+
+      // Immediate cleanup of refs
+      isSoundLoaded.current = false;
+      celebrationSound.current = null;
+
+      if (soundObj) {
+        try {
+          // CRITICAL: The Double.doubleValue() crash happens when _key is not a number.
+          // We check typeof specifically to avoid passing null/undefined to the bridge.
+          if (typeof soundObj._key === 'number' && soundObj._key !== -1) {
+            if (typeof soundObj.release === 'function') {
+              soundObj.release();
+            }
+          }
+        } catch (e) {
+          console.log('Final sound cleanup error:', e);
+        }
       }
     };
   }, []);
 
   useEffect(() => {
+    const soundObj = celebrationSound.current;
+    const isLoaded = isSoundLoaded.current;
+
     if (showCelebration) {
-      if (celebrationSound.current && celebrationSound.current.isLoaded()) {
-        celebrationSound.current.setVolume(1.0).play(success => {
-          if (!success) {
-            console.log('playback failed due to audio decoding errors');
-          }
-        });
+      if (soundObj && isLoaded && typeof soundObj._key === 'number') {
+        try {
+          soundObj.setVolume(1.0).play(success => {
+            if (!success) console.log('playback failed');
+          });
+        } catch (e) {
+          console.log('Play crash prevented:', e);
+        }
       }
     } else {
-      if (celebrationSound.current && celebrationSound.current.isLoaded()) {
-        celebrationSound.current.stop();
+      // Small check to see if we are still mounted before stopping
+      if (
+        isComponentMounted.current &&
+        soundObj &&
+        isLoaded &&
+        typeof soundObj._key === 'number'
+      ) {
+        try {
+          soundObj.stop();
+        } catch (e) {
+          console.log('Stop crash prevented:', e);
+        }
       }
     }
   }, [showCelebration]);
@@ -415,7 +454,7 @@ const HomeDetails = ({route}) => {
           </View>
 
           {/* Location Section */}
-          <View style={styles.sectionBorder}>
+          {/* <View style={styles.sectionBorder}>
             <AppText
               title="Location"
               textColor={AppColors.BLACK}
@@ -447,7 +486,7 @@ const HomeDetails = ({route}) => {
                 resizeMode="contain"
               />
             </View>
-          </View>
+          </View> */}
 
           {/* Review Input */}
           <View style={{paddingVertical: responsiveHeight(2)}}>

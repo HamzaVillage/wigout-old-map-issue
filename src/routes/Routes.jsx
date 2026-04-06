@@ -9,6 +9,10 @@ import EnterAddressManually from '../screens/main/MapCommonScreens/EnterAddressM
 import OnBoarding from '../screens/auth/OnBoarding';
 import Splash from '../screens/auth/Splash';
 
+import BuildYourList from '../screens/auth/AccountSetup/BuildYourList';
+import SearchForPlaces from '../screens/auth/AccountSetup/SearchForPlaces';
+import BrowseCategories from '../screens/auth/AccountSetup/BrowseCategories';
+
 const Stack = createStackNavigator();
 const Routes = () => {
   const [showSplash, setShowSplash] = useState(true);
@@ -16,6 +20,8 @@ const Routes = () => {
   const userData = useSelector(state => state?.user?.userData);
   const current_location = useSelector(state => state?.user?.current_location);
   const isFirstTime = useSelector(state => state?.user?.isFirstTime);
+  const isListBuilt = useSelector(state => state?.user?.isListBuilt);
+  console.log('token', token);
 
   return (
     <>
@@ -35,10 +41,33 @@ const Routes = () => {
           <Stack.Screen name="OnBoarding" component={OnBoarding} />
         ) : token ? (
           <>
-            {current_location?.latitude && userData?.isCreated == true ? (
-              <Stack.Screen name="Main" component={Main} />
-            ) : !current_location?.latitude && userData?.isCreated == true ? (
-              <Stack.Screen name="SetLocation" component={SetLocation} />
+            {userData?.isCreated ? (
+              <>
+                {current_location?.latitude ? (
+                  <>
+                    {isListBuilt ? (
+                      <Stack.Screen name="Main" component={Main} />
+                    ) : (
+                      <>
+                        <Stack.Screen
+                          name="BuildYourList"
+                          component={BuildYourList}
+                        />
+                        <Stack.Screen
+                          name="SearchForPlaces"
+                          component={SearchForPlaces}
+                        />
+                        <Stack.Screen
+                          name="BrowseCategories"
+                          component={BrowseCategories}
+                        />
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <Stack.Screen name="SetLocation" component={SetLocation} />
+                )}
+              </>
             ) : (
               <Stack.Screen
                 name="CreateProfileRoute"
