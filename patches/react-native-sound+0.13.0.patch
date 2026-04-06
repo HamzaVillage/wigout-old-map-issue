@@ -1,0 +1,22 @@
+diff --git a/node_modules/react-native-sound/android/src/main/java/com/zmxv/RNSound/Sound.kt b/node_modules/react-native-sound/android/src/main/java/com/zmxv/RNSound/Sound.kt
+index 749ea14..1d26667 100644
+--- a/node_modules/react-native-sound/android/src/main/java/com/zmxv/RNSound/Sound.kt
++++ b/node_modules/react-native-sound/android/src/main/java/com/zmxv/RNSound/Sound.kt
+@@ -269,7 +269,7 @@ open class Sound internal constructor(context:ReactApplicationContext):AudioMana
+     }
+ 
+     // Release audio focus in Android system
+-    if (!this.mixWithOthers && key === this.focusedPlayerKey) {
++    if (!this.mixWithOthers && (this.focusedPlayerKey != null && key == this.focusedPlayerKey)) {
+       val audioManager = reactContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+       audioManager.abandonAudioFocus(this)
+     }
+@@ -293,7 +293,7 @@ open class Sound internal constructor(context:ReactApplicationContext):AudioMana
+ 
+ 
+       // Release audio focus in Android system
+-      if (!this.mixWithOthers && key === this.focusedPlayerKey) {
++      if (!this.mixWithOthers && (this.focusedPlayerKey != null && key == this.focusedPlayerKey)) {
+         val audioManager = reactContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+         audioManager.abandonAudioFocus(this)
+       }

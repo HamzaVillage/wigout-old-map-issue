@@ -19,7 +19,7 @@ import {
   responsiveWidth,
   responsiveFontSize,
 } from '../../../utils/Responsive_Dimensions';
-import {useCustomNavigation} from '../../../utils/Hooks';
+import {useCustomNavigation, useDebounce} from '../../../utils/Hooks';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import BackgroundScreen from '../../../components/AppTextComps/BackgroundScreen';
 import {setIsListBuilt} from '../../../redux/Slices';
@@ -47,12 +47,13 @@ const SearchForPlaces = () => {
   );
 
   const [search, setSearch] = useState('');
-  const [customPlace, setCustomPlace] = useState('');
   const [loading, setLoading] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
   const [hatesCount, setHatesCount] = useState(0);
   const [wishlistItems, setWishlistItems] = useState([]);
   const [avoidItems, setAvoidItems] = useState([]);
+
+  const debouncedSearch = useDebounce(search, 500);
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -93,6 +94,12 @@ const SearchForPlaces = () => {
   const handleContinue = () => {
     dispatch(setIsListBuilt(true));
   };
+
+  useEffect(() => {
+    if (debouncedSearch && debouncedSearch.trim().length > 2) {
+      handleSearch(debouncedSearch);
+    }
+  }, [debouncedSearch]);
 
   const handleHeart = async item => {
     const existing = wishlistItems.find(w => w.placeId === item.place_id);
@@ -321,7 +328,6 @@ const SearchForPlaces = () => {
           style={{marginTop: 5}}
         />
 
-
         <View style={styles.statsRow}>
           <View style={styles.statChip}>
             <Ionicons
@@ -331,7 +337,7 @@ const SearchForPlaces = () => {
               style={{marginRight: 6}}
             />
             <AppText
-              title={`${likesCount} Likes`}
+              title={`${likesCount} Go Again`}
               textSize={1.4}
               textColor="#4CAF50"
               textFontWeight={true}
@@ -363,13 +369,10 @@ const SearchForPlaces = () => {
               value={search}
               onChangeText={text => {
                 setSearch(text);
-                if (text.length > 2) handleSearch(text);
+                // Removed immediate handleSearch to use debounce instead
               }}
               onSubmitEditing={() => handleSearch(search)}
             />
-            <TouchableOpacity onPress={() => handleSearch(search)}>
-              <Ionicons name="options-outline" size={20} color="#47082E" />
-            </TouchableOpacity>
           </View>
         </View>
 
@@ -521,6 +524,7 @@ const styles = StyleSheet.create({
     width: 65,
     height: 65,
     borderRadius: 15,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
   },
   actionButtons: {
     flexDirection: 'row',

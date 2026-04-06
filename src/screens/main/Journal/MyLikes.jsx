@@ -87,15 +87,15 @@ const AnimatedGridItem = ({
         activeOpacity={0.85}
         onPress={() => onNavigate(item)}
         style={styles.imageWrapper}>
-        <Image 
+        <Image
           source={{
             uri: item?.photos?.[0]
-              ? (item.photos[0].startsWith('http') 
-                  ? item.photos[0] 
-                  : `${Google_Places_Images}${item.photos[0]}`)
-              : undefined
-          }} 
-          style={styles.placeImage} 
+              ? item.photos[0].startsWith('http')
+                ? item.photos[0]
+                : `${Google_Places_Images}${item.photos[0]}`
+              : undefined,
+          }}
+          style={styles.placeImage}
         />
         {/* Gradient Overlay */}
         <View style={styles.imageOverlay} />

@@ -6,7 +6,12 @@ import {
   ActivityIndicator,
   FlatList,
   StyleSheet,
+  Image,
+  Linking,
+  Platform,
 } from 'react-native';
+import MapView, {Marker, PROVIDER_GOOGLE} from 'react-native-maps';
+
 import axios from 'axios';
 import Modal from 'react-native-modal';
 import FastImage from 'react-native-fast-image';
@@ -334,6 +339,37 @@ const HomeDetails = ({route}) => {
     }
   };
 
+  const handleOpenMap = () => {
+    const lat =
+      morePlaceDetails?.geometry?.location?.lat ||
+      placeDetails?.geometry?.location?.lat;
+    const lng =
+      morePlaceDetails?.geometry?.location?.lng ||
+      placeDetails?.geometry?.location?.lng;
+    const label = morePlaceDetails?.name || placeDetails?.name || 'Location';
+
+    if (!lat || !lng) {
+      ShowError('Location coordinates not available', 2000);
+      return;
+    }
+
+    const scheme = Platform.select({
+      ios: 'maps:0,0?q=',
+      android: 'geo:0,0?q=',
+    });
+    const latLng = `${lat},${lng}`;
+    const url = Platform.select({
+      ios: `${scheme}${label}@${latLng}`,
+      android: `${scheme}${latLng}(${label})`,
+    });
+
+    Linking.openURL(url).catch(() => {
+      // Fallback to web link if maps app isn't installed
+      const webUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;
+      Linking.openURL(webUrl);
+    });
+  };
+
   if (loading) {
     return (
       <View style={styles.center}>
@@ -454,7 +490,7 @@ const HomeDetails = ({route}) => {
           </View>
 
           {/* Location Section */}
-          {/* <View style={styles.sectionBorder}>
+          <View style={styles.sectionBorder}>
             <AppText
               title="Location"
               textColor={AppColors.BLACK}
@@ -474,19 +510,42 @@ const HomeDetails = ({route}) => {
                   placeDetails?.address ||
                   'Address not found'
                 }
-                textColor={AppColors.GRAY}
+                textColor={AppColors.BLACK}
                 textSize={1.8}
               />
             </View>
             <LineBreak space={2} />
-            <View style={styles.mapPlaceholder}>
-              <Image
-                source={AppImages.USER_LOCATION}
-                style={styles.mapPlaceholder}
-                resizeMode="contain"
-              />
-            </View>
-          </View> */}
+            <TouchableOpacity
+              activeOpacity={0.9}
+              onPress={handleOpenMap}
+              style={styles.mapContainer}>
+              <MapView
+                provider={PROVIDER_GOOGLE}
+                style={styles.map}
+                scrollEnabled={false}
+                zoomEnabled={false}
+                pitchEnabled={false}
+                rotateEnabled={false}
+                region={{
+                  latitude: morePlaceDetails?.geometry?.location?.lat || 0,
+                  longitude: morePlaceDetails?.geometry?.location?.lng || 0,
+                  latitudeDelta: 0.01,
+                  longitudeDelta: 0.01,
+                }}>
+                <Marker
+                  coordinate={{
+                    latitude: morePlaceDetails?.geometry?.location?.lat || 0,
+                    longitude: morePlaceDetails?.geometry?.location?.lng || 0,
+                  }}
+                  title={morePlaceDetails?.name || 'Location'}>
+                  <Image
+                    source={AppImages.LOCATION_MARK}
+                    style={{height: 40, width: 40}}
+                  />
+                </Marker>
+              </MapView>
+            </TouchableOpacity>
+          </View>
 
           {/* Review Input */}
           <View style={{paddingVertical: responsiveHeight(2)}}>
@@ -590,7 +649,17 @@ const styles = StyleSheet.create({
     gap: responsiveWidth(0.5),
     alignItems: 'center',
   },
+  mapContainer: {
+    width: '100%',
+    height: responsiveHeight(25),
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  map: {
+    ...StyleSheet.absoluteFillObject,
+  },
   mapPlaceholder: {width: responsiveWidth(90)},
+
   inputAction: {
     flex: 1,
     height: responsiveHeight(12),

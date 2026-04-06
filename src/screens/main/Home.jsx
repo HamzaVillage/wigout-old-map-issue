@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef, Fragment} from 'react';
 import {
   View,
   TouchableOpacity,
@@ -7,6 +7,7 @@ import {
   Animated,
   ActivityIndicator,
   ScrollView,
+  TextInput,
 } from 'react-native';
 import FastImage from 'react-native-fast-image';
 import {useDispatch, useSelector} from 'react-redux';
@@ -16,7 +17,7 @@ import LineBreak from '../../components/LineBreak';
 import AppText from '../../components/AppTextComps/AppText';
 import {AppIcons} from '../../assets/icons';
 import SVGXml from '../../components/SVGXML';
-import {useCustomNavigation} from '../../utils/Hooks';
+import {useCustomNavigation, useDebounce} from '../../utils/Hooks';
 import {
   responsiveFontSize,
   responsiveHeight,
@@ -31,7 +32,7 @@ import FetchNearbyPlaces from '../../ApiCalls/Main/FetchNearbyPlaces';
 
 const CATEGORIES = [
   {id: '1', name: 'Restaurants', type: 'restaurant', icon: 'restaurant'},
-  {id: '2', name: 'Shops', type: 'store', icon: 'storefront'},
+  {id: '2', name: 'Grocery Stores', type: 'store', icon: 'storefront'},
   {id: '3', name: 'Gas', type: 'gas_station', icon: 'local-gas-station'},
   {id: '4', name: 'Hotels', type: 'lodging', icon: 'hotel'},
   {id: '5', name: 'Shopping', type: 'shopping_mall', icon: 'shopping-bag'},
@@ -55,6 +56,9 @@ const Home = () => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(CATEGORIES[0]);
+  const [search, setSearch] = useState('');
+
+  const debouncedSearch = useDebounce(search, 500);
 
   // Animation values (preserved from your original code)
   const headerAnim = useRef(new Animated.Value(0)).current;
@@ -115,11 +119,29 @@ const Home = () => {
     ]).start();
   }, []);
 
+  useEffect(() => {
+    if (debouncedSearch && debouncedSearch.trim().length > 2) {
+      handleSearch(debouncedSearch);
+    }
+  }, [debouncedSearch]);
+
   const getGreeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return 'Good morning';
     if (hour < 17) return 'Good afternoon';
     return 'Good evening';
+  };
+
+  const handleSearch = async query => {
+    const loc =
+      currentLocation?.latitude && currentLocation?.longitude
+        ? currentLocation
+        : DEFAULT_LOCATION;
+
+    setIsLoading(true);
+    // Passing empty string for 'type' so it searches all categories using the keyword
+    await FetchNearbyPlaces(loc, dispatch, '', query);
+    setIsLoading(false);
   };
 
   const renderHeader = () => (
@@ -184,6 +206,7 @@ const Home = () => {
             </TouchableOpacity>
           </View>
         </View>
+
         <View style={{flexDirection: 'row', gap: 10, alignItems: 'center'}}>
           <TouchableOpacity
             onPress={() => navigateToRoute('WishList')}
@@ -204,6 +227,29 @@ const Home = () => {
       </Animated.View>
 
       <LineBreak space={2} />
+
+      <View style={styles.searchBarContainer}>
+        <View style={styles.searchBarPill}>
+          <Ionicons name="search-outline" size={20} color="#47082E" />
+          <TextInput
+            placeholder="Search here."
+            placeholderTextColor="#666"
+            style={styles.searchInput}
+            value={search}
+            onChangeText={text => setSearch(text)}
+            onSubmitEditing={() => handleSearch(search)}
+          />
+          {search.length > 0 && (
+            <TouchableOpacity
+              onPress={() => {
+                handleSearch('');
+                setSearch('');
+              }}>
+              <Ionicons name="close-circle-outline" size={20} color="#47082E" />
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
 
       {/* Category Tabs Section */}
       <View style={styles.tabContainer}>
@@ -243,7 +289,7 @@ const Home = () => {
 
       {/* Recommended Horizontal Section */}
       {includeShowBranding && (
-        <>
+        <Fragment>
           <View style={{paddingHorizontal: responsiveWidth(5)}}>
             <View style={styles.sectionHeader}>
               <AppText
@@ -252,7 +298,7 @@ const Home = () => {
                 textSize={2}
                 textFontWeight
               />
-              <TouchableOpacity></TouchableOpacity>
+              <View />
             </View>
           </View>
 
@@ -314,13 +360,13 @@ const Home = () => {
             />
             <LineBreak space={2} />
           </View>
-        </>
+        </Fragment>
       )}
     </View>
   );
 
-  console.log('fetchedLocations:-', fetchedLocations);
-  console.log('recommendedLocations:-', recommendedLocations);
+  // console.log('fetchedLocations:-', fetchedLocations);
+  // console.log('recommendedLocations:-', recommendedLocations);
   return (
     <ScreenWrapper>
       {isLoading ? (
@@ -330,7 +376,7 @@ const Home = () => {
       ) : (
         <FlatList
           data={includeShowBranding ? fetchedLocations : []}
-          ListHeaderComponent={renderHeader}
+          ListHeaderComponent={renderHeader()}
           numColumns={2}
           keyExtractor={(_, index) => `nearby-${index}`}
           columnWrapperStyle={styles.columnWrapper}
@@ -465,6 +511,28 @@ const styles = StyleSheet.create({
     shadowOffset: {width: 0, height: 4},
     shadowOpacity: 0.35,
     shadowRadius: 6,
+  },
+  searchBarContainer: {
+    paddingHorizontal: responsiveWidth(5),
+    marginBottom: responsiveHeight(1),
+  },
+  searchBarPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    borderRadius: 30,
+    paddingHorizontal: 20,
+    height: 55,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.6)',
+  },
+  searchInput: {
+    flex: 1,
+    height: 45,
+    marginLeft: 12,
+    fontSize: responsiveFontSize(1.8),
+    color: '#47082E',
+    padding: 0,
   },
 });
 

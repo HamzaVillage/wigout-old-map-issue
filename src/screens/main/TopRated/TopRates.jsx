@@ -7,6 +7,7 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
+  TextInput,
 } from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
 import AppHeader from '../../../components/AppHeader';
@@ -18,22 +19,16 @@ import {
   responsiveHeight,
   responsiveWidth,
 } from '../../../utils/Responsive_Dimensions';
+import {useDebounce} from '../../../utils/Hooks';
 import AppText from '../../../components/AppTextComps/AppText';
 import HomeCard from '../../../components/HomeCard';
-import Animated, {
-  FadeIn,
-  FadeInDown,
-  Layout,
-  withSpring,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated, {FadeIn, FadeInDown, Layout} from 'react-native-reanimated';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const CATEGORIES = [
   {id: '1', name: 'Restaurants', type: 'restaurant', icon: 'restaurant'},
-  {id: '2', name: 'Shops', type: 'store', icon: 'storefront'},
+  {id: '2', name: 'Grocery Stores', type: 'store', icon: 'storefront'},
   {id: '3', name: 'Gas', type: 'gas_station', icon: 'local-gas-station'},
   {id: '4', name: 'Hotels', type: 'lodging', icon: 'hotel'},
   {id: '5', name: 'Shopping', type: 'shopping_mall', icon: 'shopping-bag'},
@@ -70,16 +65,24 @@ const TopRated = ({navigation}) => {
   const placesNearby = useSelector(state => state.user.places_nearby);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(CATEGORIES[0]);
+  const [search, setSearch] = useState('');
+
+  const debouncedSearch = useDebounce(search, 500);
 
   useEffect(() => {
     if (currentLocation?.latitude && currentLocation?.longitude) {
-      fetchData();
+      fetchData(debouncedSearch);
     }
-  }, [currentLocation, selectedCategory]);
+  }, [currentLocation, selectedCategory, debouncedSearch]);
 
-  const fetchData = async () => {
+  const fetchData = async (query = '') => {
     setIsLoading(true);
-    await FetchNearbyPlaces(currentLocation, dispatch, selectedCategory.type);
+    await FetchNearbyPlaces(
+      currentLocation,
+      dispatch,
+      selectedCategory.type,
+      query,
+    );
     setIsLoading(false);
   };
 
@@ -104,6 +107,33 @@ const TopRated = ({navigation}) => {
     <ScreenWrapper>
       <SafeAreaView style={{flex: 1}}>
         <AppHeader heading={`Top Rated ${selectedCategory.name}`} />
+
+        <View style={styles.searchBarContainer}>
+          <View style={styles.searchBarPill}>
+            <Ionicons name="search-outline" size={20} color="#47082E" />
+            <TextInput
+              placeholder="Search top rated places..."
+              placeholderTextColor="#666"
+              style={styles.searchInput}
+              value={search}
+              onChangeText={text => setSearch(text)}
+              onSubmitEditing={() => fetchData(search)}
+            />
+            {search.length > 0 && (
+              <TouchableOpacity
+                onPress={() => {
+                  fetchData('');
+                  setSearch('');
+                }}>
+                <Ionicons
+                  name="close-circle-outline"
+                  size={20}
+                  color="#47082E"
+                />
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
 
         {/* Category Tabs */}
         <View style={styles.tabContainer}>
@@ -229,6 +259,28 @@ const styles = StyleSheet.create({
     height: 6,
     backgroundColor: AppColors.BTNCOLOURS,
     borderRadius: 3,
+  },
+  searchBarContainer: {
+    paddingHorizontal: responsiveWidth(4),
+    marginTop: responsiveHeight(1),
+  },
+  searchBarPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.4)',
+    borderRadius: 30,
+    paddingHorizontal: 20,
+    height: 50,
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.6)',
+  },
+  searchInput: {
+    flex: 1,
+    height: 45,
+    marginLeft: 12,
+    fontSize: responsiveFontSize(1.8),
+    color: '#47082E',
+    padding: 0,
   },
 });
 

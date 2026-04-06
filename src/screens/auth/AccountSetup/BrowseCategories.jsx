@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, Fragment} from 'react';
 import {
   View,
   TouchableOpacity,
@@ -19,7 +19,7 @@ import {
   responsiveWidth,
   responsiveFontSize,
 } from '../../../utils/Responsive_Dimensions';
-import {useCustomNavigation} from '../../../utils/Hooks';
+import {useCustomNavigation, useDebounce} from '../../../utils/Hooks';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import BackgroundScreen from '../../../components/AppTextComps/BackgroundScreen';
@@ -64,6 +64,8 @@ const BrowseCategories = () => {
     Other: 'establishment',
   };
 
+  const debouncedSearch = useDebounce(customPlace, 500);
+
   const categories = [
     {
       id: '1',
@@ -78,8 +80,18 @@ const BrowseCategories = () => {
       library: 'MaterialCommunityIcons',
     },
     {id: '3', name: 'Cafes', icon: 'cafe-outline', library: 'Ionicons'},
-    {id: '4', name: 'Shops', icon: 'bag-handle-outline', library: 'Ionicons'},
-    {id: '5', name: 'Travel', icon: 'airplane-outline', library: 'Ionicons'},
+    {
+      id: '4',
+      name: 'Grocery Stores',
+      icon: 'bag-handle-outline',
+      library: 'Ionicons',
+    },
+    {
+      id: '5',
+      name: 'Vacation Destinations',
+      icon: 'airplane-outline',
+      library: 'Ionicons',
+    },
     {id: '6', name: 'Other', icon: 'storefront-outline', library: 'Ionicons'},
   ];
 
@@ -120,6 +132,12 @@ const BrowseCategories = () => {
   const handleContinue = () => {
     dispatch(setIsListBuilt(true));
   };
+
+  useEffect(() => {
+    if (debouncedSearch && debouncedSearch.trim().length > 2) {
+      handleSearch(debouncedSearch);
+    }
+  }, [debouncedSearch]);
 
   const handleSearch = async query => {
     setLoading(true);
@@ -303,6 +321,7 @@ const BrowseCategories = () => {
           textSize={1.5}
           textColor={isSelected ? AppColors.WHITE : AppColors.BTNCOLOURS}
           textFontWeight={true}
+          textAlignment="center"
           style={{marginTop: 8}}
         />
       </TouchableOpacity>
@@ -369,28 +388,9 @@ const BrowseCategories = () => {
     );
   };
 
-  return (
-    <BackgroundScreen>
-      <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => goBack()}>
-            <Ionicons
-              name="arrow-back"
-              size={28}
-              color={AppColors.BTNCOLOURS}
-            />
-          </TouchableOpacity>
-          <View style={{width: 25}} />
-          <AppText
-            title={'Add Places to your Lists'}
-            textSize={2.8}
-            textColor={AppColors.BTNCOLOURS}
-            textFontWeight={true}
-            textAlignment="center"
-            style={{flex: 1, marginRight: 53}}
-          />
-        </View>
-
+  const listHeaderComponent = () => {
+    return (
+      <Fragment>
         <AppText
           title={'Select places you love or hate.\nYou can add notes later!'}
           textSize={1.8}
@@ -399,8 +399,6 @@ const BrowseCategories = () => {
           lineHeight={2.6}
           style={{marginTop: 5}}
         />
-
-        {/* Custom place search removed as per user request */}
 
         <View style={styles.statsRow}>
           <View style={styles.statChip}>
@@ -411,7 +409,7 @@ const BrowseCategories = () => {
               style={{marginRight: 6}}
             />
             <AppText
-              title={`${likesCount} Likes`}
+              title={`${likesCount} Go Again`}
               textSize={1.4}
               textColor="#4CAF50"
               textFontWeight={true}
@@ -449,34 +447,47 @@ const BrowseCategories = () => {
               value={customPlace}
               onChangeText={text => {
                 setCustomPlace(text);
-                if (text.length > 2) handleSearch(text);
+                // Removed immediate handleSearch to use debounce instead
               }}
               onSubmitEditing={() => handleSearch(customPlace)}
             />
-            <TouchableOpacity onPress={() => handleSearch(customPlace)}>
-              <Ionicons name="options-outline" size={20} color="#47082E" />
-            </TouchableOpacity>
           </View>
         </View>
+      </Fragment>
+    );
+  };
 
-        {loading ? (
-          <ActivityIndicator
-            size="large"
-            color={AppColors.BTNCOLOURS}
-            style={{marginTop: 20}}
+  return (
+    <BackgroundScreen>
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => goBack()}>
+            <Ionicons
+              name="arrow-back"
+              size={28}
+              color={AppColors.BTNCOLOURS}
+            />
+          </TouchableOpacity>
+          <View style={{width: 25}} />
+          <AppText
+            title={'Add Places to your Lists'}
+            textSize={2.8}
+            textColor={AppColors.BTNCOLOURS}
+            textFontWeight={true}
+            textAlignment="center"
+            style={{flex: 1, marginRight: 53}}
           />
-        ) : (
-          <FlatList
-            data={places_nearby}
-            renderItem={renderPlaceItem}
-            keyExtractor={item => item.place_id}
-            contentContainerStyle={{
-              paddingBottom: responsiveHeight(15),
-              paddingHorizontal: responsiveWidth(5),
-            }}
-            showsVerticalScrollIndicator={false}
-          />
-        )}
+        </View>
+        {/* Removed static sections to move into FlatList Header */}
+
+        <FlatList
+          data={places_nearby}
+          renderItem={renderPlaceItem}
+          ListHeaderComponent={listHeaderComponent()}
+          keyExtractor={item => item.place_id}
+          contentContainerStyle={styles.contentContainerStyle}
+          showsVerticalScrollIndicator={false}
+        />
 
         <View style={styles.footer}>
           <TouchableOpacity
@@ -518,6 +529,10 @@ const BrowseCategories = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  contentContainerStyle: {
+    flexGrow: 1,
+    paddingBottom: responsiveHeight(15),
   },
   header: {
     flexDirection: 'row',
@@ -595,11 +610,13 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     borderWidth: 1.5,
     borderColor: 'rgba(255, 255, 255, 0.6)',
+    marginHorizontal: responsiveWidth(5),
   },
   placeImage: {
     width: 65,
     height: 65,
     borderRadius: 15,
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
   },
   actionButtons: {
     flexDirection: 'row',

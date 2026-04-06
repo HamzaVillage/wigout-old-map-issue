@@ -1,7 +1,5 @@
-/* eslint-disable react-native/no-inline-styles */
 import React, {useEffect} from 'react';
-import {View, Image} from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import {View, Image, StyleSheet} from 'react-native';
 import AppColors from '../../utils/AppColors';
 import AppImages from '../../assets/images/AppImages';
 import {
@@ -9,8 +7,6 @@ import {
   responsiveWidth,
 } from '../../utils/Responsive_Dimensions';
 import {useCustomNavigation} from '../../utils/Hooks';
-
-const ONBOARDING_KEY = '@hasSeenOnBoarding';
 
 const Splash = ({onComplete}) => {
   const {navigateToRoute} = useCustomNavigation();
@@ -27,29 +23,42 @@ const Splash = ({onComplete}) => {
   }, [navigateToRoute, onComplete]);
 
   return (
-    <View
-      style={{
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        backgroundColor: AppColors.BTNCOLOURS,
-      }}>
-      <View
-        style={{flex: 0.9, justifyContent: 'center', alignItems: 'flex-end'}}>
+    <View style={styles.container}>
+      <View style={styles.topSection}>
         <Image
-          source={AppImages.app_name}
-          style={{width: responsiveWidth(100), height: responsiveHeight(100)}}
+          source={AppImages.wigOut} // app_name
+          style={styles.appNameImage}
           resizeMode="contain"
         />
       </View>
-      <View style={{flex: 1}}>
-        <Image
-          source={AppImages.main_logo}
-          style={{width: responsiveWidth(100), height: responsiveHeight(78)}}
-        />
+      <View style={styles.bottomSection}>
+        <Image source={AppImages.main_logo} style={styles.mainLogo} />
       </View>
     </View>
   );
 };
 
 export default Splash;
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: AppColors.BTNCOLOURS,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  topSection: {
+    flex: 0.9,
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+  },
+  bottomSection: {flex: 1},
+  appNameImage: {
+    height: responsiveHeight(100),
+    width: responsiveWidth(100),
+  },
+  mainLogo: {
+    height: responsiveHeight(78),
+    width: responsiveWidth(100),
+  },
+});

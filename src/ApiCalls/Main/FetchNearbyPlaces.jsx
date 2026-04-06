@@ -2,8 +2,18 @@ import axios from 'axios';
 import {Google_API_KEY, Google_Base_Url} from '../../utils/api_content';
 import {setNearbyPlaces} from '../../redux/Slices';
 
-const FetchNearbyPlaces = async (location, dispatch, type = 'restaurant', keyword = '') => {
-  let url = `${Google_Base_Url}place/nearbysearch/json?location=${location?.latitude},${location.longitude}&radius=50000&type=${type}${keyword ? `&keyword=${keyword}` : ''}&key=${Google_API_KEY}`;
+const FetchNearbyPlaces = async (
+  location,
+  dispatch,
+  type = 'restaurant',
+  keyword = '',
+) => {
+  // If type is 'all' or empty, we omit the type parameter to get a broad set of results
+  const typeParam = type && type !== 'all' ? `&type=${type}` : '';
+  const keywordParam = keyword ? `&keyword=${keyword}` : '';
+
+  let url = `${Google_Base_Url}place/nearbysearch/json?location=${location?.latitude},${location.longitude}&radius=160000${typeParam}${keywordParam}&key=${Google_API_KEY}`;
+
   console.log('url of FetchNearbyPlaces:-', url);
   try {
     let config = {
