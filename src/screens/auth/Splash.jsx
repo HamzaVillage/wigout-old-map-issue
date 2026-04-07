@@ -8,19 +8,54 @@ import {
 } from '../../utils/Responsive_Dimensions';
 import {useCustomNavigation} from '../../utils/Hooks';
 
+import {useDispatch} from 'react-redux';
+import {setCurrentLocation} from '../../redux/Slices';
+import {GetCurrentLocation} from '../../GlobalFunctions/other/GetCurrentLocation';
+import LatLngIntoAddress from '../../GlobalFunctions/other/LatLngIntoAddress';
+
 const Splash = ({onComplete}) => {
   const {navigateToRoute} = useCustomNavigation();
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    setTimeout(() => {
-      if (onComplete) {
-        onComplete();
-      } else {
-        // Fallback or default behavior
-        navigateToRoute('OnBoarding');
+    const initApp = async () => {
+      try {
+        // 1. Fetch GPS coordinates
+        const location = await GetCurrentLocation();
+
+        if (location?.latitude && location?.longitude) {
+          // 2. Convert to human-readable address
+          const address = await LatLngIntoAddress(
+            location.latitude,
+            location.longitude,
+          );
+
+          // 3. Update Redux store
+          dispatch(
+            setCurrentLocation({
+              latitude: location.latitude,
+              longitude: location.longitude,
+              address: address || 'Location identified',
+            }),
+          );
+        }
+      } catch (error) {
+        console.log('Splash location fetch error:', error);
+      } finally {
+        // 4. Proceed to next screen regardless of location success
+        // Small delay to ensure splash is visible for at least a moment
+        setTimeout(() => {
+          if (onComplete) {
+            onComplete();
+          } else {
+            navigateToRoute('OnBoarding');
+          }
+        }, 1500);
       }
-    }, 1500);
-  }, [navigateToRoute, onComplete]);
+    };
+
+    initApp();
+  }, [dispatch, navigateToRoute, onComplete]);
 
   return (
     <View style={styles.container}>

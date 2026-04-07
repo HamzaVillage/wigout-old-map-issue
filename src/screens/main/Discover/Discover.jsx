@@ -99,7 +99,6 @@ const Discover = ({navigation}) => {
     fetchData(newRegion);
   };
 
-
   // Handle navigation to details
   const handleMarkerPress = useCallback(
     place => {
@@ -271,7 +270,6 @@ const Discover = ({navigation}) => {
           </View>
         </View>
 
-
         {/* LOADING INDICATOR */}
         {loadingReviews && (
           <View style={styles.loadingOverlay}>
@@ -287,35 +285,96 @@ const Discover = ({navigation}) => {
 const OptimizedMarker = memo(({place, coordinate, onPress}) => {
   const getCategoryTheme = () => {
     const types = place.types || [];
+
+    // Food & Drink (Red/Orange)
     if (
       types.includes('restaurant') ||
       types.includes('food') ||
-      types.includes('cafe')
+      types.includes('cafe') ||
+      types.includes('bakery') ||
+      types.includes('bar')
     ) {
       return {icon: 'restaurant', color: '#FF7043', name: 'Ionicons'};
     }
-    if (types.includes('shopping_mall') || types.includes('store')) {
+
+    // Shopping (Blue)
+    if (
+      types.includes('shopping_mall') ||
+      types.includes('store') ||
+      types.includes('supermarket') ||
+      types.includes('clothing_store') ||
+      types.includes('electronics_store')
+    ) {
       return {
         icon: 'shopping',
         color: '#42A5F5',
         name: 'MaterialCommunityIcons',
       };
     }
-    if (types.includes('park') || types.includes('tourist_attraction')) {
+
+    // Outdoors & Nature (Green)
+    if (
+      types.includes('park') ||
+      types.includes('nature_reserve') ||
+      types.includes('campground') ||
+      types.includes('zoo') ||
+      types.includes('aquarium')
+    ) {
       return {icon: 'tree', color: '#66BB6A', name: 'MaterialCommunityIcons'};
     }
+
+    // Lodging (Brown)
     if (types.includes('lodging') || types.includes('hotel')) {
-      return {icon: 'hotel', color: '#8D6E63', name: 'Ionicons'};
+      return {icon: 'bed', color: '#8D6E63', name: 'MaterialCommunityIcons'};
     }
-    if (types.includes('gas_station')) {
+
+    // Gas Stations & Car Services (Indigo)
+    if (types.includes('gas_station') || types.includes('car_repair')) {
       return {
         icon: 'gas-station',
         color: '#5C6BC0',
         name: 'MaterialCommunityIcons',
       };
     }
+
+    // Culture & Sightseeing (Purple)
+    if (
+      types.includes('museum') ||
+      types.includes('art_gallery') ||
+      types.includes('tourist_attraction') ||
+      types.includes('church') ||
+      types.includes('place_of_worship')
+    ) {
+      return {icon: 'bank', color: '#9575CD', name: 'MaterialCommunityIcons'};
+    }
+
+    // Health & Wellness (Teal)
+    if (
+      types.includes('hospital') ||
+      types.includes('pharmacy') ||
+      types.includes('gym') ||
+      types.includes('spa')
+    ) {
+      return {
+        icon: 'medical-bag',
+        color: '#26A69A',
+        name: 'MaterialCommunityIcons',
+      };
+    }
+
+    // Entertainment (Pink)
+    if (
+      types.includes('movie_theater') ||
+      types.includes('amusement_park') ||
+      types.includes('night_club') ||
+      types.includes('casino')
+    ) {
+      return {icon: 'movie', color: '#EC407A', name: 'MaterialCommunityIcons'};
+    }
+
+    // Default Fallback
     return {
-      icon: 'location-sharp',
+      icon: 'location',
       color: AppColors.BTNCOLOURS,
       name: 'Ionicons',
     };
@@ -325,7 +384,15 @@ const OptimizedMarker = memo(({place, coordinate, onPress}) => {
 
   return (
     <Marker coordinate={coordinate} onPress={onPress}>
-      <View style={[styles.smartMarker, {backgroundColor: theme.color}]}>
+      <View
+        style={[
+          styles.smartMarker,
+          {
+            backgroundColor: theme.color,
+            borderWidth: 2,
+            borderColor: AppColors.BTNCOLOURS,
+          },
+        ]}>
         {theme.name === 'Ionicons' ? (
           <Ionicons name={theme.icon} size={14} color="#FFF" />
         ) : (
