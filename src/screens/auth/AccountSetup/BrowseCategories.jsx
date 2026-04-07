@@ -230,9 +230,7 @@ const BrowseCategories = ({navigation}) => {
 
     return (
       <TouchableOpacity
-        onPress={() =>
-          navigateToRoute('HomeDetails', {placeDetails: item})
-        }
+        onPress={() => navigateToRoute('HomeDetails', {placeDetails: item})}
         style={styles.placeItem}>
         {imageUrl ? (
           <Image source={{uri: imageUrl}} style={styles.placeImage} />
@@ -301,7 +299,7 @@ const BrowseCategories = ({navigation}) => {
           style={styles.statChip}>
           <Ionicons name="heart" size={16} color="#4CAF50" />
           <AppText
-            title={`${likesCount} Loved`}
+            title={`${likesCount} Go Again`}
             textSize={1.3}
             textColor="#4CAF50"
             textFontWeight
@@ -387,7 +385,7 @@ const BrowseCategories = ({navigation}) => {
       </View>
     </View>
   );
-
+  console.log('likesCount:-', likesCount);
   return (
     <BackgroundScreen>
       <SafeAreaView style={styles.container}>

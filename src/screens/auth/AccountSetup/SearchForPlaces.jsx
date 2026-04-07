@@ -16,11 +16,7 @@ import Svg, {Defs, LinearGradient, Stop, Rect} from 'react-native-svg';
 // Components & Utils
 import AppText from '../../../components/AppTextComps/AppText';
 import AppColors from '../../../utils/AppColors';
-import {
-  responsiveHeight,
-  responsiveWidth,
-  responsiveFontSize,
-} from '../../../utils/Responsive_Dimensions';
+import {responsiveWidth} from '../../../utils/Responsive_Dimensions';
 import {useCustomNavigation, useDebounce} from '../../../utils/Hooks';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import BackgroundScreen from '../../../components/AppTextComps/BackgroundScreen';
@@ -29,11 +25,6 @@ import ShowError from '../../../utils/ShowError';
 // Logic & API
 import {setIsListBuilt} from '../../../redux/Slices';
 import FetchNearbyPlaces from '../../../ApiCalls/Main/FetchNearbyPlaces';
-import {
-  AddWishList,
-  GetWishList,
-  RemoveWishList,
-} from '../../../ApiCalls/Main/WishList_API/WishListAPI';
 import {
   AddReviews,
   GetReviews,
@@ -52,7 +43,7 @@ const SearchForPlaces = () => {
   const [loading, setLoading] = useState(false);
 
   // Local tracking state
-  const [wishlistItems, setWishlistItems] = useState([]);
+  const [likedItems, setLikedItems] = useState([]);
   const [avoidItems, setAvoidItems] = useState([]);
 
   const debouncedSearch = useDebounce(search, 600);
@@ -61,12 +52,9 @@ const SearchForPlaces = () => {
   const syncLists = async () => {
     if (!token) return;
     try {
-      const [wishRes, revRes] = await Promise.all([
-        GetWishList(token),
-        GetReviews(token),
-      ]);
-      if (wishRes?.success) setWishlistItems(wishRes.wishLists || []);
+      const revRes = await GetReviews(token);
       if (revRes?.reviews) {
+        setLikedItems(revRes.reviews.filter(r => r.actionType === 'Go Again'));
         setAvoidItems(revRes.reviews.filter(r => r.actionType === 'Avoid'));
       }
     } catch (e) {
@@ -93,14 +81,14 @@ const SearchForPlaces = () => {
     handleSearch(debouncedSearch);
   }, [debouncedSearch, handleSearch]);
 
-  // 3. Heart (Go Again / Wishlist) Logic
+  // 3. Heart (Go Again) Logic
   const handleHeart = async item => {
-    const existing = wishlistItems.find(w => w.placeId === item.place_id);
+    const existing = likedItems.find(l => l.placeId === item.place_id);
 
     if (existing) {
-      const res = await RemoveWishList(token, {placeId: item.place_id});
-      if (res?.data?.success || res?.status === 200) {
-        setWishlistItems(prev => prev.filter(w => w.placeId !== item.place_id));
+      const res = await RemoveReview({reviewId: existing._id}, token);
+      if (res?.success) {
+        setLikedItems(prev => prev.filter(l => l._id !== existing._id));
         ShowError('Removed from Go Again');
       }
       return;
@@ -117,18 +105,24 @@ const SearchForPlaces = () => {
 
     const data = {
       placeId: item.place_id,
-      name: item.name,
+      restaurantName: item.name,
       address: item.vicinity || item.formatted_address,
-      image: item.photos?.[0]?.photo_reference || '',
+      rating: item.rating || 0,
+      reviewText: 'Added from Search',
+      actionType: 'Go Again',
+      photos: item.photos?.[0]?.photo_reference
+        ? [`${Google_Places_Images}${item.photos[0].photo_reference}`]
+        : [],
       category: 'Search Result',
-      isVisited: true,
+      latitude: item.geometry?.location?.lat,
+      longitude: item.geometry?.location?.lng,
     };
 
-    const res = await AddWishList(token, data);
+    const res = await AddReviews(token, data);
     if (res?.success) {
-      setWishlistItems(prev => [
+      setLikedItems(prev => [
         ...prev,
-        {_id: res.wishList?._id, placeId: item.place_id},
+        {_id: res.review?._id, placeId: item.place_id},
       ]);
       ShowError('Added to Go Again');
     }
@@ -147,12 +141,12 @@ const SearchForPlaces = () => {
       return;
     }
 
-    // Exclusivity: Remove from Wishlist first
-    const inWish = wishlistItems.find(w => w.placeId === item.place_id);
-    if (inWish) {
-      const resWish = await RemoveWishList(token, {placeId: item.place_id});
-      if (resWish?.data?.success || resWish?.status === 200) {
-        setWishlistItems(prev => prev.filter(w => w.placeId !== item.place_id));
+    // Exclusivity: Remove from Liked first
+    const inLiked = likedItems.find(l => l.placeId === item.place_id);
+    if (inLiked) {
+      const resLiked = await RemoveReview({reviewId: inLiked._id}, token);
+      if (resLiked?.success) {
+        setLikedItems(prev => prev.filter(l => l._id !== inLiked._id));
       }
     }
 
@@ -185,14 +179,12 @@ const SearchForPlaces = () => {
       ? `${Google_Places_Images}${item.photos[0].photo_reference}&maxwidth=200`
       : null;
 
-    const isLiked = wishlistItems.some(w => w.placeId === item.place_id);
+    const isLiked = likedItems.some(l => l.placeId === item.place_id);
     const isAvoided = avoidItems.some(a => a.placeId === item.place_id);
 
     return (
       <TouchableOpacity
-        onPress={() =>
-          navigateToRoute('HomeDetails', {placeDetails: item})
-        }
+        onPress={() => navigateToRoute('HomeDetails', {placeDetails: item})}
         style={styles.placeItem}>
         {imageUrl ? (
           <Image source={{uri: imageUrl}} style={styles.placeImage} />
@@ -256,7 +248,7 @@ const SearchForPlaces = () => {
           style={styles.statChip}>
           <Ionicons name="heart" size={16} color="#4CAF50" />
           <AppText
-            title={`${wishlistItems.length} Go Again`}
+            title={`${likedItems.length} Go Again`}
             textSize={1.3}
             textColor="#4CAF50"
             textFontWeight
@@ -316,7 +308,7 @@ const SearchForPlaces = () => {
             />
           </TouchableOpacity>
           <AppText
-            title={'Add Places'}
+            title={'Search For Places'}
             textSize={2.6}
             textColor={AppColors.BTNCOLOURS}
             textFontWeight
