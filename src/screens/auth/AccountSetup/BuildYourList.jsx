@@ -63,22 +63,24 @@ const BuildYourList = () => {
     <BackgroundScreen>
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => goBack()}>
+          {/* <View style={{width: 25}} /> */}
+          {/* <TouchableOpacity onPress={() => goBack()}>
             <Ionicons
               name="arrow-back"
               size={28}
               color={AppColors.BTNCOLOURS}
             />
-          </TouchableOpacity>
-          <View style={{width: 25}} />
-          <AppText
-            title={"Let's Build Your Lists!"}
-            textSize={2.8}
-            textColor={AppColors.BTNCOLOURS}
-            textFontWeight={true}
-            textAlignment="center"
-            style={{flex: 1, marginRight: 53}}
-          />
+          </TouchableOpacity> */}
+
+          <View style={{flex: 1}}>
+            <AppText
+              title={"Let's Build Your Lists!"}
+              textSize={2.8}
+              textColor={AppColors.BTNCOLOURS}
+              textFontWeight={true}
+              textAlignment="center"
+            />
+          </View>
         </View>
 
         <View style={styles.content}>

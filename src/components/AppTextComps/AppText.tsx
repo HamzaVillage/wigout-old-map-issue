@@ -22,6 +22,7 @@ type textProps = {
   paddingBottom?: any;
   textTransform?: any;
   paddingHorizontal?: any;
+  marginTop?: any;
 };
 
 const AppText = ({
@@ -38,6 +39,7 @@ const AppText = ({
   paddingBottom,
   textTransform,
   paddingHorizontal,
+  marginTop,
 }: textProps) => {
   return (
     <Text
@@ -56,6 +58,7 @@ const AppText = ({
         borderBottomColor: borderBottomColor ? borderBottomColor : null,
         textTransform: textTransform ? textTransform : null,
         paddingBottom: paddingBottom ? responsiveHeight(paddingBottom) : null,
+        marginTop: marginTop ? responsiveHeight(marginTop) : null,
         paddingHorizontal: paddingHorizontal
           ? responsiveWidth(paddingHorizontal)
           : null,

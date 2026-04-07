@@ -112,7 +112,6 @@ const Main = () => {
 
       {/* Grouping related screens mentally makes this easier to manage */}
       <Stack.Screen name="Notifications" component={Notifications} />
-      <Stack.Screen name="HomeDetails" component={HomeDetails} />
 
       {/* Profile Related */}
       <Stack.Screen name="EditProfile" component={EditProfile} />

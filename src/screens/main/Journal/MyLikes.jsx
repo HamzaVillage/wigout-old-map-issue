@@ -331,12 +331,7 @@ const MyLikes = ({navigation, route}) => {
         setEditingItemId={setEditingItemId}
         onRemove={handleRemove}
         onOpenNote={handleOpenNote}
-        onNavigate={i =>
-          navigateToRoute('Main', {
-            screen: 'HomeDetails',
-            params: {placeDetails: i},
-          })
-        }
+        onNavigate={i => navigateToRoute('HomeDetails', {placeDetails: i})}
       />
     ),
     [editingItemId, handleRemove, navigateToRoute, handleOpenNote],

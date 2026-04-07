@@ -14,6 +14,7 @@ import SearchForPlaces from '../screens/auth/AccountSetup/SearchForPlaces';
 import BrowseCategories from '../screens/auth/AccountSetup/BrowseCategories';
 import MyLikes from '../screens/main/Journal/MyLikes';
 import MyHates from '../screens/main/Journal/MyHates';
+import HomeDetails from '../screens/main/HomeDetails';
 
 const Stack = createStackNavigator();
 const Routes = () => {
@@ -86,6 +87,7 @@ const Routes = () => {
         />
         <Stack.Screen name="MyLikes" component={MyLikes} />
         <Stack.Screen name="MyHates" component={MyHates} />
+        <Stack.Screen name="HomeDetails" component={HomeDetails} />
       </Stack.Navigator>
       <Toast />
     </>

@@ -273,12 +273,7 @@ const MyHates = ({navigation, route}) => {
         index={index}
         onRemove={handleRemove}
         onOpenNote={handleOpenNote}
-        onNavigate={i =>
-          navigateToRoute('Main', {
-            screen: 'HomeDetails',
-            params: {placeDetails: i},
-          })
-        }
+        onNavigate={i => navigateToRoute('HomeDetails', {placeDetails: i})}
       />
     ),
     [handleRemove, handleOpenNote, navigateToRoute],
