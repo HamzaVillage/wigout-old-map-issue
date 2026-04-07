@@ -40,7 +40,7 @@ import ShowError from '../../../utils/ShowError';
 
 const {width} = Dimensions.get('window');
 
-const BrowseCategories = () => {
+const BrowseCategories = ({navigation}) => {
   const {navigateToRoute, goBack} = useCustomNavigation();
   const dispatch = useDispatch();
   const {token, current_location, places_nearby} = useSelector(
@@ -52,7 +52,7 @@ const BrowseCategories = () => {
   const [loading, setLoading] = useState(false);
   const [likesCount, setLikesCount] = useState(0);
   const [hatesCount, setHatesCount] = useState(0);
-  const [wishlistItems, setWishlistItems] = useState([]);
+  const [likedItems, setLikedItems] = useState([]);
   const [avoidItems, setAvoidItems] = useState([]);
 
   const categoryMapping = {
@@ -103,11 +103,11 @@ const BrowseCategories = () => {
         GetReviews(token),
       ]);
 
-      if (wishRes?.success) {
-        setWishlistItems(wishRes.wishLists || []);
-        setLikesCount(wishRes.wishLists?.length || 0);
-      }
       if (revRes?.reviews) {
+        const liked = revRes.reviews.filter(r => r.actionType === 'Go Again');
+        setLikedItems(liked);
+        setLikesCount(liked.length);
+
         const avoided = revRes.reviews.filter(r => r.actionType === 'Avoid');
         setAvoidItems(avoided);
         setHatesCount(avoided.length);
@@ -147,41 +147,18 @@ const BrowseCategories = () => {
   };
 
   const handleHeart = async item => {
-    const existing = wishlistItems.find(w => w.placeId === item.place_id);
+    const existing = likedItems.find(
+      l => l.placeId === item.place_id || l.restaurantName === item.name,
+    );
     console.log('existing', existing);
     if (existing) {
-      const res = await RemoveWishList(token, {placeId: item.place_id});
+      const res = await RemoveReview({reviewId: existing._id}, token);
 
       // Checking both standard and nested success flags/statuses
-      const status = res?.status || res?.response?.status;
-      const data = res?.data || res?.response?.data;
-      const isSuccess =
-        status === 200 ||
-        status === 204 ||
-        data?.success ||
-        data?.status === 'success';
-
-      console.log('RemoveWishList Final Check:', isSuccess, status, data);
-
-      if (isSuccess) {
+      if (res?.success) {
         setLikesCount(prev => prev - 1);
-        setWishlistItems(prev => prev.filter(w => w.placeId !== item.place_id));
-        ShowError('Removed from Wishlist', 2000);
-      } else {
-        console.log('Delete Wishlist failed (attempt 1):', status, data);
-        // Fallback attempt with ID if placeId fails
-        const resFallback = await RemoveWishList(token, {
-          wishListId: existing._id,
-        });
-        const fallbackStatus =
-          resFallback?.status || resFallback?.response?.status;
-        if (fallbackStatus === 200 || resFallback?.data?.success) {
-          setLikesCount(prev => prev - 1);
-          setWishlistItems(prev =>
-            prev.filter(w => w.placeId !== item.place_id),
-          );
-          ShowError('Removed from Wishlist', 2000);
-        }
+        setLikedItems(prev => prev.filter(l => l._id !== existing._id));
+        ShowError('Removed from Go Again List', 2000);
       }
       return;
     }
@@ -200,24 +177,30 @@ const BrowseCategories = () => {
 
     const data = {
       placeId: item.place_id,
-      name: item.name,
+      restaurantName: item.name,
       address: item.vicinity || item.formatted_address,
-      image: item.photos?.[0]?.photo_reference || '',
       rating: item.rating || 0,
-      userRatingsTotal: item.user_ratings_total || 0,
+      reviewText: 'Added from onboarding',
+      actionType: 'Go Again',
+      photos: item.photos?.[0]?.photo_reference
+        ? [`${Google_Places_Images}${item.photos[0].photo_reference}`]
+        : [],
       category: selectedCategory,
-      notes: '',
-      isVisited: false,
+      latitude: item.geometry?.location?.lat,
+      longitude: item.geometry?.location?.lng,
     };
-    const res = await AddWishList(token, data);
+    const res = await AddReviews(token, data);
     if (res?.success) {
       setLikesCount(prev => prev + 1);
-      // Re-fetch or add with returned _id to allow immediate toggle-off
-      setWishlistItems(prev => [
+      setLikedItems(prev => [
         ...prev,
-        {_id: res.wishList?._id, placeId: item.place_id},
+        {
+          _id: res.review?._id,
+          placeId: item.place_id,
+          restaurantName: item.name,
+        },
       ]);
-      ShowError(res?.msg || 'Added to Wishlist', 2000);
+      ShowError(res?.msg || 'Added to Go Again List', 2000);
     }
   };
 
@@ -235,14 +218,15 @@ const BrowseCategories = () => {
       return;
     }
 
-    // Exclusivity: If it's in wishlist, remove it first
-    const existingWish = wishlistItems.find(w => w.placeId === item.place_id);
-    if (existingWish) {
-      const resWish = await RemoveWishList(token, {placeId: item.place_id});
-      const status = resWish?.status || resWish?.response?.status;
-      if (status === 200 || status === 204 || resWish?.data?.success) {
+    // Exclusivity: If it's in liked list, remove it first
+    const existingLiked = likedItems.find(
+      l => l.placeId === item.place_id || l.restaurantName === item.name,
+    );
+    if (existingLiked) {
+      const resLiked = await RemoveReview({reviewId: existingLiked._id}, token);
+      if (resLiked?.success) {
         setLikesCount(prev => prev - 1);
-        setWishlistItems(prev => prev.filter(w => w.placeId !== item.place_id));
+        setLikedItems(prev => prev.filter(l => l._id !== existingLiked._id));
       }
     }
 
@@ -333,7 +317,9 @@ const BrowseCategories = () => {
       ? `${Google_Places_Images}${item.photos[0].photo_reference}`
       : null;
 
-    const isLiked = wishlistItems.some(w => w.placeId === item.place_id);
+    const isLiked = likedItems.some(
+      l => l.placeId === item.place_id || l.restaurantName === item.name,
+    );
     const isAvoided = avoidItems.some(
       a => a.placeId === item.place_id || a.restaurantName === item.name,
     );
@@ -401,7 +387,9 @@ const BrowseCategories = () => {
         />
 
         <View style={styles.statsRow}>
-          <View style={styles.statChip}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('MyLikes')}
+            style={styles.statChip}>
             <Ionicons
               name="heart"
               size={16}
@@ -414,8 +402,11 @@ const BrowseCategories = () => {
               textColor="#4CAF50"
               textFontWeight={true}
             />
-          </View>
-          <View style={styles.statChip}>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => navigation.navigate('MyHates')}
+            style={styles.statChip}>
             <Ionicons
               name="thumbs-down"
               size={16}
@@ -428,7 +419,7 @@ const BrowseCategories = () => {
               textColor="#D32F2F"
               textFontWeight={true}
             />
-          </View>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.categoriesContainer}>

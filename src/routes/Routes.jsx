@@ -12,6 +12,8 @@ import Splash from '../screens/auth/Splash';
 import BuildYourList from '../screens/auth/AccountSetup/BuildYourList';
 import SearchForPlaces from '../screens/auth/AccountSetup/SearchForPlaces';
 import BrowseCategories from '../screens/auth/AccountSetup/BrowseCategories';
+import MyLikes from '../screens/main/Journal/MyLikes';
+import MyHates from '../screens/main/Journal/MyHates';
 
 const Stack = createStackNavigator();
 const Routes = () => {
@@ -82,6 +84,8 @@ const Routes = () => {
           name="EnterAddressManually"
           component={EnterAddressManually}
         />
+        <Stack.Screen name="MyLikes" component={MyLikes} />
+        <Stack.Screen name="MyHates" component={MyHates} />
       </Stack.Navigator>
       <Toast />
     </>

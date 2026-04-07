@@ -349,7 +349,7 @@ const MyLikes = ({navigation, route}) => {
               iconColor={AppColors.BLACK}
             />
             <AppText
-              title={'My Likes'}
+              title={'Go Again'}
               textColor={AppColors.BLACK}
               textSize={2.8}
               textFontWeight
@@ -376,11 +376,15 @@ const MyLikes = ({navigation, route}) => {
               onChangeText={handleSearch}
               logo={<Ionicons name="search" size={20} color={AppColors.GRAY} />}
               rightIcon={
-                <MaterialIcons
-                  name="tune"
-                  size={20}
-                  color={AppColors.BTNCOLOURS}
-                />
+                searchQuery ? (
+                  <TouchableOpacity onPress={() => setSearchQuery('')}>
+                    <Ionicons
+                      name="close-circle"
+                      size={20}
+                      color={AppColors.GRAY}
+                    />
+                  </TouchableOpacity>
+                ) : null
               }
             />
           </View>

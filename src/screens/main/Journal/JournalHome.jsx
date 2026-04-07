@@ -173,7 +173,7 @@ const JournalHome = ({navigation}) => {
                 <Ionicons name="heart-outline" size={24} color="#4CAF50" />
               </View>
               <AppText
-                title={'My Likes'}
+                title={'Go Again'}
                 textColor={AppColors.BLACK}
                 textSize={1.8}
                 textFontWeight
@@ -196,7 +196,7 @@ const JournalHome = ({navigation}) => {
                 />
               </View>
               <AppText
-                title={'My Hates'}
+                title={'Avoids'}
                 textColor={AppColors.BLACK}
                 textSize={1.8}
                 textFontWeight

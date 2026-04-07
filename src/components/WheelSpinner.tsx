@@ -31,6 +31,13 @@ const SPINNER_COLORS = [
   '#FF9800', // Orange
   '#00BCD4', // Cyan
   '#E91E63', // Pink
+  '#8BC34A', // Light Green
+  '#3F51B5', // Indigo
+  '#FFC107', // Amber
+  '#009688', // Teal
+  '#795548', // Brown
+  '#607D8B', // Blue Grey
+  '#F44336', // Deep Red
 ];
 
 const WheelSpinner = forwardRef<WheelRef, WheelSpinnerProps>(

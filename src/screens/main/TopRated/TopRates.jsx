@@ -14,6 +14,8 @@ import AppHeader from '../../../components/AppHeader';
 import ScreenWrapper from '../../../components/ScreenWrapper';
 import AppColors from '../../../utils/AppColors';
 import FetchNearbyPlaces from '../../../ApiCalls/Main/FetchNearbyPlaces';
+import {GetWishList} from '../../../ApiCalls/Main/WishList_API/WishListAPI';
+import {GetReviews} from '../../../ApiCalls/Main/Reviews/ReviewsApiCall';
 import {
   responsiveFontSize,
   responsiveHeight,
@@ -63,11 +65,40 @@ const TopRated = ({navigation}) => {
   const dispatch = useDispatch();
   const currentLocation = useSelector(state => state.user.current_location);
   const placesNearby = useSelector(state => state.user.places_nearby);
+  const token = useSelector(state => state.user.token);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(CATEGORIES[0]);
   const [search, setSearch] = useState('');
+  const [excludedPlaceIds, setExcludedPlaceIds] = useState(new Set());
 
   const debouncedSearch = useDebounce(search, 500);
+
+  useEffect(() => {
+    const fetchUserLists = async () => {
+      if (!token) return;
+      try {
+        const [revRes] = await Promise.all([
+          // GetWishList(token),
+          GetReviews(token),
+        ]);
+
+        const ids = new Set();
+        if (wishRes?.success) {
+          wishRes.wishLists?.forEach(w => ids.add(w.placeId));
+        }
+        if (revRes?.reviews) {
+          revRes.reviews?.forEach(r => ids.add(r.placeId));
+        }
+        setExcludedPlaceIds(ids);
+      } catch (error) {
+        console.log('Error fetching user filters:', error);
+      }
+    };
+
+    const unsubscribe = navigation.addListener('focus', fetchUserLists);
+    fetchUserLists(); // Initial fetch
+    return unsubscribe;
+  }, [navigation, token]);
 
   useEffect(() => {
     if (currentLocation?.latitude && currentLocation?.longitude) {
@@ -86,9 +117,9 @@ const TopRated = ({navigation}) => {
     setIsLoading(false);
   };
 
-  // Sort places by rating in descending order
+  // Sort places by rating in descending order and filter out excluded items
   const topRatedPlaces = [...placesNearby]
-    .filter(place => place.rating) // Ensure they have a rating
+    .filter(place => place.rating && !excludedPlaceIds.has(place.place_id))
     .sort((a, b) => b.rating - a.rating);
 
   const renderItem = ({item, index}) => {
