@@ -33,7 +33,7 @@ import LineBreak from '../../../components/LineBreak';
 import {responsiveWidth} from '../../../utils/Responsive_Dimensions';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import {useCustomNavigation} from '../../../utils/Hooks';
+import {useCustomNavigation, useDebounce} from '../../../utils/Hooks';
 import BackIcon from '../../../components/AppTextComps/BackIcon';
 import {useSelector} from 'react-redux';
 
@@ -214,6 +214,8 @@ const MyHates = ({navigation, route}) => {
   const [noteModalVisible, setNoteModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
 
+  const debouncedSearch = useDebounce(searchQuery, 500);
+
   const fetchMyHates = async () => {
     setLoader(true);
     try {
@@ -237,18 +239,21 @@ const MyHates = ({navigation, route}) => {
   }, [navigation]);
 
   const filteredHates = useMemo(() => {
-    if (!searchQuery) return myHates;
+    if (!debouncedSearch) return myHates;
     return myHates.filter(item =>
-      item.restaurantName.toLowerCase().includes(searchQuery.toLowerCase()),
+      item.restaurantName.toLowerCase().includes(debouncedSearch.toLowerCase()),
     );
-  }, [searchQuery, myHates]);
+  }, [debouncedSearch, myHates]);
 
-  const handleRemove = async item => {
-    setLoader(true);
-    const res = await RemoveReview({reviewId: item?._id}, token);
-    if (res?.success) fetchMyHates();
-    else setLoader(false);
-  };
+  const handleRemove = useCallback(
+    async item => {
+      setLoader(true);
+      const res = await RemoveReview({reviewId: item?._id}, token);
+      if (res?.success) fetchMyHates();
+      else setLoader(false);
+    },
+    [token],
+  );
 
   const handleAddNote = async (item, noteText) => {
     setNoteModalVisible(false);
@@ -256,26 +261,33 @@ const MyHates = ({navigation, route}) => {
     if (res) fetchMyHates();
   };
 
+  const handleOpenNote = useCallback(item => {
+    setSelectedItem(item);
+    setNoteModalVisible(true);
+  }, []);
+
   const renderItem = useCallback(
     ({item, index}) => (
       <AnimatedGridItem
         item={item}
         index={index}
         onRemove={handleRemove}
-        onNavigate={i => navigateToRoute('ListViewDetail', {placeDetails: i})}
-        onOpenNote={i => {
-          setSelectedItem(i);
-          setNoteModalVisible(true);
-        }}
+        onOpenNote={handleOpenNote}
+        onNavigate={i =>
+          navigateToRoute('Main', {
+            screen: 'HomeDetails',
+            params: {placeDetails: i},
+          })
+        }
       />
     ),
-    [myHates],
+    [handleRemove, handleOpenNote, navigateToRoute],
   );
 
   const HeaderComponent = useMemo(
     () => (
       <View style={{paddingHorizontal: 20}}>
-        <View style={styles.warningBox}>
+        {/* <View style={styles.warningBox}>
           <Ionicons name="warning-outline" size={24} color="#F44336" />
           <View style={{flex: 1, marginLeft: 12}}>
             <AppText
@@ -293,7 +305,7 @@ const MyHates = ({navigation, route}) => {
             />
           </View>
         </View>
-        <LineBreak space={2} />
+        <LineBreak space={2} /> */}
         <AppTextInput
           placeholder={'Search your avoids...'}
           value={searchQuery}

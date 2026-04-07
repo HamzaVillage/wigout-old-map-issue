@@ -1,5 +1,5 @@
 /* eslint-disable react-native/no-inline-styles */
-import React, {useEffect, useState, useCallback} from 'react';
+import React, {useEffect, useState, useCallback, useMemo, memo} from 'react';
 import {
   View,
   StyleSheet,
@@ -36,7 +36,7 @@ import {
 } from '../../../utils/Responsive_Dimensions';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
-import {useCustomNavigation} from '../../../utils/Hooks';
+import {useCustomNavigation, useDebounce} from '../../../utils/Hooks';
 import BackIcon from '../../../components/AppTextComps/BackIcon';
 import {useSelector} from 'react-redux';
 import {
@@ -47,124 +47,126 @@ import {
 import {Google_Places_Images} from '../../../utils/api_content';
 
 // ─── Animated Grid Item ───────────────────────────────────────────────────────
-const AnimatedGridItem = ({
-  item,
-  index,
-  editingItemId,
-  setEditingItemId,
-  onRemove,
-  onNavigate,
-  onOpenNote,
-}) => {
-  const translateY = useSharedValue(60);
-  const opacity = useSharedValue(0);
+const AnimatedGridItem = memo(
+  ({
+    item,
+    index,
+    editingItemId,
+    setEditingItemId,
+    onRemove,
+    onNavigate,
+    onOpenNote,
+  }) => {
+    const translateY = useSharedValue(60);
+    const opacity = useSharedValue(0);
 
-  useEffect(() => {
-    const delay = index * 80;
-    translateY.value = withDelay(
-      delay,
-      withTiming(0, {duration: 450, easing: Easing.out(Easing.cubic)}),
-    );
-    opacity.value = withDelay(
-      delay,
-      withTiming(1, {duration: 450, easing: Easing.out(Easing.cubic)}),
-    );
-  }, []);
+    useEffect(() => {
+      const delay = index * 80;
+      translateY.value = withDelay(
+        delay,
+        withTiming(0, {duration: 450, easing: Easing.out(Easing.cubic)}),
+      );
+      opacity.value = withDelay(
+        delay,
+        withTiming(1, {duration: 450, easing: Easing.out(Easing.cubic)}),
+      );
+    }, []);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{translateY: translateY.value}],
-    opacity: opacity.value,
-  }));
+    const animatedStyle = useAnimatedStyle(() => ({
+      transform: [{translateY: translateY.value}],
+      opacity: opacity.value,
+    }));
 
-  const isEditing = editingItemId === item._id;
+    const isEditing = editingItemId === item._id;
 
-  console.log('item.category:-', item);
+    // console.log('item.category:-', item);
 
-  return (
-    <Animated.View style={[styles.gridCard, animatedStyle]}>
-      {/* Image */}
-      <TouchableOpacity
-        activeOpacity={0.85}
-        onPress={() => onNavigate(item)}
-        style={styles.imageWrapper}>
-        <Image
-          source={{
-            uri: item?.photos?.[0]
-              ? item.photos[0].startsWith('http')
-                ? item.photos[0]
-                : `${Google_Places_Images}${item.photos[0]}`
-              : undefined,
-          }}
-          style={styles.placeImage}
-        />
-        {/* Gradient Overlay */}
-        <View style={styles.imageOverlay} />
-
-        {/* Action Buttons on Image */}
-        <View style={styles.actionRow}>
-          <TouchableOpacity
-            style={[styles.iconBtn, isEditing && styles.iconBtnActive]}
-            onPress={() => onOpenNote(item)}>
-            <MaterialIcons
-              name="edit"
-              size={responsiveFontSize(1.8)}
-              color={isEditing ? AppColors.BTNCOLOURS : '#fff'}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.iconBtnDelete}
-            onPress={() => onRemove(item)}>
-            <MaterialIcons
-              name="delete-outline"
-              size={responsiveFontSize(1.8)}
-              color="#F44336"
-            />
-          </TouchableOpacity>
-        </View>
-      </TouchableOpacity>
-
-      {/* Details */}
-      <View style={styles.cardDetails}>
-        <AppText
-          title={item.restaurantName}
-          textColor={AppColors.BLACK}
-          textSize={1.7}
-          textFontWeight
-          numberOfLines={1}
-        />
-        <View style={styles.categoryRow}>
-          <MaterialIcons
-            name="category"
-            size={responsiveFontSize(1.3)}
-            color={AppColors.BTNCOLOURS}
+    return (
+      <Animated.View style={[styles.gridCard, animatedStyle]}>
+        {/* Image */}
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={() => onNavigate(item)}
+          style={styles.imageWrapper}>
+          <Image
+            source={{
+              uri: item?.photos?.[0]
+                ? item.photos[0].startsWith('http')
+                  ? item.photos[0]
+                  : `${Google_Places_Images}${item.photos[0]}`
+                : undefined,
+            }}
+            style={styles.placeImage}
           />
+          {/* Gradient Overlay */}
+          <View style={styles.imageOverlay} />
+
+          {/* Action Buttons on Image */}
+          <View style={styles.actionRow}>
+            <TouchableOpacity
+              style={[styles.iconBtn, isEditing && styles.iconBtnActive]}
+              onPress={() => onOpenNote(item)}>
+              <MaterialIcons
+                name="edit"
+                size={responsiveFontSize(1.8)}
+                color={isEditing ? AppColors.BTNCOLOURS : '#fff'}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.iconBtnDelete}
+              onPress={() => onRemove(item)}>
+              <MaterialIcons
+                name="delete-outline"
+                size={responsiveFontSize(1.8)}
+                color="#F44336"
+              />
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+
+        {/* Details */}
+        <View style={styles.cardDetails}>
           <AppText
-            title={item.category || 'Restaurant'}
-            textColor={AppColors.GRAY}
-            textSize={1.3}
+            title={item.restaurantName}
+            textColor={AppColors.BLACK}
+            textSize={1.7}
+            textFontWeight
+            numberOfLines={1}
           />
-        </View>
-
-        {/* Notes preview */}
-        {item?.notes?.length > 0 && (
-          <View style={styles.noteBadge}>
+          <View style={styles.categoryRow}>
             <MaterialIcons
-              name="speaker-notes"
-              size={responsiveFontSize(1.2)}
+              name="category"
+              size={responsiveFontSize(1.3)}
               color={AppColors.BTNCOLOURS}
             />
             <AppText
-              title={item.notes[item.notes.length - 1].noteText}
+              title={item.category || 'Restaurant'}
               textColor={AppColors.GRAY}
-              textSize={1.1}
-              numberOfLines={1}
+              textSize={1.3}
             />
           </View>
-        )}
-      </View>
-    </Animated.View>
-  );
-};
+
+          {/* Notes preview */}
+          {item?.notes?.length > 0 && (
+            <View style={styles.noteBadge}>
+              <MaterialIcons
+                name="speaker-notes"
+                size={responsiveFontSize(1.2)}
+                color={AppColors.BTNCOLOURS}
+              />
+              <AppText
+                title={item.notes[item.notes.length - 1].noteText}
+                textColor={AppColors.GRAY}
+                textSize={1.1}
+                numberOfLines={1}
+              />
+            </View>
+          )}
+        </View>
+      </Animated.View>
+    );
+  },
+);
 
 // ─── Note Modal ───────────────────────────────────────────────────────────────
 const NoteModal = ({visible, item, onClose, onSave}) => {
@@ -251,17 +253,22 @@ const MyLikes = ({navigation, route}) => {
   const token = useSelector(state => state.user.token);
   const [loader, setLoader] = useState(false);
   const [myLikes, setMyLikes] = useState(likesData || []);
-  const [filteredLikes, setFilteredLikes] = useState(likesData || []);
   const [searchQuery, setSearchQuery] = useState('');
   const [editingItemId, setEditingItemId] = useState(null);
   const [noteModalVisible, setNoteModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
 
+  const debouncedSearch = useDebounce(searchQuery, 500);
+
+  const filteredLikes = useMemo(() => {
+    if (!debouncedSearch) return myLikes;
+    return myLikes.filter(item =>
+      item.restaurantName.toLowerCase().includes(debouncedSearch.toLowerCase()),
+    );
+  }, [debouncedSearch, myLikes]);
+
   useEffect(() => {
-    if (likesData) {
-      setMyLikes(likesData);
-      setFilteredLikes(likesData);
-    }
+    if (likesData) setMyLikes(likesData);
   }, [likesData]);
 
   useEffect(() => {
@@ -279,38 +286,30 @@ const MyLikes = ({navigation, route}) => {
         res => res.actionType === 'Go Again',
       );
       setMyLikes(likedPlaces);
-      setFilteredLikes(likedPlaces);
     }
     setLoader(false);
   };
 
-  const handleSearch = text => {
-    setSearchQuery(text);
-    if (text === '') {
-      setFilteredLikes(myLikes);
-    } else {
-      const filtered = myLikes.filter(item =>
-        item.restaurantName.toLowerCase().includes(text.toLowerCase()),
-      );
-      setFilteredLikes(filtered);
-    }
-  };
+  const handleSearch = text => setSearchQuery(text);
 
-  const handleRemove = async item => {
-    let data = {reviewId: item?._id};
-    setLoader(true);
-    const res = await RemoveReview(data, token);
-    if (res?.success) {
-      fetchMyLikes();
-    } else {
-      setLoader(false);
-    }
-  };
+  const handleRemove = useCallback(
+    async item => {
+      let data = {reviewId: item?._id};
+      setLoader(true);
+      const res = await RemoveReview(data, token);
+      if (res?.success) {
+        fetchMyLikes();
+      } else {
+        setLoader(false);
+      }
+    },
+    [token],
+  );
 
-  const handleOpenNote = item => {
+  const handleOpenNote = useCallback(item => {
     setSelectedItem(item);
     setNoteModalVisible(true);
-  };
+  }, []);
 
   const handleAddNote = async (item, noteText) => {
     if (!noteText.trim()) {
@@ -331,11 +330,16 @@ const MyLikes = ({navigation, route}) => {
         editingItemId={editingItemId}
         setEditingItemId={setEditingItemId}
         onRemove={handleRemove}
-        onNavigate={i => navigateToRoute('ListViewDetail', {placeDetails: i})}
         onOpenNote={handleOpenNote}
+        onNavigate={i =>
+          navigateToRoute('Main', {
+            screen: 'HomeDetails',
+            params: {placeDetails: i},
+          })
+        }
       />
     ),
-    [editingItemId],
+    [editingItemId, handleRemove, navigateToRoute, handleOpenNote],
   );
 
   return (
