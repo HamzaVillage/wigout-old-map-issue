@@ -1,7 +1,7 @@
 // import Geolocation from '@react-native-community/geolocation';
 import Geolocation from 'react-native-geolocation-service';
 
-import { PermissionsAndroid, Platform } from 'react-native';
+import {PermissionsAndroid, Platform} from 'react-native';
 
 export const GetCurrentLocation = async () => {
   try {
@@ -28,23 +28,23 @@ export const GetCurrentLocation = async () => {
             },
             err => reject(err),
             // {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
-            { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000, showLocationDialog: true }
+            {
+              enableHighAccuracy: true,
+              timeout: 12000,
+              maximumAge: 30000,
+              showLocationDialog: true,
+            },
           );
         });
       } else {
-
         // console.log('Location permission denied');
-
       }
     } else {
-      const whenInUse = await Geolocation.requestAuthorization('whenInUse')
-      const always = await Geolocation.requestAuthorization('always')
+      const whenInUse = await Geolocation.requestAuthorization('whenInUse');
+      const always = await Geolocation.requestAuthorization('always');
 
-
-      if (always == "granted" || whenInUse == "granted") {
-
+      if (always == 'granted' || whenInUse == 'granted') {
         // console.log("whenInUse || always" , always, whenInUse)
-
 
         return new Promise((resolve, reject) => {
           Geolocation.getCurrentPosition(
@@ -57,7 +57,12 @@ export const GetCurrentLocation = async () => {
             },
             err => reject(err),
             // {enableHighAccuracy: true, timeout: 15000, maximumAge: 10000},
-            { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000, showLocationDialog: true }
+            {
+              enableHighAccuracy: true,
+              timeout: 12000,
+              maximumAge: 30000,
+              showLocationDialog: true,
+            },
           );
         });
       } else {
@@ -65,7 +70,7 @@ export const GetCurrentLocation = async () => {
       }
     }
   } catch (error) {
-    console.log("Error", error)
+    console.log('Error', error);
     return Promise.reject(error);
   }
 };

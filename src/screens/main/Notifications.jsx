@@ -30,6 +30,11 @@ const Notifications = ({navigation}) => {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
+  // Initial load effect
+  useEffect(() => {
+    fetchNotifications();
+  }, []);
+
   // Memoized fetch function to prevent unnecessary re-creations
   const fetchNotifications = useCallback(
     async (isRefreshing = false) => {
@@ -58,11 +63,6 @@ const Notifications = ({navigation}) => {
     },
     [token],
   );
-
-  // Initial load effect
-  useEffect(() => {
-    fetchNotifications();
-  }, [fetchNotifications]);
 
   const onRefresh = () => {
     fetchNotifications(true);
@@ -102,80 +102,68 @@ const Notifications = ({navigation}) => {
   return (
     <ScreenWrapper>
       <View style={{flex: 1}}>
-      <LineBreak space={3} />
-      <AppHeader
-        onBackPress={() => navigation.goBack()}
-        heading={'Notification'}
-        rightIcon={
-          <TouchableOpacity onPress={() => {}}>
-            <AntDesign
-              name={'message1'}
-              size={responsiveFontSize(2.5)}
-              color={AppColors.WHITE}
-            />
-          </TouchableOpacity>
-        }
-      />
-      <LineBreak space={3} />
+        <LineBreak space={3} />
+        <AppHeader onBackPress={true} heading={'Notification'} />
+        <LineBreak space={3} />
 
-      {loading && !refreshing ? (
-        <View style={styles.loaderContainer}>
-          <ActivityIndicator size="large" color={AppColors.BTNCOLOURS} />
-        </View>
-      ) : (
-        <FlatList
-          data={notifications}
-          keyExtractor={(item, index) =>
-            item?.id?.toString() || index.toString()
-          }
-          ItemSeparatorComponent={() => <LineBreak space={2} />}
-          ListEmptyComponent={renderEmptyComponent}
-          contentContainerStyle={
-            notifications.length === 0 ? {flex: 1} : {paddingBottom: 20}
-          }
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              colors={[AppColors.BTNCOLOURS]} // Android
-              tintColor={AppColors.BTNCOLOURS} // iOS
-            />
-          }
-          renderItem={({item}) => (
-            <View style={styles.notificationItem}>
-              <View style={styles.row}>
-                {renderNotificationIcon()}
-                <View style={styles.textContainer}>
-                  <AppText
-                    title={item.title || 'Notification'}
-                    textColor={AppColors.BLACK}
-                    textSize={2.1}
-                    textFontWeight
-                  />
-                  <AppText
-                    title={
-                      item.created_at
-                        ? moment(item.created_at).format(
-                            'DD MMM, YYYY | hh:mm A',
-                          )
-                        : moment().format('DD MMM, YYYY | hh:mm A')
-                    }
-                    textColor={AppColors.GRAY}
-                    textSize={1.4}
-                  />
-                </View>
-              </View>
-              <LineBreak space={1} />
-              <AppText
-                title={item.message || item.description || ''}
-                textColor={AppColors.GRAY}
-                textSize={1.6}
-                lineHeight={2.2}
+        {loading && !refreshing ? (
+          <View style={styles.loaderContainer}>
+            <ActivityIndicator size="large" color={AppColors.BTNCOLOURS} />
+          </View>
+        ) : (
+          <FlatList
+            data={notifications}
+            keyExtractor={(item, index) =>
+              item?.id?.toString() || index.toString()
+            }
+            ItemSeparatorComponent={() => <LineBreak space={2} />}
+            ListEmptyComponent={renderEmptyComponent}
+            contentContainerStyle={
+              notifications.length === 0 ? {flex: 1} : {paddingBottom: 20}
+            }
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                colors={[AppColors.BTNCOLOURS]} // Android
+                tintColor={AppColors.BTNCOLOURS} // iOS
               />
-            </View>
-          )}
-        />
-      )}
+            }
+            renderItem={({item}) => (
+              <View style={styles.notificationItem}>
+                <View style={styles.row}>
+                  {renderNotificationIcon()}
+                  <View style={styles.textContainer}>
+                    <AppText
+                      title={item.title || 'Notification'}
+                      textColor={AppColors.BLACK}
+                      textSize={2.1}
+                      textFontWeight
+                    />
+                    <AppText
+                      title={
+                        item.created_at
+                          ? moment(item.created_at).format(
+                              'DD MMM, YYYY | hh:mm A',
+                            )
+                          : moment().format('DD MMM, YYYY | hh:mm A')
+                      }
+                      textColor={AppColors.GRAY}
+                      textSize={1.4}
+                    />
+                  </View>
+                </View>
+                <LineBreak space={1} />
+                <AppText
+                  title={item.message || item.description || ''}
+                  textColor={AppColors.GRAY}
+                  textSize={1.6}
+                  lineHeight={2.2}
+                />
+              </View>
+            )}
+          />
+        )}
       </View>
     </ScreenWrapper>
   );

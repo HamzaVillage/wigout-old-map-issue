@@ -4,8 +4,11 @@ import {View} from 'react-native';
 import BackIcon from './AppTextComps/BackIcon';
 import AppText from './AppTextComps/AppText';
 import AppColors from '../utils/AppColors';
-import { responsiveHeight, responsiveWidth } from '../utils/Responsive_Dimensions';
-import { useCustomNavigation } from '../utils/Hooks';
+import {
+  responsiveHeight,
+  responsiveWidth,
+} from '../utils/Responsive_Dimensions';
+import {useCustomNavigation} from '../utils/Hooks';
 
 type props = {
   // title?: string,
@@ -16,10 +19,16 @@ type props = {
   backIconColor?: any;
 };
 
-const AppHeader = ({onBackPress, heading, rightIcon, middleIcon, backIconColor}: props) => {
+const AppHeader = ({
+  onBackPress,
+  heading,
+  rightIcon,
+  middleIcon,
+  backIconColor,
+}: props) => {
   const {goBack} = useCustomNavigation();
   const backHandler = () => {
-      goBack();
+    goBack();
   };
 
   return (
@@ -38,7 +47,9 @@ const AppHeader = ({onBackPress, heading, rightIcon, middleIcon, backIconColor}:
           alignItems: 'center',
           gap: 20,
         }}>
-        {onBackPress && <BackIcon onBackPress={backHandler} iconColor={backIconColor} />}
+        {onBackPress && (
+          <BackIcon onBackPress={backHandler} iconColor={backIconColor} />
+        )}
         {middleIcon ? (
           middleIcon
         ) : (
