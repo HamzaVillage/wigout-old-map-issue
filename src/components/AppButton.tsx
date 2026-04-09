@@ -28,6 +28,8 @@ interface AppButtonProps {
   activeOpacity?: number;
   loading?: boolean;
   disabled?: boolean;
+  mT?: number;
+  mB?: number;
   style?: ViewStyle;
 }
 
@@ -47,6 +49,8 @@ const AppButton = ({
   activeOpacity = 0.7,
   loading = false,
   disabled = false,
+  mT,
+  mB,
   style,
 }: AppButtonProps) => {
   // Determine if the button should be uninteractable
@@ -67,6 +71,8 @@ const AppButton = ({
           borderWidth: borderWidth,
           borderColor: borderColor as any,
           opacity: isInteractionDisabled ? 0.6 : 1, // Visual feedback for disabled state
+          marginTop: mT,
+          marginBottom: mB,
         },
         style,
       ]}>

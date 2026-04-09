@@ -21,11 +21,11 @@ export const AddReviews = async (token, data) => {
 export const GetReviews = async token => {
   try {
     const response = await ApiCall('GET', 'getUserReview', '', token);
-    console.log('resss', response.message);
+    console.log('res in GetReviews:-', response?.data?.msg);
 
     return response.data;
   } catch (error) {
-    console.log('error..', error);
+    console.log('error in GetReviews:-', error);
   }
 };
 

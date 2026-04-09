@@ -19,6 +19,7 @@ import AppColors from '../../../utils/AppColors';
 import {responsiveWidth} from '../../../utils/Responsive_Dimensions';
 import {useCustomNavigation, useDebounce} from '../../../utils/Hooks';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import BackgroundScreen from '../../../components/AppTextComps/BackgroundScreen';
 import ShowError from '../../../utils/ShowError';
 
@@ -30,12 +31,17 @@ import {
   GetReviews,
   RemoveReview,
 } from '../../../ApiCalls/Main/Reviews/ReviewsApiCall';
+import {
+  AddWishList,
+  GetWishList,
+  RemoveWishList,
+} from '../../../ApiCalls/Main/WishList_API/WishListAPI';
 import {Google_Places_Images} from '../../../utils/api_content';
 
-const SearchForPlaces = () => {
+const SearchForPlaces = ({navigation}) => {
   const {navigateToRoute, goBack} = useCustomNavigation();
   const dispatch = useDispatch();
-  const {token, current_location, places_nearby} = useSelector(
+  const {token, current_location, places_nearby, isListBuilt} = useSelector(
     state => state.user,
   );
 
@@ -45,6 +51,7 @@ const SearchForPlaces = () => {
   // Local tracking state
   const [likedItems, setLikedItems] = useState([]);
   const [avoidItems, setAvoidItems] = useState([]);
+  const [wishlistItems, setWishlistItems] = useState([]);
 
   const debouncedSearch = useDebounce(search, 600);
 
@@ -52,10 +59,17 @@ const SearchForPlaces = () => {
   const syncLists = async () => {
     if (!token) return;
     try {
-      const revRes = await GetReviews(token);
+      const [revRes, wishRes] = await Promise.all([
+        GetReviews(token),
+        GetWishList(token),
+      ]);
       if (revRes?.reviews) {
         setLikedItems(revRes.reviews.filter(r => r.actionType === 'Go Again'));
         setAvoidItems(revRes.reviews.filter(r => r.actionType === 'Avoid'));
+      }
+      const wishlistData = wishRes?.wishLists || wishRes?.data || wishRes;
+      if (wishlistData && Array.isArray(wishlistData)) {
+        setWishlistItems(wishlistData);
       }
     } catch (e) {
       console.log('Sync error:', e);
@@ -94,12 +108,20 @@ const SearchForPlaces = () => {
       return;
     }
 
-    // Exclusivity: Remove from Avoid first
     const inAvoid = avoidItems.find(a => a.placeId === item.place_id);
     if (inAvoid) {
       const revRes = await RemoveReview({reviewId: inAvoid._id}, token);
       if (revRes?.success) {
         setAvoidItems(prev => prev.filter(a => a._id !== inAvoid._id));
+      }
+    }
+
+    // Exclusivity: Remove from Wishlist first
+    const inWish = wishlistItems.find(w => w.placeId === item.place_id);
+    if (inWish) {
+      const wishRes = await RemoveWishList(token, {placeId: item.place_id});
+      if (wishRes?.success) {
+        setWishlistItems(prev => prev.filter(w => w.placeId !== item.place_id));
       }
     }
 
@@ -141,12 +163,20 @@ const SearchForPlaces = () => {
       return;
     }
 
-    // Exclusivity: Remove from Liked first
     const inLiked = likedItems.find(l => l.placeId === item.place_id);
     if (inLiked) {
       const resLiked = await RemoveReview({reviewId: inLiked._id}, token);
       if (resLiked?.success) {
         setLikedItems(prev => prev.filter(l => l._id !== inLiked._id));
+      }
+    }
+
+    // Exclusivity: Remove from Wishlist first
+    const inWish = wishlistItems.find(w => w.placeId === item.place_id);
+    if (inWish) {
+      const wishRes = await RemoveWishList(token, {placeId: item.place_id});
+      if (wishRes?.success) {
+        setWishlistItems(prev => prev.filter(w => w.placeId !== item.place_id));
       }
     }
 
@@ -173,6 +203,65 @@ const SearchForPlaces = () => {
     }
   };
 
+  const handleWishlistToggle = async item => {
+    try {
+      const existing = wishlistItems.find(w => w.placeId === item.place_id);
+      if (existing) {
+        const res = await RemoveWishList(token, {placeId: item.place_id});
+        if (res?.success) {
+          setWishlistItems(prev =>
+            prev.filter(w => w.placeId !== item.place_id),
+          );
+          ShowError('Removed from Wish List');
+        } else {
+          ShowError(res?.message || 'Failed to remove from Wish List');
+        }
+        return;
+      }
+
+      // Mutual exclusivity: Remove from Go Again
+      const inLiked = likedItems.find(l => l.placeId === item.place_id);
+      if (inLiked) {
+        const resLiked = await RemoveReview({reviewId: inLiked._id}, token);
+        if (resLiked?.success) {
+          setLikedItems(prev => prev.filter(l => l._id !== inLiked._id));
+        }
+      }
+
+      // Mutual exclusivity: Remove from Avoid
+      const inAvoid = avoidItems.find(a => a.placeId === item.place_id);
+      if (inAvoid) {
+        const resAvoid = await RemoveReview({reviewId: inAvoid._id}, token);
+        if (resAvoid?.success) {
+          setAvoidItems(prev => prev.filter(a => a._id !== inAvoid._id));
+        }
+      }
+
+      const data = {
+        placeId: item.place_id,
+        name: item.name,
+        address: item.vicinity || item.formatted_address,
+        image: item.photos?.[0]?.photo_reference || '',
+        rating: item.rating || 0,
+        userRatingsTotal: item.user_ratings_total || 0,
+        category: 'Search Result',
+        notes: '',
+        isVisited: false,
+      };
+
+      const res = await AddWishList(token, data);
+      if (res?.success) {
+        setWishlistItems(prev => [...prev, {placeId: item.place_id, ...data}]);
+        ShowError('Added to Wish List');
+      } else {
+        ShowError(res?.message || 'Failed to add to Wish List');
+      }
+    } catch (e) {
+      console.log('Wishlist toggle error:', e);
+      ShowError('Something went wrong');
+    }
+  };
+
   // 5. Render Helpers
   const renderPlaceItem = ({item}) => {
     const imageUrl = item.photos?.[0]?.photo_reference
@@ -181,6 +270,10 @@ const SearchForPlaces = () => {
 
     const isLiked = likedItems.some(l => l.placeId === item.place_id);
     const isAvoided = avoidItems.some(a => a.placeId === item.place_id);
+    const isWishlisted =
+      !isLiked &&
+      !isAvoided &&
+      wishlistItems.some(w => w.placeId === item.place_id);
 
     return (
       <TouchableOpacity
@@ -227,6 +320,15 @@ const SearchForPlaces = () => {
               color={isAvoided ? '#D32F2F' : '#47082E'}
             />
           </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => handleWishlistToggle(item)}
+            style={styles.circleActionBtn}>
+            <FontAwesome
+              name={isWishlisted ? 'bookmark' : 'bookmark-o'}
+              size={20}
+              color={isWishlisted ? '#FF9800' : '#47082E'}
+            />
+          </TouchableOpacity>
         </View>
       </TouchableOpacity>
     );
@@ -263,6 +365,18 @@ const SearchForPlaces = () => {
             title={`${avoidItems.length} Avoids`}
             textSize={1.3}
             textColor="#D32F2F"
+            textFontWeight
+          />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => navigateToRoute('WishList')}
+          style={styles.statChip}>
+          <FontAwesome name="bookmark" size={16} color="#FF9800" />
+          <AppText
+            title={`${wishlistItems.length} Wish List`}
+            textSize={1.3}
+            textColor="#FF9800"
             textFontWeight
           />
         </TouchableOpacity>
@@ -335,7 +449,13 @@ const SearchForPlaces = () => {
         <View style={styles.footer}>
           <TouchableOpacity
             activeOpacity={0.8}
-            onPress={() => dispatch(setIsListBuilt(true))}
+            onPress={() => {
+              if (isListBuilt) {
+                navigation.navigate('MainTabs');
+              } else {
+                dispatch(setIsListBuilt(true));
+              }
+            }}
             style={styles.continueButton}>
             <Svg
               height="58"

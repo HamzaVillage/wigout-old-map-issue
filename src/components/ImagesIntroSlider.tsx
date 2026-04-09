@@ -1,32 +1,26 @@
 import React from 'react';
-import {
-  View,
-  StyleSheet,
-  ImageBackground,
-  TouchableOpacity,
-} from 'react-native';
+import {View, StyleSheet, ImageBackground} from 'react-native';
 import AppIntroSlider from 'react-native-app-intro-slider';
 import {
-  responsiveFontSize,
   responsiveHeight,
   responsiveWidth,
 } from '../utils/Responsive_Dimensions';
 import AppHeader from './AppHeader';
 import {useNavigation} from '@react-navigation/native';
-import AntDesign from 'react-native-vector-icons/AntDesign';
 import AppColors from '../utils/AppColors';
 
-const ImageIntroSlider = ({images}) => {
+const ImageIntroSlider = ({images}: {images: string[]}) => {
   const navigation = useNavigation();
 
   // Render the item for the slider
-  const renderItem = ({item}) => {
+  const renderItem = ({item}: {item: string}) => {
     return (
       <ImageBackground source={{uri: item}} style={styles.image}>
         <View style={{paddingVertical: responsiveHeight(2)}}>
           <AppHeader
-            onBackPress={() => navigation.goBack()}
+            onBackPress={true}
             backIconColor={AppColors.WHITE}
+            goBackBG={AppColors.blackOpacity}
             // rightIcon={
             //   <TouchableOpacity>
             //     <AntDesign
@@ -69,6 +63,7 @@ const styles = StyleSheet.create({
   image: {
     width: responsiveWidth(100),
     height: responsiveHeight(50),
+    backgroundColor: AppColors.blackOpacity,
   },
 });
 

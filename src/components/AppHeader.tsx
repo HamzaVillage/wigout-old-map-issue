@@ -17,6 +17,7 @@ type props = {
   rightIcon?: any;
   middleIcon?: any;
   backIconColor?: any;
+  goBackBG?: any;
 };
 
 const AppHeader = ({
@@ -25,6 +26,7 @@ const AppHeader = ({
   rightIcon,
   middleIcon,
   backIconColor,
+  goBackBG,
 }: props) => {
   const {goBack} = useCustomNavigation();
   const backHandler = () => {
@@ -48,7 +50,11 @@ const AppHeader = ({
           gap: 20,
         }}>
         {onBackPress && (
-          <BackIcon onBackPress={backHandler} iconColor={backIconColor} />
+          <BackIcon
+            onBackPress={backHandler}
+            iconColor={backIconColor}
+            backgroundColor={goBackBG}
+          />
         )}
         {middleIcon ? (
           middleIcon

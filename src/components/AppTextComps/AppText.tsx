@@ -23,6 +23,7 @@ type textProps = {
   textTransform?: any;
   paddingHorizontal?: any;
   marginTop?: any;
+  paddingLeft?: any;
 };
 
 const AppText = ({
@@ -40,6 +41,7 @@ const AppText = ({
   textTransform,
   paddingHorizontal,
   marginTop,
+  paddingLeft,
 }: textProps) => {
   return (
     <Text
@@ -62,6 +64,7 @@ const AppText = ({
         paddingHorizontal: paddingHorizontal
           ? responsiveWidth(paddingHorizontal)
           : null,
+        paddingLeft: paddingLeft ? responsiveWidth(paddingLeft) : null,
       }}>
       {title}
     </Text>

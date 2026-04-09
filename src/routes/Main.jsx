@@ -38,6 +38,10 @@ import ListViewDetail from '../screens/main/Lists/ListViewDetail';
 import HelpMeDecide from '../screens/main/Journal/HelpMeDecide';
 import SpinTheWheel from '../screens/main/Journal/SpinTheWheel';
 import WishList from '../screens/main/WishList';
+import BrowseCategories from '../screens/auth/AccountSetup/BrowseCategories';
+import BuildYourList from '../screens/auth/AccountSetup/BuildYourList';
+import SearchForPlaces from '../screens/auth/AccountSetup/SearchForPlaces';
+import Visited from '../screens/main/Journal/Visited';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -137,6 +141,10 @@ const Main = () => {
       <Stack.Screen name="HelpMeDecide" component={HelpMeDecide} />
       <Stack.Screen name="SpinTheWheel" component={SpinTheWheel} />
       <Stack.Screen name="WishList" component={WishList} />
+      <Stack.Screen name="BrowseCategories" component={BrowseCategories} />
+      <Stack.Screen name="BuildYourList" component={BuildYourList} />
+      <Stack.Screen name="SearchForPlaces" component={SearchForPlaces} />
+      <Stack.Screen name="Visited" component={Visited} />
     </Stack.Navigator>
   );
 };

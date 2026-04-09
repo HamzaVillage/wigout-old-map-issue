@@ -13,6 +13,7 @@ import Entypo from 'react-native-vector-icons/Entypo';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Feather from 'react-native-vector-icons/Feather';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 
@@ -51,6 +52,18 @@ const Profile = () => {
       },
       {
         id: 2,
+        title: 'Build Your List',
+        navTo: 'BuildYourList',
+        icon: (
+          <FontAwesome5
+            name="star"
+            size={responsiveFontSize(2)}
+            color={AppColors.BTNCOLOURS}
+          />
+        ),
+      },
+      {
+        id: 3,
         title: 'Notification',
         navTo: 'NotificationsSettings',
         icon: (
@@ -62,7 +75,7 @@ const Profile = () => {
         ),
       },
       {
-        id: 3,
+        id: 4,
         title: 'Payments',
         navTo: 'Payments',
         icon: (
@@ -74,7 +87,7 @@ const Profile = () => {
         ),
       },
       {
-        id: 4,
+        id: 5,
         title: 'Linked Accounts',
         navTo: 'LinkedAccounts',
         icon: (
@@ -86,7 +99,7 @@ const Profile = () => {
         ),
       },
       {
-        id: 9,
+        id: 6,
         title: 'Help Center',
         navTo: 'HelpCenter',
         icon: (
@@ -98,7 +111,7 @@ const Profile = () => {
         ),
       },
       {
-        id: 10,
+        id: 7,
         title: 'Invite Friends',
         navTo: 'InviteFriends',
         icon: (
@@ -109,20 +122,20 @@ const Profile = () => {
           />
         ),
       },
+      // {
+      //   id: 8,
+      //   title: 'Visit History',
+      //   navTo: 'VisitHistory',
+      //   icon: (
+      //     <FontAwesome5
+      //       name="star"
+      //       size={responsiveFontSize(2)}
+      //       color={AppColors.BTNCOLOURS}
+      //     />
+      //   ),
+      // },
       {
-        id: 11,
-        title: 'Visit History',
-        navTo: 'VisitHistory',
-        icon: (
-          <FontAwesome5
-            name="star"
-            size={responsiveFontSize(2)}
-            color={AppColors.BTNCOLOURS}
-          />
-        ),
-      },
-      {
-        id: 12,
+        id: 9,
         title: 'Logout',
         isLogout: true,
         icon: (

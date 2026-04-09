@@ -6,7 +6,7 @@ import {
   SafeAreaView,
   Dimensions,
 } from 'react-native';
-import {useDispatch} from 'react-redux';
+import {useDispatch, useSelector} from 'react-redux';
 import Svg, {Defs, LinearGradient, Stop, Rect} from 'react-native-svg';
 import AppText from '../../../components/AppTextComps/AppText';
 import AppColors from '../../../utils/AppColors';
@@ -15,18 +15,25 @@ import {
   responsiveWidth,
 } from '../../../utils/Responsive_Dimensions';
 import {useCustomNavigation} from '../../../utils/Hooks';
-import Ionicons from 'react-native-vector-icons/Ionicons';
 import BackgroundScreen from '../../../components/AppTextComps/BackgroundScreen';
 import {setIsListBuilt} from '../../../redux/Slices';
 
 const {width} = Dimensions.get('window');
 
-const BuildYourList = () => {
+const BuildYourList = ({navigation}) => {
   const {navigateToRoute, goBack} = useCustomNavigation();
   const dispatch = useDispatch();
+  const userSelector = useSelector(state => state.user);
+  const {isListBuilt} = userSelector;
 
   const handleSkip = () => {
-    dispatch(setIsListBuilt(true));
+    if (isListBuilt) {
+      // Return to main app if already built (e.g. from Profile)
+      navigation.navigate('MainTabs');
+    } else {
+      // Complete onboarding
+      dispatch(setIsListBuilt(true));
+    }
   };
 
   const GradientButton = ({title, onPress}) => (

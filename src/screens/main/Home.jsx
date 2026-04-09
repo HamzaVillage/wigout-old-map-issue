@@ -29,6 +29,8 @@ import ScreenWrapper from '../../components/ScreenWrapper';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import FetchNearbyPlaces from '../../ApiCalls/Main/FetchNearbyPlaces';
+import {GetReviews} from '../../ApiCalls/Main/Reviews/ReviewsApiCall';
+import {GetWishList} from '../../ApiCalls/Main/WishList_API/WishListAPI';
 
 const CATEGORIES = [
   {id: '1', name: 'Restaurants', type: 'restaurant', icon: 'restaurant'},
@@ -47,16 +49,20 @@ const DEFAULT_LOCATION = {
 
 const Home = () => {
   const dispatch = useDispatch();
-  const {navigateToRoute} = useCustomNavigation();
+  const {navigateToRoute, navigation} = useCustomNavigation();
   const userData = useSelector(state => state.user.userData);
   const fetchedLocations = useSelector(
     state => state?.user?.places_nearby || [],
   );
   const currentLocation = useSelector(state => state.user.current_location);
+  const token = useSelector(state => state.user.token);
 
   const [isLoading, setIsLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(CATEGORIES[0]);
   const [search, setSearch] = useState('');
+  const [likedItems, setLikedItems] = useState([]);
+  const [avoidItems, setAvoidItems] = useState([]);
+  const [wishlistItems, setWishlistItems] = useState([]);
 
   const debouncedSearch = useDebounce(search, 500);
 
@@ -107,6 +113,36 @@ const Home = () => {
       }),
     ]).start();
   };
+
+  useEffect(() => {
+    const fetchUserLists = async () => {
+      if (!token) return;
+      try {
+        const [revRes, wishRes] = await Promise.all([
+          GetReviews(token),
+          GetWishList(token),
+        ]);
+
+        if (revRes?.reviews) {
+          setLikedItems(
+            revRes.reviews.filter(r => r.actionType === 'Go Again'),
+          );
+          setAvoidItems(revRes.reviews.filter(r => r.actionType === 'Avoid'));
+        }
+
+        const wishlistData = wishRes?.wishLists || wishRes?.data || wishRes;
+        if (wishlistData && Array.isArray(wishlistData)) {
+          setWishlistItems(wishlistData);
+        }
+      } catch (error) {
+        console.log('Error fetching user lists on Home:', error);
+      }
+    };
+
+    const unsubscribe = navigation.addListener('focus', fetchUserLists);
+    fetchUserLists(); // Initial fetch
+    return unsubscribe;
+  }, [navigation, token]);
 
   useEffect(() => {
     // Start initial animations staggered
@@ -225,6 +261,44 @@ const Home = () => {
           </TouchableOpacity>
         </View>
       </Animated.View>
+
+      <View style={styles.statsRow}>
+        <TouchableOpacity
+          onPress={() => navigateToRoute('MyLikes')}
+          style={styles.statChip}>
+          <Ionicons name="heart" size={16} color="#4CAF50" />
+          <AppText
+            title={`${likedItems.length} Go Again`}
+            textSize={1.3}
+            textColor="#4CAF50"
+            textFontWeight
+          />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => navigateToRoute('MyHates')}
+          style={styles.statChip}>
+          <Ionicons name="thumbs-down" size={16} color="#D32F2F" />
+          <AppText
+            title={`${avoidItems.length} Avoids`}
+            textSize={1.3}
+            textColor="#D32F2F"
+            textFontWeight
+          />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => navigateToRoute('WishList')}
+          style={styles.statChip}>
+          <FontAwesome name="bookmark" size={16} color="#FF9800" />
+          <AppText
+            title={`${wishlistItems.length} Wish List`}
+            textSize={1.3}
+            textColor="#FF9800"
+            textFontWeight
+          />
+        </TouchableOpacity>
+      </View>
 
       <LineBreak space={2} />
 
@@ -533,6 +607,22 @@ const styles = StyleSheet.create({
     fontSize: responsiveFontSize(1.8),
     color: '#47082E',
     padding: 0,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 12,
+    marginTop: 15,
+  },
+  statChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 20,
+    gap: 6,
+    elevation: 2,
   },
 });
 

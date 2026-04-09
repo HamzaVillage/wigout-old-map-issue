@@ -28,6 +28,10 @@ type Colors = {
     inputBackground: string
     primaryColor: string
     graysh: string
+    goAgain: string
+    avoid: string
+    wishlist: string
+    blackOpacity: string
   };
 
 const AppColors: Colors = {
@@ -60,6 +64,10 @@ const AppColors: Colors = {
     inputBackground: 'rgba(255,255,255,0.60)',
     primaryColor: "#47082E",
     graysh: "#D3D3D3",
+    goAgain: "#4CAF50",
+    avoid: "#F75555",
+    wishlist: "#FF9C12",
+    blackOpacity: "rgba(0,0,0,0.5)",
   };
 
 export default AppColors;

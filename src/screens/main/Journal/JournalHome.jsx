@@ -46,6 +46,7 @@ const JournalHome = ({navigation}) => {
   const [likesData, setLikesData] = useState([]);
   const [hatesData, setHatesData] = useState([]);
   const [wishlistItems, setWishlistItems] = useState([]);
+  const [visitedItems, setVisitedItems] = useState([]);
   const [loader, setLoader] = useState(false);
   const [winner, setWinner] = useState(null);
   const wheelRef = useRef(null);
@@ -80,12 +81,26 @@ const JournalHome = ({navigation}) => {
       ]);
 
       if (reviewsRes?.reviews) {
-        setLikesData(
-          reviewsRes.reviews.filter(res => res.actionType === 'Go Again'),
-        );
-        setHatesData(
-          reviewsRes.reviews.filter(res => res.actionType === 'Avoid'),
-        );
+        const reviews = reviewsRes?.reviews;
+        const likes = reviews.filter(res => res.actionType === 'Go Again');
+        const hates = reviews.filter(res => res.actionType === 'Avoid');
+
+        setLikesData(likes);
+        setHatesData(hates);
+
+        // Deduplicate visitedItems based on placeId or _id
+        const visitedMap = new Map();
+        [...likes, ...hates].forEach(item => {
+          const id = item.placeId || item.restaurantId || item._id;
+          if (!visitedMap.has(id)) {
+            visitedMap.set(id, item);
+          } else {
+            // If already exists, keep the most recent one (assuming reviews are sorted by newest first, or just keeping the first encountered)
+            // If they are not sorted, we should sort them first. 
+            // The API usually returns them in some order. Assuming first is newest.
+          }
+        });
+        setVisitedItems(Array.from(visitedMap.values()));
       }
 
       if (wishlistRes?.success) {
@@ -162,8 +177,6 @@ const JournalHome = ({navigation}) => {
             </TouchableOpacity>
           </View>
 
-          <LineBreak space={4} />
-
           {/* Like/Hate Cards */}
           <View style={styles.cardsRow}>
             <TouchableOpacity
@@ -209,8 +222,53 @@ const JournalHome = ({navigation}) => {
             </TouchableOpacity>
           </View>
 
-          {/* Wish List Card - Fixed Count Bug */}
-          <TouchableOpacity
+          {/* WishList/Visited Card  */}
+          <View style={styles.cardsRow}>
+            <TouchableOpacity
+              style={[styles.card, {backgroundColor: '#FFEACC'}]}
+              onPress={() => navigateToRoute('WishList')}>
+              <View style={styles.cardIconContainer}>
+                <FontAwesome
+                  name={'bookmark-o'}
+                  size={24}
+                  color={AppColors.wishlist}
+                />
+              </View>
+              <AppText
+                title={'Wish List'}
+                textColor={AppColors.BLACK}
+                textSize={1.8}
+                textFontWeight
+              />
+              <AppText
+                title={`${wishlistItems.length} places`}
+                textColor={AppColors.GRAY}
+                textSize={1.4}
+              />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.card, {backgroundColor: '#E3F2FD'}]}
+              onPress={() => navigateToRoute('Visited')}>
+              <View style={styles.cardIconContainer}>
+                <Ionicons name="location-outline" size={24} color={'#2196F3'} />
+              </View>
+              <AppText
+                title={'Visited'}
+                textColor={AppColors.BLACK}
+                textSize={1.8}
+                textFontWeight
+              />
+              <AppText
+                title={`${visitedItems?.length} places`}
+                textColor={AppColors.GRAY}
+                textSize={1.4}
+              />
+            </TouchableOpacity>
+          </View>
+
+          {/* Wish List Card */}
+          {/* <TouchableOpacity
             style={[styles.wishListCard, {backgroundColor: '#E3F2FD'}]}
             onPress={() => navigateToRoute('WishList')}>
             <View style={styles.wishListCardIconContainer}>
@@ -229,7 +287,7 @@ const JournalHome = ({navigation}) => {
                 textSize={1.4}
               />
             </View>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           <LineBreak space={2} />
 
@@ -380,6 +438,7 @@ const styles = StyleSheet.create({
   cardsRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginTop: responsiveHeight(2),
   },
   card: {
     width: responsiveWidth(43),

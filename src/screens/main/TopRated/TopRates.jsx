@@ -21,12 +21,13 @@ import {
   responsiveHeight,
   responsiveWidth,
 } from '../../../utils/Responsive_Dimensions';
-import {useDebounce} from '../../../utils/Hooks';
+import {useCustomNavigation, useDebounce} from '../../../utils/Hooks';
 import AppText from '../../../components/AppTextComps/AppText';
 import HomeCard from '../../../components/HomeCard';
 import Animated, {FadeIn, FadeInDown, Layout} from 'react-native-reanimated';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 
 const CATEGORIES = [
   {id: '1', name: 'Restaurants', type: 'restaurant', icon: 'restaurant'},
@@ -70,25 +71,36 @@ const TopRated = ({navigation}) => {
   const [selectedCategory, setSelectedCategory] = useState(CATEGORIES[0]);
   const [search, setSearch] = useState('');
   const [excludedPlaceIds, setExcludedPlaceIds] = useState(new Set());
-
+  const [likedItems, setLikedItems] = useState([]);
+  const [avoidItems, setAvoidItems] = useState([]);
+  const [wishlistItems, setWishlistItems] = useState([]);
+  const {navigateToRoute} = useCustomNavigation();
   const debouncedSearch = useDebounce(search, 500);
 
   useEffect(() => {
     const fetchUserLists = async () => {
       if (!token) return;
       try {
-        const [revRes] = await Promise.all([
-          // GetWishList(token),
+        const [revRes, wishRes] = await Promise.all([
           GetReviews(token),
+          GetWishList(token),
         ]);
 
         const ids = new Set();
-        if (wishRes?.success) {
-          wishRes.wishLists?.forEach(w => ids.add(w.placeId));
-        }
         if (revRes?.reviews) {
-          revRes.reviews?.forEach(r => ids.add(r.placeId));
+          const liked = revRes.reviews.filter(r => r.actionType === 'Go Again');
+          const avoided = revRes.reviews.filter(r => r.actionType === 'Avoid');
+          setLikedItems(liked);
+          setAvoidItems(avoided);
+          revRes.reviews.forEach(r => ids.add(r.placeId));
         }
+
+        const wishlistData = wishRes?.wishLists || wishRes?.data || wishRes;
+        if (wishlistData && Array.isArray(wishlistData)) {
+          setWishlistItems(wishlistData);
+          wishlistData.forEach(w => ids.add(w.placeId));
+        }
+
         setExcludedPlaceIds(ids);
       } catch (error) {
         console.log('Error fetching user filters:', error);
@@ -138,6 +150,44 @@ const TopRated = ({navigation}) => {
     <ScreenWrapper>
       <SafeAreaView style={{flex: 1}}>
         <AppHeader heading={`Top Rated ${selectedCategory.name}`} />
+
+        <View style={styles.statsRow}>
+          <TouchableOpacity
+            onPress={() => navigateToRoute('MyLikes')}
+            style={styles.statChip}>
+            <Ionicons name="heart" size={16} color="#4CAF50" />
+            <AppText
+              title={`${likedItems.length} Go Again`}
+              textSize={1.3}
+              textColor="#4CAF50"
+              textFontWeight
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => navigateToRoute('MyHates')}
+            style={styles.statChip}>
+            <Ionicons name="thumbs-down" size={16} color="#D32F2F" />
+            <AppText
+              title={`${avoidItems.length} Avoids`}
+              textSize={1.3}
+              textColor="#D32F2F"
+              textFontWeight
+            />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            onPress={() => navigateToRoute('WishList')}
+            style={styles.statChip}>
+            <FontAwesome name="bookmark" size={16} color="#FF9800" />
+            <AppText
+              title={`${wishlistItems.length} Wish List`}
+              textSize={1.3}
+              textColor="#FF9800"
+              textFontWeight
+            />
+          </TouchableOpacity>
+        </View>
 
         <View style={styles.searchBarContainer}>
           <View style={styles.searchBarPill}>
@@ -312,6 +362,22 @@ const styles = StyleSheet.create({
     fontSize: responsiveFontSize(1.8),
     color: '#47082E',
     padding: 0,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 12,
+    marginTop: 15,
+  },
+  statChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 20,
+    gap: 6,
+    elevation: 2,
   },
 });
 
