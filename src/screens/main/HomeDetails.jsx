@@ -48,15 +48,19 @@ import {setPlaceDetail} from '../../redux/Slices';
 import {
   AddReviews,
   GetReviews,
+  updateReviews,
+  GetReviewsByPlaceId,
 } from '../../ApiCalls/Main/Reviews/ReviewsApiCall';
 import {
   AddWishList,
   GetWishList,
   RemoveWishList,
 } from '../../ApiCalls/Main/WishList_API/WishListAPI';
+import {RemoveReview} from '../../ApiCalls/Main/Reviews/ReviewsApiCall';
 import ShowError from '../../utils/ShowError';
 import ScreenWrapper from '../../components/ScreenWrapper';
 import moment from 'moment';
+import StarRating from 'react-native-star-rating-widget';
 
 const HomeDetails = ({route}) => {
   const {placeDetails} = route.params;
@@ -74,6 +78,12 @@ const HomeDetails = ({route}) => {
   const [isWishList, setIsWishList] = useState(false);
   const [personalReviews, setPersonalReviews] = useState([]);
   const [wishlistLoader, setWishlistLoader] = useState(false);
+  const [removeReviewLoader, setRemoveReviewLoader] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [isEditing, setIsEditing] = useState(false);
+  const [updateLoader, setUpdateLoader] = useState(false);
+  const [inAppSummary, setInAppSummary] = useState(null);
+  const [inAppBreakdown, setInAppBreakdown] = useState(null);
 
   // Sound refs with mounting guard
   const celebrationSound = useRef(null);
@@ -155,7 +165,7 @@ const HomeDetails = ({route}) => {
   }, [showCelebration]);
 
   useEffect(() => {
-    const id = placeDetails?.place_id || placeDetails?.placeId;
+    const id = placeDetails?.placeId;
     if (id) {
       getMorePlaceInfo(id);
       syncUserStatus(id);
@@ -164,11 +174,12 @@ const HomeDetails = ({route}) => {
 
   const syncUserStatus = async id => {
     try {
-      const [wishRes, revRes] = await Promise.all([
+      const [wishRes, revRes, inAppRes] = await Promise.all([
         GetWishList(token),
         GetReviews(token),
+        GetReviewsByPlaceId(token, id),
       ]);
-
+      console.log('wishRes:-', wishRes);
       // Sync Wishlist
       const wishlistData = wishRes?.wishLists || wishRes?.data || wishRes;
       if (wishlistData && Array.isArray(wishlistData)) {
@@ -181,6 +192,12 @@ const HomeDetails = ({route}) => {
           .filter(r => r.placeId === id)
           .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
         setPersonalReviews(matching);
+      }
+
+      // Sync In-App Ratings Summary
+      if (inAppRes?.data) {
+        setInAppSummary(inAppRes.data.summary || null);
+        setInAppBreakdown(inAppRes.data.ratingBreakdown || null);
       }
     } catch (error) {
       console.log('Error syncing user status:', error);
@@ -223,31 +240,25 @@ const HomeDetails = ({route}) => {
       .filter(Boolean);
   }, [morePlaceDetails, placeDetails]);
 
-  // Compute breakdown from reviews
+  // Compute breakdown from In-App reviews
   const ratingData = useMemo(() => {
-    const breakdown = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0};
-    const reviews = morePlaceDetails?.reviews || [];
-
-    if (reviews.length === 0) return [];
-
-    reviews.forEach(r => {
-      if (breakdown[r.rating] !== undefined) {
-        breakdown[r.rating] += 1;
-      }
-    });
+    const breakdown = inAppBreakdown || {1: 0, 2: 0, 3: 0, 4: 0, 5: 0};
+    const total = inAppSummary?.totalReviews || 0;
 
     return Object.keys(breakdown)
       .map(star => ({
         id: star,
         rating: Number(star),
-        progress: Math.round((breakdown[star] / reviews.length) * 100),
+        progress: total > 0 ? Math.round((breakdown[star] / total) * 100) : 0,
       }))
       .reverse();
-  }, [morePlaceDetails]);
+  }, [inAppBreakdown, inAppSummary]);
 
-  const recommendationPercentage = morePlaceDetails?.rating
-    ? Math.round((morePlaceDetails.rating / 5) * 100)
-    : 0;
+  const recommendationPercentage = inAppSummary?.recommendationPercentage || 0;
+  const averageRating = inAppSummary?.averageRating
+    ? Number(inAppSummary.averageRating).toFixed(1)
+    : '0';
+  const totalReviews = inAppSummary?.totalReviews || 0;
 
   const getCategory = () => {
     const types = morePlaceDetails?.types || placeDetails?.types || [];
@@ -274,14 +285,33 @@ const HomeDetails = ({route}) => {
       return;
     }
 
+    if (rating === 0) {
+      ShowError('Please select rating', 2000);
+      return;
+    }
+
     if (type === 'Avoid') setAvoidLoader(true);
     if (type === 'Go Again') setGoAgainLoader(true);
     if (type === 'Review') setReviewLoader(true);
+
+    // If item is in wishlist, remove it first
+    if (isWishList) {
+      try {
+        const placeId = placeDetails?.placeId;
+        const res = await RemoveWishList(token, {placeId});
+        if (res?.success) {
+          setIsWishList(false);
+        }
+      } catch (error) {
+        console.log('Error removing from wishlist before review:', error);
+      }
+    }
+
     const data = {
       placeId: morePlaceDetails?.place_id,
       restaurantName: morePlaceDetails?.name,
       address: morePlaceDetails?.formatted_address,
-      rating: morePlaceDetails?.rating,
+      rating: rating,
       reviewText: typeReview,
       actionType: type,
       photos: images,
@@ -292,6 +322,7 @@ const HomeDetails = ({route}) => {
 
     try {
       const res = await AddReviews(token, data);
+      console.log('res in createReview:-', res);
       if (res.success) {
         if (type === 'Go Again') {
           setShowCelebration(true);
@@ -313,14 +344,100 @@ const HomeDetails = ({route}) => {
     }
   };
 
+  const handleRemoveReview = async () => {
+    if (personalReviews.length === 0) return;
+
+    const reviewId = personalReviews[0]._id || personalReviews[0].id;
+    if (!reviewId) {
+      ShowError('Review ID not found', 2000);
+      return;
+    }
+
+    setRemoveReviewLoader(true);
+    try {
+      const res = await RemoveReview({reviewId}, token);
+      if (res?.success) {
+        ShowError(res.msg || 'Review removed successfully', 2000);
+        const id = placeDetails?.placeId;
+        syncUserStatus(id);
+      } else {
+        ShowError(res?.message || 'Failed to remove review', 2000);
+      }
+    } catch (error) {
+      console.log('Error removing review:', error);
+      ShowError('Something went wrong', 2000);
+    } finally {
+      setRemoveReviewLoader(false);
+    }
+  };
+
+  const handleEditPress = () => {
+    if (personalReviews.length > 0) {
+      const review = personalReviews[0];
+      setRating(review.rating || 0);
+      setTypeReview(review.reviewText || '');
+      setIsEditing(true);
+    }
+  };
+
+  const handleUpdateReview = async () => {
+    if (rating === 0) {
+      ShowError('Please select rating', 2000);
+      return;
+    }
+
+    const reviewId = personalReviews[0]._id || personalReviews[0].id;
+    if (!reviewId) {
+      ShowError('Review ID not found', 2000);
+      return;
+    }
+
+    setUpdateLoader(true);
+    const data = {
+      reviewId,
+      rating,
+      reviewText: typeReview,
+      actionType: personalReviews[0].actionType,
+      placeId: morePlaceDetails?.place_id,
+      restaurantName: morePlaceDetails?.name,
+      address: morePlaceDetails?.formatted_address,
+      photos: images,
+      category: getCategory(),
+      latitude: morePlaceDetails?.geometry?.location?.lat,
+      longitude: morePlaceDetails?.geometry?.location?.lng,
+    };
+
+    try {
+      const res = await updateReviews(token, data);
+      if (res?.success) {
+        ShowError(res.msg || 'Review updated successfully', 2000);
+        setIsEditing(false);
+        setTypeReview('');
+        setRating(0);
+        const id = placeDetails?.placeId;
+        syncUserStatus(id);
+      } else {
+        ShowError(res?.message || 'Failed to update review', 2000);
+      }
+    } catch (error) {
+      console.log('Error updating review:', error);
+      ShowError('Something went wrong', 2000);
+    } finally {
+      setUpdateLoader(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setTypeReview('');
+    setRating(0);
+  };
+
   const toggleWishlist = async () => {
     if (!morePlaceDetails && !placeDetails) return;
 
     setWishlistLoader(true);
-    const placeId =
-      morePlaceDetails?.place_id ||
-      placeDetails?.place_id ||
-      placeDetails?.placeId;
+    const placeId = placeDetails?.placeId;
 
     try {
       if (isWishList) {
@@ -406,6 +523,8 @@ const HomeDetails = ({route}) => {
   }
 
   // console.log('personalReview:-', personalReview);
+  // console.log('placeId:-', placeDetails?.placeId);
+  // console.log('ratingData:-', ratingData);
   return (
     <ScreenWrapper>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -415,7 +534,7 @@ const HomeDetails = ({route}) => {
 
         <View style={styles.contentPadding}>
           <View style={styles.titleRow}>
-            <View style={{width: responsiveWidth(80)}}>
+            <View style={{width: responsiveWidth(90)}}>
               <AppText
                 title={
                   morePlaceDetails?.name || placeDetails?.name || 'No Name'
@@ -426,7 +545,7 @@ const HomeDetails = ({route}) => {
               />
             </View>
 
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={styles.wishlistBtn}
               onPress={toggleWishlist}
               disabled={wishlistLoader}>
@@ -439,7 +558,7 @@ const HomeDetails = ({route}) => {
                   color={AppColors.BTNCOLOURS}
                 />
               )}
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
 
           <LineBreak space={2} />
@@ -466,12 +585,12 @@ const HomeDetails = ({route}) => {
                       <AppText
                         title={item.rating}
                         textSize={1.8}
-                        textColor={AppColors.ThemeColor}
+                        textColor={AppColors.BTNCOLOURS}
                       />
                       <Entypo
                         name="star"
                         size={responsiveFontSize(2)}
-                        color={AppColors.ThemeColor}
+                        color={AppColors.BTNCOLOURS}
                       />
                     </View>
                     <RatingWithProgressbar
@@ -487,7 +606,7 @@ const HomeDetails = ({route}) => {
                 <View>
                   <View style={styles.compactRow}>
                     <AppText
-                      title={`${morePlaceDetails?.rating || '-'}`}
+                      title={`${averageRating}`}
                       textSize={4}
                       textColor={AppColors.BLACK}
                       textFontWeight
@@ -495,7 +614,7 @@ const HomeDetails = ({route}) => {
                     <AntDesign name="star" size={24} color={AppColors.Yellow} />
                   </View>
                   <AppText
-                    title={`${morePlaceDetails?.reviews?.length || 0} Reviews`}
+                    title={`${totalReviews} Reviews`}
                     textSize={1.5}
                     textColor={AppColors.BLACK}
                   />
@@ -579,11 +698,7 @@ const HomeDetails = ({route}) => {
           {personalReviews.length > 0 && (
             <View style={styles.sectionBorder}>
               <AppText
-                title={
-                  personalReviews.length > 0
-                    ? 'Your Review History'
-                    : 'User Reviews'
-                }
+                title={'Your Review'}
                 textColor={AppColors.BLACK}
                 textSize={2}
                 textFontWeight
@@ -604,24 +719,38 @@ const HomeDetails = ({route}) => {
                             style={styles.authorPhoto}
                           />
                           <View style={{flex: 1}}>
-                            <AppText
-                              title={userData?.fullName || 'You'}
-                              textColor={AppColors.BLACK}
-                              textSize={1.6}
-                              textFontWeight
-                            />
-                            <View style={styles.rowAlignCenter}>
+                            <View
+                              style={[
+                                styles.rowAlignCenter,
+                                {justifyContent: 'space-between'},
+                              ]}>
                               <AppText
-                                title={review.actionType}
-                                textColor={
-                                  review.actionType === 'Avoid'
-                                    ? AppColors.avoid
-                                    : AppColors.goAgain
-                                }
-                                textSize={1.3}
+                                title={userData?.fullName || 'You'}
+                                textColor={AppColors.BLACK}
+                                textSize={1.6}
                                 textFontWeight
                               />
                             </View>
+                            <AppText
+                              title={review.actionType}
+                              textColor={
+                                review.actionType === 'Avoid'
+                                  ? AppColors.avoid
+                                  : AppColors.goAgain
+                              }
+                              textSize={1.3}
+                              textFontWeight
+                              paddingBottom={0.5}
+                            />
+
+                            <StarRating
+                              rating={review.rating}
+                              onChange={() => {}}
+                              starSize={20}
+                              color={AppColors.BTNCOLOURS}
+                              emptyColor={AppColors.GRAY}
+                              starContainerStyle={{marginLeft: -8}}
+                            />
                           </View>
 
                           <View style={styles.timeContainer}>
@@ -641,6 +770,16 @@ const HomeDetails = ({route}) => {
                           textSize={1.5}
                           lineHeight={2}
                         />
+
+                        <TouchableOpacity
+                          style={styles.editButton}
+                          onPress={handleEditPress}>
+                          <AntDesign
+                            name="edit"
+                            size={12}
+                            color={AppColors.WHITE}
+                          />
+                        </TouchableOpacity>
                       </View>
                       <LineBreak space={2} />
                     </View>
@@ -649,76 +788,106 @@ const HomeDetails = ({route}) => {
             </View>
           )}
 
-          {/* Review Input */}
-          {!isWishList && (
-            <View style={{paddingVertical: responsiveHeight(2)}}>
+          {/* Review Input & Action Buttons */}
+          {(personalReviews.length === 0 || isEditing) && (
+            <View
+              style={{
+                paddingVertical: responsiveHeight(2),
+                paddingHorizontal: responsiveWidth(2),
+                borderRadius: 12,
+                backgroundColor: AppColors.whiteOpacity,
+                marginTop: 10,
+              }}>
               <AppText
-                title="Add Review"
+                title={isEditing ? 'Update Review' : 'Add Review'}
                 textColor={AppColors.BLACK}
                 textSize={2}
                 textFontWeight
               />
-              <LineBreak space={2} />
+              <LineBreak space={1} />
+
+              {/* Star Rating */}
+              <View style={styles.starContainner}>
+                <StarRating
+                  rating={rating}
+                  onChange={setRating}
+                  starSize={25}
+                  color={AppColors.BTNCOLOURS}
+                  emptyColor={AppColors.GRAY}
+                />
+              </View>
+
               <AppTextInput
                 placeholder="Write your detailed review"
                 textAlignVertical="top"
                 inputHeight={15}
                 multiline
-                onChangeText={setTypeReview}
                 value={typeReview}
-                rightIcon={
-                  <View style={styles.inputAction}>
-                    <TouchableOpacity
-                      // onPress={() => createReview('Review')}
-                      disabled={reviewLoader}>
-                      {reviewLoader ? (
-                        <ActivityIndicator
-                          size="small"
-                          color={AppColors.BTNCOLOURS}
-                        />
-                      ) : (
-                        <Ionicons
-                          name="send"
-                          size={responsiveFontSize(2.5)}
-                          color={AppColors.BTNCOLOURS}
-                        />
-                      )}
-                    </TouchableOpacity>
-                  </View>
-                }
+                onChangeText={setTypeReview}
               />
+              <LineBreak space={2} />
+              <View style={styles.buttonRow}>
+                {isEditing ? (
+                  <Fragment>
+                    <AppButton
+                      title="Cancel"
+                      handlePress={handleCancelEdit}
+                      btnWidth={42}
+                      btnBackgroundColor={AppColors.GRAY}
+                    />
+                    <AppButton
+                      title="Update"
+                      handlePress={handleUpdateReview}
+                      btnWidth={42}
+                      btnBackgroundColor={AppColors.BTNCOLOURS}
+                      loading={updateLoader}
+                    />
+                  </Fragment>
+                ) : (
+                  <Fragment>
+                    <AppButton
+                      title="Avoid"
+                      handlePress={() => createReview('Avoid')}
+                      btnWidth={42}
+                      btnBackgroundColor={AppColors.avoid}
+                      loading={avoidLoader}
+                    />
+                    <AppButton
+                      title="Go Again"
+                      handlePress={() => createReview('Go Again')}
+                      btnWidth={42}
+                      btnBackgroundColor={AppColors.goAgain}
+                      loading={goAgainLoader}
+                    />
+                  </Fragment>
+                )}
+              </View>
             </View>
           )}
 
-          {/* Action Buttons */}
+          {/* Action Buttons (Remaining) */}
           <Fragment>
-            {!isWishList && (
-              <View style={styles.buttonRow}>
-                <AppButton
-                  title="Avoid"
-                  handlePress={() => createReview('Avoid')}
-                  btnWidth={44}
-                  btnBackgroundColor={AppColors.avoid}
-                  loading={avoidLoader}
-                />
-                <AppButton
-                  title="Go Again"
-                  handlePress={() => createReview('Go Again')}
-                  btnWidth={44}
-                  btnBackgroundColor={AppColors.goAgain}
-                  loading={goAgainLoader}
-                />
-              </View>
+            {personalReviews.length > 0 && !isWishList && !isEditing && (
+              <AppButton
+                title="Remove Review"
+                handlePress={handleRemoveReview}
+                btnWidth={92}
+                btnBackgroundColor={AppColors.avoid}
+                loading={removeReviewLoader}
+                mT={10}
+              />
             )}
 
-            <AppButton
-              title={isWishList ? 'Remove from Wishlist' : 'Add to Wishlist'}
-              handlePress={toggleWishlist}
-              btnWidth={92}
-              btnBackgroundColor={AppColors.wishlist}
-              loading={goAgainLoader}
-              mT={10}
-            />
+            {personalReviews.length === 0 && (
+              <AppButton
+                title={isWishList ? 'Remove from Wishlist' : 'Add to Wishlist'}
+                handlePress={toggleWishlist}
+                btnWidth={92}
+                btnBackgroundColor={AppColors.wishlist}
+                loading={wishlistLoader}
+                mT={10}
+              />
+            )}
           </Fragment>
         </View>
         <LineBreak space={4} />
@@ -849,6 +1018,20 @@ const styles = StyleSheet.create({
   timeContainer: {
     padding: 4,
     borderRadius: 10,
+  },
+  starContainner: {
+    width: '100%',
+    gap: 10,
+    marginBottom: 10,
+    // backgroundColor: 'red',
+  },
+  editButton: {
+    position: 'absolute',
+    bottom: 5,
+    right: 5,
+    backgroundColor: AppColors.BTNCOLOURS,
+    padding: 8,
+    borderRadius: 30,
   },
 });
 

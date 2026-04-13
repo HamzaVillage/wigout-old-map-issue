@@ -32,6 +32,7 @@ type Colors = {
     avoid: string
     wishlist: string
     blackOpacity: string
+    whiteOpacity: string
   };
 
 const AppColors: Colors = {
@@ -68,6 +69,7 @@ const AppColors: Colors = {
     avoid: "#F75555",
     wishlist: "#FF9C12",
     blackOpacity: "rgba(0,0,0,0.5)",
+    whiteOpacity: "rgba(255,255,255,0.5)",
   };
 
 export default AppColors;

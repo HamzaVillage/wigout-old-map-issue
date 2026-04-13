@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, {useMemo} from 'react';
 import {
   View,
   StyleSheet,
@@ -8,7 +8,6 @@ import {
   Easing,
 } from 'react-native';
 import AppColors from '../utils/AppColors';
-
 
 type Props = {
   /** progress can be 0..1 (fraction) or 0..100 (percentage). */
@@ -30,8 +29,12 @@ const RatingWithProgressbar = ({
   // Normalize input:
   // If user passed >1 assume they used 0..100, convert to fraction
   const normalized = useMemo(() => {
-    if (!Number.isFinite(progress)) return 0;
-    if (progress > 1) return Math.max(0, Math.min(progress / 100, 1));
+    if (!Number.isFinite(progress)) {
+      return 0;
+    }
+    if (progress > 1) {
+      return Math.max(0, Math.min(progress / 100, 1));
+    }
     return Math.max(0, Math.min(progress, 1));
   }, [progress]);
 
@@ -60,7 +63,7 @@ const RatingWithProgressbar = ({
           outputRange: ['0%', '100%'],
         }),
       }
-    : { width: `${normalized * 100}%` };
+    : {width: `${normalized * 100}%`};
 
   return (
     <View style={[styles.container, style]}>
@@ -88,7 +91,7 @@ const styles = StyleSheet.create({
   },
   progress: {
     height: '100%',
-    backgroundColor: AppColors.BLACK,
+    backgroundColor: AppColors.BTNCOLOURS,
     borderRadius: 6,
   },
 });

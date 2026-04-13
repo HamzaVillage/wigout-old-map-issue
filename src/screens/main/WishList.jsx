@@ -62,6 +62,12 @@ const WishList = ({navigation}) => {
     <ScreenWrapper>
       <SafeAreaView style={{flex: 1}}>
         <AppHeader heading="WishList" onBackPress />
+        <AppText
+          title={`${wishlistItems.length} places in your wishlist`}
+          textColor={AppColors.GRAY}
+          textSize={1.6}
+          paddingHorizontal={5}
+        />
         <View
           style={{
             flex: 1,
