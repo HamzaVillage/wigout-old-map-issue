@@ -24,7 +24,7 @@ const Routes = () => {
   const current_location = useSelector(state => state?.user?.current_location);
   const isFirstTime = useSelector(state => state?.user?.isFirstTime);
   const isListBuilt = useSelector(state => state?.user?.isListBuilt);
-  console.log('token', token);
+  // console.log('Token:-', token);
 
   return (
     <>

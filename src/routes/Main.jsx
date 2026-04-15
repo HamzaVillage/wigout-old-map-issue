@@ -42,6 +42,8 @@ import BrowseCategories from '../screens/auth/AccountSetup/BrowseCategories';
 import BuildYourList from '../screens/auth/AccountSetup/BuildYourList';
 import SearchForPlaces from '../screens/auth/AccountSetup/SearchForPlaces';
 import Visited from '../screens/main/Journal/Visited';
+import Reminder from '../screens/main/Profile/Reminder';
+import CreateReminder from '../screens/main/Profile/CreateReminder';
 
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
@@ -145,6 +147,8 @@ const Main = () => {
       <Stack.Screen name="BuildYourList" component={BuildYourList} />
       <Stack.Screen name="SearchForPlaces" component={SearchForPlaces} />
       <Stack.Screen name="Visited" component={Visited} />
+      <Stack.Screen name="Reminder" component={Reminder} />
+      <Stack.Screen name="CreateReminder" component={CreateReminder} />
     </Stack.Navigator>
   );
 };

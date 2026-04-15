@@ -1,6 +1,6 @@
-import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
-import axios, { AxiosRequestConfig } from 'axios';
-import { ShowToast } from '../utils/api_content';
+import {createAsyncThunk, createSlice, PayloadAction} from '@reduxjs/toolkit';
+import axios, {AxiosRequestConfig} from 'axios';
+import {ShowToast} from '../utils/api_content';
 
 // Define types for initial state
 interface UserState {
@@ -13,6 +13,7 @@ interface UserState {
   Save_Place_Detail: any;
   isFirstTime: boolean;
   isListBuilt: boolean;
+  reminders: any[];
 }
 
 const initialState: UserState = {
@@ -20,7 +21,7 @@ const initialState: UserState = {
   token: '',
   isLoading: false,
   error: null,
-  current_location:{
+  current_location: {
     latitude: null,
     longitude: null,
     address: '',
@@ -29,6 +30,7 @@ const initialState: UserState = {
   Save_Place_Detail: null,
   isFirstTime: true,
   isListBuilt: false,
+  reminders: [],
 };
 
 // Define return type of API response
@@ -44,7 +46,7 @@ interface LoginResponse {
 // Async Thunk with TypeScript
 export const UserLogin = createAsyncThunk<LoginResponse, AxiosRequestConfig>(
   'auth/UserLogin',
-  async (config, { rejectWithValue }) => {
+  async (config, {rejectWithValue}) => {
     try {
       const response = await axios.request<LoginResponse>(config);
       console.log('response===>>>', JSON.stringify(response.data));
@@ -61,7 +63,7 @@ export const UserLogin = createAsyncThunk<LoginResponse, AxiosRequestConfig>(
       ShowToast('error', error.response.data.message);
       return rejectWithValue('Something went wrong');
     }
-  }
+  },
 );
 
 // Redux Slice with TypeScript
@@ -69,10 +71,10 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    clearToken: (state) => {
-      state.token = ''
-      state.userData = {}
-      state.isListBuilt = false
+    clearToken: state => {
+      state.token = '';
+      state.userData = {};
+      state.isListBuilt = false;
     },
     setToken: (state, action) => {
       state.token = action.payload;
@@ -80,23 +82,22 @@ const authSlice = createSlice({
     setUserData: (state, action: PayloadAction<Record<string, any>>) => {
       state.userData = action.payload;
     },
-    UpdateProfile: (state,action) => {
-        if(action.payload) {
-          state.userData = action.payload
-        }
+    UpdateProfile: (state, action) => {
+      if (action.payload) {
+        state.userData = action.payload;
+      }
     },
     setCurrentLocation: (state, action) => {
-
       state.current_location.latitude = action.payload.latitude;
       state.current_location.longitude = action.payload.longitude;
       state.current_location.address = action.payload.address;
     },
     setNearbyPlaces: (state, action) => {
       // Implementation for setting nearby places can be added here
-      state.places_nearby = action.payload; 
+      state.places_nearby = action.payload;
     },
-    setPlaceDetail:  (state, action) => {
-      state.Save_Place_Detail = action.payload
+    setPlaceDetail: (state, action) => {
+      state.Save_Place_Detail = action.payload;
     },
     setIsFirstTime: (state, action: PayloadAction<boolean>) => {
       state.isFirstTime = action.payload;
@@ -104,19 +105,30 @@ const authSlice = createSlice({
     setIsListBuilt: (state, action: PayloadAction<boolean>) => {
       state.isListBuilt = action.payload;
     },
+    addReminder: (state, action) => {
+      state.reminders.push(action.payload);
+    },
+    deleteReminder: (state, action) => {
+      state.reminders = state.reminders.filter(
+        item => item.id !== action.payload,
+      );
+    },
   },
-  extraReducers: (builder) => {
+  extraReducers: builder => {
     builder
-      .addCase(UserLogin.pending, (state) => {
+      .addCase(UserLogin.pending, state => {
         state.isLoading = true;
         state.error = null;
       })
-      .addCase(UserLogin.fulfilled, (state, action: PayloadAction<LoginResponse>) => {
-        state.isLoading = false;
-        state.token = action.payload.token;
-        state.userData = action.payload.data;
-        console.log('action.payload<<<<=====', action.payload);
-      })
+      .addCase(
+        UserLogin.fulfilled,
+        (state, action: PayloadAction<LoginResponse>) => {
+          state.isLoading = false;
+          state.token = action.payload.token;
+          state.userData = action.payload.data;
+          console.log('action.payload<<<<=====', action.payload);
+        },
+      )
       .addCase(UserLogin.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string; // ✅ Ensured `error` is always a string
@@ -124,5 +136,17 @@ const authSlice = createSlice({
   },
 });
 
-export const { clearToken, setUserData, setToken,UpdateProfile, setCurrentLocation,setNearbyPlaces,setPlaceDetail, setIsFirstTime, setIsListBuilt} = authSlice.actions;
+export const {
+  clearToken,
+  setUserData,
+  setToken,
+  UpdateProfile,
+  setCurrentLocation,
+  setNearbyPlaces,
+  setPlaceDetail,
+  setIsFirstTime,
+  setIsListBuilt,
+  addReminder,
+  deleteReminder,
+} = authSlice.actions;
 export default authSlice.reducer;

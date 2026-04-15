@@ -1,5 +1,6 @@
-import { useNavigation } from '@react-navigation/native';
-import { useState, useEffect } from 'react';
+import {useNavigation} from '@react-navigation/native';
+import {useState, useEffect} from 'react';
+import Toast from 'react-native-toast-message';
 
 export const useCustomNavigation = () => {
   const navigation = useNavigation();
@@ -17,6 +18,13 @@ export const useCustomNavigation = () => {
     goBack,
     navigation,
   };
+};
+
+export const ShowToast = message => {
+  return Toast.show({
+    type: 'success',
+    text1: message,
+  });
 };
 
 export const useDebounce = (value, delay) => {

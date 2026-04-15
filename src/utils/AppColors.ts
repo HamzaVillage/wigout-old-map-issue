@@ -33,6 +33,7 @@ type Colors = {
     wishlist: string
     blackOpacity: string
     whiteOpacity: string
+    menuBg: string
   };
 
 const AppColors: Colors = {
@@ -70,6 +71,7 @@ const AppColors: Colors = {
     wishlist: "#FF9C12",
     blackOpacity: "rgba(0,0,0,0.5)",
     whiteOpacity: "rgba(255,255,255,0.5)",
+    menuBg: "rgba(255, 255, 255, 0.7)",
   };
 
 export default AppColors;

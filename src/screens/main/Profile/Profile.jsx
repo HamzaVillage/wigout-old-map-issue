@@ -52,11 +52,11 @@ const Profile = () => {
       },
       {
         id: 2,
-        title: 'Build Your List',
-        navTo: 'BuildYourList',
+        title: 'Reminders',
+        navTo: 'Reminder',
         icon: (
           <FontAwesome5
-            name="star"
+            name="calendar"
             size={responsiveFontSize(2)}
             color={AppColors.BTNCOLOURS}
           />
@@ -64,12 +64,12 @@ const Profile = () => {
       },
       {
         id: 3,
-        title: 'Notification',
-        navTo: 'NotificationsSettings',
+        title: 'Build Your List',
+        navTo: 'BuildYourList',
         icon: (
-          <AntDesign
-            name="bells"
-            size={iconSize}
+          <FontAwesome5
+            name="star"
+            size={responsiveFontSize(2)}
             color={AppColors.BTNCOLOURS}
           />
         ),
@@ -122,18 +122,18 @@ const Profile = () => {
           />
         ),
       },
-      // {
-      //   id: 8,
-      //   title: 'Visit History',
-      //   navTo: 'VisitHistory',
-      //   icon: (
-      //     <FontAwesome5
-      //       name="star"
-      //       size={responsiveFontSize(2)}
-      //       color={AppColors.BTNCOLOURS}
-      //     />
-      //   ),
-      // },
+      {
+        id: 8,
+        title: 'Notification',
+        navTo: 'NotificationsSettings',
+        icon: (
+          <AntDesign
+            name="bells"
+            size={iconSize}
+            color={AppColors.BTNCOLOURS}
+          />
+        ),
+      },
       {
         id: 9,
         title: 'Logout',
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
   },
   menuContainer: {
     marginHorizontal: responsiveWidth(5),
-    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+    backgroundColor: AppColors.menuBg,
     borderRadius: 20,
     paddingVertical: 10,
     overflow: 'hidden',

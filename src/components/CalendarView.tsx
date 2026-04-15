@@ -1,33 +1,51 @@
-/* eslint-disable react-native/no-inline-styles */
 import React from 'react';
 import {Calendar} from 'react-native-calendars';
 import AppColors from '../utils/AppColors';
-import {responsiveHeight} from '../utils/Responsive_Dimensions';
+import {
+  responsiveHeight,
+  responsiveWidth,
+} from '../utils/Responsive_Dimensions';
+import {StyleSheet, View} from 'react-native';
 
-const CalendarView = () => {
+const CalendarView = ({onDayPress, markedDates}: any) => {
   return (
     <Calendar
-      style={{
-        backgroundColor: AppColors.BTNCOLOURS,
-        // height: 350,
-        overflow: 'hidden',
-        borderRadius: 30,
-        paddingBottom: responsiveHeight(1),
-      }}
+      style={styles.calendar}
+      onDayPress={onDayPress}
+      markingType={'multi-dot'}
       theme={{
-        backgroundColor: AppColors.BTNCOLOURS,
-        calendarBackground: AppColors.BTNCOLOURS,
-        selectedDayBackgroundColor: AppColors.WHITE,
+        calendarBackground: 'transparent',
+        backgroundColor: 'transparent',
+        textSectionTitleColor: AppColors.GRAY,
+        selectedDayBackgroundColor: AppColors.BTNCOLOURS,
         selectedDayTextColor: AppColors.WHITE,
-        textDisabledColor: AppColors.GRAY,
-        arrowColor: AppColors.WHITE,
-        monthTextColor: AppColors.WHITE,
-        agendaDayTextColor: AppColors.WHITE,
-        agendaDayNumColor: AppColors.WHITE,
-        textSectionTitleColor: AppColors.WHITE,
+        todayTextColor: AppColors.BTNCOLOURS,
+        dayTextColor: AppColors.BLACK,
+        textDisabledColor: '#d9e1e8',
+        dotColor: AppColors.BTNCOLOURS,
+        selectedDotColor: AppColors.WHITE,
+        arrowColor: AppColors.BTNCOLOURS,
+        monthTextColor: AppColors.BLACK,
+        indicatorColor: AppColors.BTNCOLOURS,
+        textDayFontWeight: '400',
+        textMonthFontWeight: 'bold',
+        textDayHeaderFontWeight: '500',
       }}
+      markedDates={markedDates}
     />
   );
 };
 
 export default CalendarView;
+
+const styles = StyleSheet.create({
+  calendarWrapper: {
+    paddingHorizontal: responsiveWidth(5),
+  },
+  calendar: {
+    borderRadius: 15,
+    paddingBottom: 10,
+    backgroundColor: AppColors.menuBg,
+    overflow: 'hidden',
+  },
+});
