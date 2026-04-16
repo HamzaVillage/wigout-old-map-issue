@@ -17,9 +17,10 @@ import AppText from '../../../components/AppTextComps/AppText';
 import LineBreak from '../../../components/LineBreak';
 import AppButton from '../../../components/AppButton';
 import SVGXml from '../../../components/SVGXML';
-import WheelSpinner, {WheelRef} from '../../../components/WheelSpinner';
-
-// Utils & Helpers
+import WheelSpinner, {
+  SPINNER_COLORS,
+  WheelRef,
+} from '../../../components/WheelSpinner';
 import {
   responsiveFontSize,
   responsiveHeight,
@@ -28,6 +29,15 @@ import {
 import {baseUrl} from '../../../utils/api_content';
 import {useCustomNavigation} from '../../../utils/Hooks';
 import {AppIcons} from '../../../assets/icons';
+import AnimatedReanimated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withDelay,
+} from 'react-native-reanimated';
+import {Dimensions} from 'react-native';
+
+const {width} = Dimensions.get('window');
 
 // Icons
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -49,6 +59,7 @@ const JournalHome = ({navigation}) => {
   const [visitedItems, setVisitedItems] = useState([]);
   const [loader, setLoader] = useState(false);
   const [winner, setWinner] = useState(null);
+  const [celebrating, setCelebrating] = useState(false);
   const wheelRef = useRef(null);
   const isFocused = useIsFocused();
   const currentLocation = useSelector(state => state.user.current_location);
@@ -66,6 +77,7 @@ const JournalHome = ({navigation}) => {
 
   const triggerSpin = () => {
     setWinner(null);
+    setCelebrating(false);
     wheelRef.current?.spin();
   };
 
@@ -96,7 +108,7 @@ const JournalHome = ({navigation}) => {
             visitedMap.set(id, item);
           } else {
             // If already exists, keep the most recent one (assuming reviews are sorted by newest first, or just keeping the first encountered)
-            // If they are not sorted, we should sort them first. 
+            // If they are not sorted, we should sort them first.
             // The API usually returns them in some order. Assuming first is newest.
           }
         });
@@ -267,28 +279,6 @@ const JournalHome = ({navigation}) => {
             </TouchableOpacity>
           </View>
 
-          {/* Wish List Card */}
-          {/* <TouchableOpacity
-            style={[styles.wishListCard, {backgroundColor: '#E3F2FD'}]}
-            onPress={() => navigateToRoute('WishList')}>
-            <View style={styles.wishListCardIconContainer}>
-              <FontAwesome name={'bookmark-o'} size={24} color={'#2196F3'} />
-            </View>
-            <View>
-              <AppText
-                title={'Wish List'}
-                textColor={AppColors.BLACK}
-                textSize={1.8}
-                textFontWeight
-              />
-              <AppText
-                title={`${wishlistItems.length} places`}
-                textColor={AppColors.GRAY}
-                textSize={1.4}
-              />
-            </View>
-          </TouchableOpacity> */}
-
           <LineBreak space={2} />
 
           {/* Wheel Spinner */}
@@ -319,20 +309,24 @@ const JournalHome = ({navigation}) => {
                 <View style={styles.winnerContainer}>
                   <TouchableOpacity
                     style={styles.winnerCard}
-                    onPress={() =>
-                      navigateToRoute('HomeDetails', {
-                        placeDetails: winner.fullData,
-                      })
-                    }>
+                    onPress={() => {
+                      setCelebrating(true);
+                      setTimeout(() => {
+                        navigateToRoute('HomeDetails', {
+                          placeDetails: winner.fullData,
+                        });
+                        setCelebrating(false);
+                      }, 2000);
+                    }}>
                     <AppText
-                      title={`${winner.name}`}
+                      title={`Winner: ${winner.name}`}
                       textColor={AppColors.BTNCOLOURS}
                       textSize={1.8}
                       textFontWeight
                       textAlignment={'center'}
                     />
                     <AppText
-                      title="Tap to view details"
+                      title="Let's Go! (Tap to celebrate)"
                       textColor={AppColors.GRAY}
                       textSize={1.2}
                     />
@@ -340,10 +334,7 @@ const JournalHome = ({navigation}) => {
 
                   <AppButton
                     title="Spin Again"
-                    handlePress={() => {
-                      setWinner(null);
-                      triggerSpin();
-                    }}
+                    handlePress={triggerSpin}
                     btnWidth={40}
                     btnHeight={40}
                     btnBackgroundColor={AppColors.BTNCOLOURS}
@@ -389,8 +380,65 @@ const JournalHome = ({navigation}) => {
 
           <LineBreak space={4} />
         </ScrollView>
+
+        {/* Confetti Overlay */}
+        {celebrating && (
+          <View style={StyleSheet.absoluteFill} pointerEvents="none">
+            {Array.from({length: 30}).map((_, i) => (
+              <ConfettiParticle key={i} index={i} />
+            ))}
+          </View>
+        )}
       </SafeAreaView>
     </ScreenWrapper>
+  );
+};
+
+const ConfettiParticle = ({index}) => {
+  const translateY = useSharedValue(-20);
+  const translateX = useSharedValue(Math.random() * width);
+  const rotate = useSharedValue(Math.random() * 360);
+  const opacity = useSharedValue(1);
+
+  const color = SPINNER_COLORS[index % SPINNER_COLORS.length];
+
+  useEffect(() => {
+    const delay = Math.random() * 800;
+    const duration = 1500 + Math.random() * 1000;
+
+    translateY.value = withDelay(
+      delay,
+      withTiming(responsiveHeight(100), {duration}),
+    );
+    rotate.value = withDelay(delay, withTiming(rotate.value + 720, {duration}));
+    opacity.value = withDelay(
+      delay + duration - 500,
+      withTiming(0, {duration: 500}),
+    );
+  }, []);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      {translateY: translateY.value},
+      {translateX: translateX.value},
+      {rotate: `${rotate.value}deg`},
+    ],
+    opacity: opacity.value,
+  }));
+
+  return (
+    <AnimatedReanimated.View
+      style={[
+        {
+          position: 'absolute',
+          width: 8 + Math.random() * 6,
+          height: 8 + Math.random() * 6,
+          backgroundColor: color,
+          borderRadius: index % 2 === 0 ? 0 : 5,
+        },
+        animatedStyle,
+      ]}
+    />
   );
 };
 

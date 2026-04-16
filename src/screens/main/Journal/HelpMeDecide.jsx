@@ -89,6 +89,35 @@ const HelpMeDecide = () => {
     setCustomOption('');
   };
 
+  const handleDecideForMe = () => {
+    if (myLikes.length < 2) {
+      Alert.alert(
+        'Info',
+        'You need at least 2 saved places to use "Decide for me".',
+      );
+      return;
+    }
+
+    // Pick random items (2 to 6)
+    const shuffled = [...myLikes].sort(() => 0.5 - Math.random());
+    const count = Math.min(shuffled.length, 6);
+    const randomPick = shuffled.slice(0, count);
+
+    const options = randomPick.map(item => ({
+      id: item._id,
+      name: item.name || item.restaurantName,
+      category: 'Saved Place',
+      image: item.image
+        ? {uri: `${Google_Places_Images}${item.image}`}
+        : item.photos?.[0]
+        ? {uri: `${Google_Places_Images}${item.photos[0]}`}
+        : AppImages.resturant,
+      fullData: item,
+    }));
+
+    navigateToRoute('SpinTheWheel', {options});
+  };
+
   const removeOption = id => {
     setSelectedOptions(selectedOptions.filter(item => item.id !== id));
   };
@@ -135,7 +164,15 @@ const HelpMeDecide = () => {
               textSize={2.5}
               textFontWeight
             />
-            <View style={{width: 40}} />
+            <TouchableOpacity
+              onPress={handleDecideForMe}
+              style={styles.decideForMeHeaderBtn}>
+              <Ionicons
+                name="sparkles"
+                size={22}
+                color={AppColors.BTNCOLOURS}
+              />
+            </TouchableOpacity>
           </View>
 
           <LineBreak space={2} />
@@ -404,6 +441,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 8,
     borderRadius: 8,
+  },
+  decideForMeHeaderBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F5F5F5',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

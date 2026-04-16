@@ -22,7 +22,7 @@ export interface WheelRef {
   spin: () => void;
 }
 
-const SPINNER_COLORS = [
+export const SPINNER_COLORS = [
   '#FF5252', // Red
   '#448AFF', // Blue
   '#4CAF50', // Green

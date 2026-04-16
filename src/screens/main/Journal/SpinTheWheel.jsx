@@ -15,14 +15,25 @@ import AppColors from '../../../utils/AppColors';
 import AppText from '../../../components/AppTextComps/AppText';
 import {useCustomNavigation} from '../../../utils/Hooks';
 import BackIcon from '../../../components/AppTextComps/BackIcon';
-import Svg, {Path, G, Text as SvgText, TSpan} from 'react-native-svg';
+import Svg, {Path, G, Text as SvgText} from 'react-native-svg';
 import LineBreak from '../../../components/LineBreak';
-import {responsiveHeight} from '../../../utils/Responsive_Dimensions';
+import {
+  responsiveHeight,
+  responsiveWidth,
+} from '../../../utils/Responsive_Dimensions';
+import AppButton from '../../../components/AppButton';
+import AnimatedReanimated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withDelay,
+  runOnJS,
+} from 'react-native-reanimated';
 
 const {width} = Dimensions.get('window');
 const WHEEL_SIZE = width * 0.9;
 const RADIUS = WHEEL_SIZE / 2;
-const DURATION = 10000; // 10 seconds
+const DURATION = 6000; // 6 seconds
 
 const SPINNER_COLORS = [
   AppColors.BTNCOLOURS,
@@ -41,6 +52,7 @@ const SpinTheWheel = ({route}) => {
   const {goBack, navigateToRoute} = useCustomNavigation();
   const [winner, setWinner] = useState(null);
   const [spinning, setSpinning] = useState(true);
+  const [celebrating, setCelebrating] = useState(false);
   const spinValue = useRef(new Animated.Value(0)).current;
 
   // Colors from the mockup (Dark Burgundy / Reddish Pink)
@@ -96,13 +108,17 @@ const SpinTheWheel = ({route}) => {
     setWinner(winningOption);
   };
 
-  const handleWinnerPress = () => {
-    console.log('winner:----', winner);
-    if (winner?.fullData) {
-      navigateToRoute('HomeDetails', {placeDetails: winner.fullData});
-    } else {
-      Alert.alert('Info', 'This is a custom option with no details.');
-    }
+  const handleWinnerAccept = () => {
+    setCelebrating(true);
+    // Let confetti run for a bit before navigating
+    setTimeout(() => {
+      if (winner?.fullData) {
+        navigateToRoute('HomeDetails', {placeDetails: winner.fullData});
+      } else {
+        Alert.alert('Info', 'This is a custom option with no details.');
+      }
+      setCelebrating(false);
+    }, 2500);
   };
 
   const polarToCartesian = (centerX, centerY, radius, angleInDegrees) => {
@@ -212,7 +228,7 @@ const SpinTheWheel = ({route}) => {
 
           <View style={styles.wheelContainer}>
             <TouchableOpacity
-              onPress={winner && !spinning ? handleWinnerPress : null}
+              onPress={winner && !spinning ? handleWinnerAccept : null}
               activeOpacity={0.7}
               disabled={!winner || spinning}>
               <AppText
@@ -229,7 +245,7 @@ const SpinTheWheel = ({route}) => {
                 textAlignment={'center'}
                 paddingBottom={10}
               />
-              {winner && !spinning && winner.fullData && (
+              {/* {winner && !spinning && winner.fullData && (
                 <AppText
                   title={'(Tap to view details)'}
                   textColor={AppColors.GRAY}
@@ -237,7 +253,7 @@ const SpinTheWheel = ({route}) => {
                   textAlignment={'center'}
                   paddingBottom={10}
                 />
-              )}
+              )} */}
             </TouchableOpacity>
 
             <View style={styles.wheelWrapper}>
@@ -265,10 +281,100 @@ const SpinTheWheel = ({route}) => {
               {/* Let's add a visual pointer overlay */}
               <View style={styles.pointer} />
             </View>
+
+            {/* Bottom Actions */}
+            {!spinning && winner && (
+              <View style={styles.actionContainer}>
+                <AppButton
+                  title={`Let's Go to ${
+                    winner.name.length > 20
+                      ? winner.name.substring(0, 20) + '...'
+                      : winner.name
+                  }!`}
+                  handlePress={handleWinnerAccept}
+                  btnBackgroundColor={AppColors.BTNCOLOURS}
+                  btnWidth={85}
+                />
+                <TouchableOpacity
+                  onPress={startSpin}
+                  style={styles.spinAgainBtn}>
+                  <AppText
+                    title={'Spin Again'}
+                    textColor={AppColors.GRAY}
+                    textSize={1.6}
+                    textFontWeight
+                  />
+                </TouchableOpacity>
+              </View>
+            )}
           </View>
         </View>
+
+        {/* Confetti Overlay */}
+        {celebrating && (
+          <View style={StyleSheet.absoluteFill} pointerEvents="none">
+            {Array.from({length: 30}).map((_, i) => (
+              <ConfettiParticle key={i} index={i} />
+            ))}
+          </View>
+        )}
       </SafeAreaView>
     </ScreenWrapper>
+  );
+};
+
+const ConfettiParticle = ({index}) => {
+  const translateY = useSharedValue(-20);
+  const translateX = useSharedValue(Math.random() * width);
+  const rotate = useSharedValue(Math.random() * 360);
+  const opacity = useSharedValue(1);
+
+  const colors = [
+    AppColors.BTNCOLOURS,
+    AppColors.Yellow,
+    AppColors.hotPink,
+    AppColors.royalBlue,
+    AppColors.THEME_COLOR,
+  ];
+  const color = colors[index % colors.length];
+
+  useEffect(() => {
+    const delay = Math.random() * 1000;
+    const duration = 1500 + Math.random() * 1000;
+
+    translateY.value = withDelay(
+      delay,
+      withTiming(responsiveHeight(100), {duration}),
+    );
+    rotate.value = withDelay(delay, withTiming(rotate.value + 720, {duration}));
+    opacity.value = withDelay(
+      delay + duration - 500,
+      withTiming(0, {duration: 500}),
+    );
+  }, []);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      {translateY: translateY.value},
+      {translateX: translateX.value},
+      {rotate: `${rotate.value}deg`},
+    ],
+    opacity: opacity.value,
+  }));
+
+  return (
+    <AnimatedReanimated.View
+      style={[
+        {
+          position: 'absolute',
+          width: 8 + Math.random() * 6,
+          height: 8 + Math.random() * 6,
+          backgroundColor: color,
+          borderRadius: index % 2 === 0 ? 0 : 5,
+        },
+        animatedStyle,
+      ]}
+    />
   );
 };
 
@@ -309,6 +415,15 @@ const styles = StyleSheet.create({
     borderRightColor: 'transparent',
     borderBottomColor: AppColors.BTNCOLOURS, // Pointer color
     transform: [{rotate: '180deg'}], // Pointing down
+  },
+  actionContainer: {
+    marginTop: 40,
+    width: '100%',
+    alignItems: 'center',
+    gap: 15,
+  },
+  spinAgainBtn: {
+    paddingVertical: 10,
   },
 });
 
