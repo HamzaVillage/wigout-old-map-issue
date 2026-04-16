@@ -165,10 +165,12 @@ const HomeDetails = ({route}) => {
   }, [showCelebration]);
 
   useEffect(() => {
-    const id = placeDetails?.placeId;
+    const id = placeDetails?.placeId || placeDetails?.place_id;
     if (id) {
       getMorePlaceInfo(id);
       syncUserStatus(id);
+    } else {
+      setLoading(false);
     }
   }, [placeDetails, token]);
 
@@ -319,6 +321,7 @@ const HomeDetails = ({route}) => {
       latitude: morePlaceDetails?.geometry?.location?.lat,
       longitude: morePlaceDetails?.geometry?.location?.lng,
     };
+    // console.log('review payload:-', JSON.stringify(data, null, 2));
 
     try {
       const res = await AddReviews(token, data);
@@ -437,7 +440,7 @@ const HomeDetails = ({route}) => {
     if (!morePlaceDetails && !placeDetails) return;
 
     setWishlistLoader(true);
-    const placeId = placeDetails?.placeId;
+    const placeId = placeDetails?.placeId || placeDetails?.place_id;
 
     try {
       if (isWishList) {
@@ -462,12 +465,18 @@ const HomeDetails = ({route}) => {
             placeDetails?.user_ratings_total ||
             0,
           category: getCategory(),
+          latitude:
+            morePlaceDetails?.geometry?.location?.lat ||
+            placeDetails?.geometry?.location?.lat,
+          longitude:
+            morePlaceDetails?.geometry?.location?.lng ||
+            placeDetails?.geometry?.location?.lng,
           notes: '',
           isVisited: false,
         };
-        console.log('Adding to wishlist:', placeId);
+        console.log('Wishlist Payload:-', JSON.stringify(data, null, 2));
         const res = await AddWishList(token, data);
-        console.log('AddWishList response in HomeDetails:', res);
+        console.log('AddWishList response in HomeDetails:-', res);
         if (res?.success) {
           setIsWishList(true);
           ShowError(res?.msg || 'Added to wishlist', 2000);

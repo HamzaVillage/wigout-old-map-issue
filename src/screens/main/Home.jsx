@@ -31,6 +31,8 @@ import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import FetchNearbyPlaces from '../../ApiCalls/Main/FetchNearbyPlaces';
 import {GetReviews} from '../../ApiCalls/Main/Reviews/ReviewsApiCall';
 import {GetWishList} from '../../ApiCalls/Main/WishList_API/WishListAPI';
+import {requestLocationPermission} from '../../utils/Permissions';
+import {startBackgroundService} from '../../services/BackgroundLocationService';
 
 const CATEGORIES = [
   {id: '1', name: 'Restaurants', type: 'restaurant', icon: 'restaurant'},
@@ -143,6 +145,23 @@ const Home = () => {
     fetchUserLists(); // Initial fetch
     return unsubscribe;
   }, [navigation, token]);
+
+  // Handle Background Location Service initialization
+  useEffect(() => {
+    const initBackgroundService = async () => {
+      if (!token) return;
+      
+      const hasPermission = await requestLocationPermission();
+      if (hasPermission) {
+        console.log('Permission granted, starting background service...');
+        await startBackgroundService();
+      } else {
+        console.log('Background location permission denied.');
+      }
+    };
+
+    initBackgroundService();
+  }, [token]);
 
   useEffect(() => {
     // Start initial animations staggered

@@ -79,7 +79,7 @@ const AnimatedGridItem = memo(
 
     const isEditing = editingItemId === item._id;
 
-    // console.log('item.category:-', item);
+    console.log('item.category:-', item);
 
     return (
       <Animated.View style={[styles.gridCard, animatedStyle]}>

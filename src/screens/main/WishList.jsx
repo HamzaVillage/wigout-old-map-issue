@@ -41,6 +41,7 @@ const WishList = ({navigation}) => {
   };
 
   const renderItem = ({item}) => {
+    console.log('item in wishlist:-', item);
     return (
       <View style={{marginBottom: responsiveHeight(2)}}>
         <HomeCard

@@ -74,30 +74,30 @@ const Profile = () => {
           />
         ),
       },
-      {
-        id: 4,
-        title: 'Payments',
-        navTo: 'Payments',
-        icon: (
-          <AntDesign
-            name="wallet"
-            size={iconSize}
-            color={AppColors.BTNCOLOURS}
-          />
-        ),
-      },
-      {
-        id: 5,
-        title: 'Linked Accounts',
-        navTo: 'LinkedAccounts',
-        icon: (
-          <Ionicons
-            name="swap-vertical"
-            size={iconSize}
-            color={AppColors.BTNCOLOURS}
-          />
-        ),
-      },
+      // {
+      //   id: 4,
+      //   title: 'Payments',
+      //   navTo: 'Payments',
+      //   icon: (
+      //     <AntDesign
+      //       name="wallet"
+      //       size={iconSize}
+      //       color={AppColors.BTNCOLOURS}
+      //     />
+      //   ),
+      // },
+      // {
+      //   id: 5,
+      //   title: 'Linked Accounts',
+      //   navTo: 'LinkedAccounts',
+      //   icon: (
+      //     <Ionicons
+      //       name="swap-vertical"
+      //       size={iconSize}
+      //       color={AppColors.BTNCOLOURS}
+      //     />
+      //   ),
+      // },
       {
         id: 6,
         title: 'Help Center',
@@ -122,18 +122,18 @@ const Profile = () => {
       //     />
       //   ),
       // },
-      // {
-      //   id: 8,
-      //   title: 'Notification',
-      //   navTo: 'NotificationsSettings',
-      //   icon: (
-      //     <AntDesign
-      //       name="bells"
-      //       size={iconSize}
-      //       color={AppColors.BTNCOLOURS}
-      //     />
-      //   ),
-      // },
+      {
+        id: 8,
+        title: 'Notification',
+        navTo: 'NotificationsSettings',
+        icon: (
+          <AntDesign
+            name="bells"
+            size={iconSize}
+            color={AppColors.BTNCOLOURS}
+          />
+        ),
+      },
       {
         id: 9,
         title: 'Logout',
@@ -146,6 +146,18 @@ const Profile = () => {
           />
         ),
       },
+      // {
+      //   id: 10,
+      //   title: 'Delete Account',
+      //   isDelete: true,
+      //   icon: (
+      //     <MaterialIcons
+      //       name="delete"
+      //       size={iconSize}
+      //       color={AppColors.RED_COLOR}
+      //     />
+      //   ),
+      // },
     ],
     [iconSize],
   );

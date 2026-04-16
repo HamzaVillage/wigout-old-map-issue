@@ -15,7 +15,6 @@ export const GetWishList = async token => {
 export const AddWishList = async (token, data) => {
   try {
     const res = await ApiCall('POST', 'wishlist', data, token);
-    console.log('res in AddWishList:-', res?.data);
 
     return res?.data || {success: false, message: 'No data returned'};
   } catch (err) {
