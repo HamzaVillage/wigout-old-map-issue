@@ -110,30 +110,30 @@ const Profile = () => {
           />
         ),
       },
-      {
-        id: 7,
-        title: 'Invite Friends',
-        navTo: 'InviteFriends',
-        icon: (
-          <Ionicons
-            name="people-outline"
-            size={iconSize}
-            color={AppColors.BTNCOLOURS}
-          />
-        ),
-      },
-      {
-        id: 8,
-        title: 'Notification',
-        navTo: 'NotificationsSettings',
-        icon: (
-          <AntDesign
-            name="bells"
-            size={iconSize}
-            color={AppColors.BTNCOLOURS}
-          />
-        ),
-      },
+      // {
+      //   id: 7,
+      //   title: 'Invite Friends',
+      //   navTo: 'InviteFriends',
+      //   icon: (
+      //     <Ionicons
+      //       name="people-outline"
+      //       size={iconSize}
+      //       color={AppColors.BTNCOLOURS}
+      //     />
+      //   ),
+      // },
+      // {
+      //   id: 8,
+      //   title: 'Notification',
+      //   navTo: 'NotificationsSettings',
+      //   icon: (
+      //     <AntDesign
+      //       name="bells"
+      //       size={iconSize}
+      //       color={AppColors.BTNCOLOURS}
+      //     />
+      //   ),
+      // },
       {
         id: 9,
         title: 'Logout',
@@ -191,7 +191,7 @@ const Profile = () => {
           )}
         </View>
 
-        <LineBreak space={3} />
+        <LineBreak space={1} />
 
         {/* Settings Menu */}
         <View style={styles.menuContainer}>
@@ -226,7 +226,7 @@ const Profile = () => {
           ))}
         </View>
 
-        <LineBreak space={5} />
+        <LineBreak space={3} />
       </ScrollView>
 
       <LogoutModal
@@ -270,36 +270,12 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  editBadge: {
-    position: 'absolute',
-    bottom: 0,
-    right: 5,
-    backgroundColor: AppColors.BTNCOLOURS,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: AppColors.WHITE,
-  },
   menuContainer: {
     marginHorizontal: responsiveWidth(5),
     backgroundColor: AppColors.menuBg,
     borderRadius: 20,
     paddingVertical: 10,
     overflow: 'hidden',
-    // ...Platform.select({
-    //   ios: {
-    //     shadowColor: '#000',
-    //     shadowOffset: {width: 0, height: 2},
-    //     shadowOpacity: 0.05,
-    //     shadowRadius: 10,
-    //   },
-    //   android: {
-    //     elevation: 3,
-    //   },
-    // }),
   },
   menuItem: {
     flexDirection: 'row',

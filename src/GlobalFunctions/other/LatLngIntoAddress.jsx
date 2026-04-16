@@ -11,10 +11,10 @@ export default LatLngIntoAddress = async (lat, lng) => {
     };
 
     const res = await axios.request(config);
-    console.log(
-      'LatLngIntoAddress API response:',
-      JSON.stringify(res?.data, null, 2),
-    );
+    // console.log(
+    //   'LatLngIntoAddress API response:',
+    //   JSON.stringify(res?.data, null, 2),
+    // );
 
     return res?.data.results[0]?.formatted_address;
   } catch (error) {

@@ -73,7 +73,7 @@ const Reminder = ({navigation}) => {
     return reminders.filter(r => r.date === selectedDate);
   }, [reminders, selectedDate]);
 
-  console.log('selectedDateReminders:-', selectedDateReminders);
+  // console.log('selectedDateReminders:-', selectedDateReminders);
   return (
     <ScreenWrapper>
       <ScrollView contentContainerStyle={{flexGrow: 1}}>

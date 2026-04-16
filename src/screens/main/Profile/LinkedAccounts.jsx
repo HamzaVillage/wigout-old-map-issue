@@ -48,11 +48,7 @@ const LinkedAccounts = () => {
   );
   return (
     <ScreenWrapper>
-      <View style={{flex: 1}}>
-      <AppHeader
-        onBackPress={() => navigation.goBack()}
-        heading="Linked Accounts"
-      />
+      <AppHeader onBackPress={true} heading="Linked Accounts" />
       <LineBreak space={4} />
       <FlatList
         data={data}
@@ -60,7 +56,6 @@ const LinkedAccounts = () => {
         ItemSeparatorComponent={() => <LineBreak space={3} />}
         renderItem={renderItem}
       />
-      </View>
     </ScreenWrapper>
   );
 };
