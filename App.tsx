@@ -16,9 +16,11 @@ import {
   startBackgroundService,
   stopBackgroundService,
 } from './src/services/BackgroundLocationService';
-import {notifyUserForNearbyReviewedPlaces} from './src/GlobalFunctions/main';
-import notifee from '@notifee/react-native'; // ✅ Added notifee import
 import {requestLocationPermission} from './src/utils/Permissions';
+import {navigationRef, navigate} from './src/utils/NavigationService';
+import {EventType} from '@notifee/react-native';
+import {notifyUserForNearbyReviewedPlaces} from './src/GlobalFunctions/main';
+import notifee from '@notifee/react-native';
 
 const latitude = '37.4191213';
 const longitude = '-122.0932968';
@@ -31,13 +33,13 @@ const BackgroundManager = () => {
     const startService = async () => {
       if (token) {
         // ✅ Immediate hit when active/on login
-        if (location?.latitude) {
-          notifyUserForNearbyReviewedPlaces(
-            token,
-            location?.latitude,
-            location?.longitude,
-          );
-        }
+        // if (location?.latitude) {
+        //   notifyUserForNearbyReviewedPlaces(
+        //     token,
+        //     location?.latitude,
+        //     location?.longitude,
+        //   );
+        // }
 
         const permissionGranted = await requestLocationPermission();
         if (permissionGranted) {
@@ -65,15 +67,55 @@ const App = () => {
     // Initialize Notifications
     const initNotifications = async () => {
       const unsubscribeMessaging = listenForForegroundMessages();
-      const unsubscribeNotifee = registerNotifeeForegroundHandler();
+      const unsubscribeNotifeeForeground = notifee.onForegroundEvent(
+        async ({type, detail}) => {
+          if (type === EventType.PRESS) {
+            console.log('Notification pressed in Foreground!', detail.notification);
+            const placeDetails = detail.notification?.data?.placeDetails;
+            console.log('Place Details from notification:', placeDetails);
+            if (placeDetails) {
+              const parsedDetails =
+                typeof placeDetails === 'string'
+                  ? JSON.parse(placeDetails)
+                  : placeDetails;
+              console.log('Navigating to HomeDetails with:', parsedDetails.name);
+              navigate('HomeDetails', {placeDetails: parsedDetails});
+            }
+          }
+        },
+      );
 
       return () => {
         unsubscribeMessaging();
-        unsubscribeNotifee();
+        unsubscribeNotifeeForeground();
       };
     };
 
+    // Handle App launch from notification
+    const checkInitialNotification = async () => {
+      const initialNotification = await notifee.getInitialNotification();
+      if (initialNotification) {
+        console.log(
+          'App launched from notification:',
+          initialNotification.notification,
+        );
+        const placeDetails =
+          initialNotification.notification?.data?.placeDetails;
+        console.log('Initial Notification Place Details:', placeDetails);
+        if (placeDetails) {
+          const parsedDetails =
+            typeof placeDetails === 'string'
+              ? JSON.parse(placeDetails)
+              : placeDetails;
+          console.log('Navigating (Initial) to HomeDetails with:', parsedDetails.name);
+          navigate('HomeDetails', {placeDetails: parsedDetails});
+        }
+      }
+    };
+
     const cleanup = initNotifications();
+    checkInitialNotification();
+
     return () => {
       cleanup.then(unsub => unsub?.());
     };
@@ -82,7 +124,7 @@ const App = () => {
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        <NavigationContainer>
+        <NavigationContainer ref={navigationRef}>
           <BackgroundManager />
           <Routes />
         </NavigationContainer>

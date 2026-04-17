@@ -166,6 +166,7 @@ const HomeDetails = ({route}) => {
 
   useEffect(() => {
     const id = placeDetails?.placeId || placeDetails?.place_id;
+    console.log('HomeDetails initializing with ID:', id);
     if (id) {
       getMorePlaceInfo(id);
       syncUserStatus(id);
@@ -533,6 +534,7 @@ const HomeDetails = ({route}) => {
 
   // console.log('personalReview:-', personalReview);
   // console.log('placeId:-', placeDetails?.placeId);
+  console.log('placeDetails:-', placeDetails);
   // console.log('ratingData:-', ratingData);
   return (
     <ScreenWrapper>

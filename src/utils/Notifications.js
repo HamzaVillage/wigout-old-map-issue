@@ -77,6 +77,35 @@ export async function displayNotification(remoteMessage) {
   }
 }
 
+// -------------------- Rate Prompt Notification --------------------
+export async function triggerRateNotification(place) {
+  console.log('Triggering Rate Prompt for:', place.name);
+  try {
+    const channelId = await ensureAndroidChannel();
+    await notifee.requestPermission();
+    
+    await notifee.displayNotification({
+      title: 'How was it?',
+      body: `How was your visit to ${place.name}? Rate it now!`,
+      android: {
+        channelId,
+        smallIcon: 'ic_launcher',
+        importance: AndroidImportance.HIGH,
+        pressAction: {
+          id: 'default',
+          launchActivity: 'default',
+        },
+      },
+      data: {
+        // We pass the whole place object for HomeDetails
+        placeDetails: JSON.stringify(place),
+      },
+    });
+  } catch (err) {
+    console.error('Error triggering rate notification:', err);
+  }
+}
+
 async function ensureAndroidChannel() {
   console.log('Ensuring Android Channel...');
   const channelId = await notifee.createChannel({

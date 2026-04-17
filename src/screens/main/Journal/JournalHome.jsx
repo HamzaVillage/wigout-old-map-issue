@@ -47,6 +47,8 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import {GetReviews} from '../../../ApiCalls/Main/Reviews/ReviewsApiCall';
 import {GetWishList} from '../../../ApiCalls/Main/WishList_API/WishListAPI';
 import {useIsFocused} from '@react-navigation/native';
+import {requestLocationPermission} from '../../../utils/Permissions';
+import {startBackgroundService} from '../../../services/BackgroundLocationService';
 
 const JournalHome = ({navigation}) => {
   const {navigateToRoute} = useCustomNavigation();
@@ -123,6 +125,23 @@ const JournalHome = ({navigation}) => {
     } finally {
       setLoader(false);
     }
+  }, [token]);
+
+  // Handle Background Location Service initialization
+  useEffect(() => {
+    const initBackgroundService = async () => {
+      if (!token) return;
+
+      const hasPermission = await requestLocationPermission();
+      if (hasPermission) {
+        console.log('Permission granted, starting background service...');
+        await startBackgroundService();
+      } else {
+        console.log('Background location permission denied.');
+      }
+    };
+
+    initBackgroundService();
   }, [token]);
 
   useEffect(() => {

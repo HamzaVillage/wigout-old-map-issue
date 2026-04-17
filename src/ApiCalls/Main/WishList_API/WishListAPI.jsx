@@ -3,7 +3,7 @@ import {ApiCall} from '../../../utils/ApiCall';
 export const GetWishList = async token => {
   try {
     const res = await ApiCall('GET', 'wishlist', '', token);
-    console.log('res in GetWishList:-', res?.data);
+    // console.log('res in GetWishList:-', res?.data);
 
     return res?.data || {success: false, message: 'No data returned'};
   } catch (err) {

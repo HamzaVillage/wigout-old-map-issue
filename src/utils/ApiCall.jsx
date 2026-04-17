@@ -13,10 +13,10 @@ export const ApiCall = async (method, endpoint, data, token = null) => {
       },
       data: data ? data : '',
     };
-    console.log(`Making ${method} request to: ${config.url}`);
-    console.log(`Payload:`, JSON.stringify(data));
+    // console.log(`Making ${method} request to: ${config.url}`);
+    // console.log(`Payload:`, JSON.stringify(data));
     const res = await axios.request(config); // ✅ Use axios.request for broader compatibility with DELETE bodies
-    console.log(`Response received for ${endpoint}:`, res?.status);
+    // console.log(`Response received for ${endpoint}:`, res?.status);
     return res;
   } catch (error) {
     return error;
