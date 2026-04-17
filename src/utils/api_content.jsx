@@ -25,6 +25,7 @@ export const endPoints = {
   deleteNote: '/api/user/deleteNote',
   getAllNotifications: '/api/user/getNotifications',
   notifyUser: '/api/user/notifyUserForNearbyReviewedPlaces',
+  deleteAccount: '/api/user/deleteAccount',
 };
 
 export const ShowToast = (type: 'success' | 'error' | 'info', message) => {

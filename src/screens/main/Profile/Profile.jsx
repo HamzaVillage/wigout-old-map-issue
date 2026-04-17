@@ -23,8 +23,10 @@ import AppColors from '../../../utils/AppColors';
 import AppText from '../../../components/AppTextComps/AppText';
 import LineBreak from '../../../components/LineBreak';
 import LogoutModal from '../../../components/LogoutModal';
+import DeleteAccountModal from '../../../components/DeleteAccountModal';
 import {clearToken} from '../../../redux/Slices';
-import {baseUrl} from '../../../utils/api_content';
+import {baseUrl, ShowToast} from '../../../utils/api_content';
+import {deleteAccount} from '../../../GlobalFunctions/auth';
 import {
   responsiveFontSize,
   responsiveHeight,
@@ -35,7 +37,9 @@ const Profile = () => {
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const userData = useSelector(state => state.user.userData);
+  const token = useSelector(state => state.user.token);
 
   const iconSize = responsiveFontSize(2.2);
   const arrowSize = responsiveFontSize(2.5);
@@ -135,6 +139,18 @@ const Profile = () => {
         ),
       },
       {
+        id: 10,
+        title: 'Delete Account',
+        isDelete: true,
+        icon: (
+          <MaterialIcons
+            name="delete"
+            size={iconSize}
+            color={AppColors.RED_COLOR}
+          />
+        ),
+      },
+      {
         id: 9,
         title: 'Logout',
         isLogout: true,
@@ -146,18 +162,6 @@ const Profile = () => {
           />
         ),
       },
-      // {
-      //   id: 10,
-      //   title: 'Delete Account',
-      //   isDelete: true,
-      //   icon: (
-      //     <MaterialIcons
-      //       name="delete"
-      //       size={iconSize}
-      //       color={AppColors.RED_COLOR}
-      //     />
-      //   ),
-      // },
     ],
     [iconSize],
   );
@@ -165,8 +169,21 @@ const Profile = () => {
   const handleMenuPress = item => {
     if (item.isLogout) {
       setShowLogoutModal(true);
+    } else if (item?.isDelete) {
+      setShowDeleteModal(true);
     } else if (item.navTo) {
       navigation.navigate(item.navTo);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setShowDeleteModal(false);
+    const res = await deleteAccount({token});
+    if (res?.success) {
+      ShowToast('success', res?.msg || 'Account deleted successfully!');
+      dispatch(clearToken());
+    } else {
+      ShowToast('error', res?.message || 'Failed to delete account.');
     }
   };
 
@@ -218,7 +235,11 @@ const Profile = () => {
                   <AppText
                     title={item.title}
                     textColor={
-                      item.isLogout ? AppColors.RED_COLOR : AppColors.BLACK
+                      item.isLogout
+                        ? AppColors.RED_COLOR
+                        : item?.isDelete
+                        ? AppColors.RED_COLOR
+                        : AppColors.BLACK
                     }
                     textSize={1.8}
                   />
@@ -245,6 +266,11 @@ const Profile = () => {
         visible={showLogoutModal}
         handleResetOnPress={() => setShowLogoutModal(false)}
         handleApplyOnPress={() => dispatch(clearToken())}
+      />
+      <DeleteAccountModal
+        visible={showDeleteModal}
+        handleResetOnPress={() => setShowDeleteModal(false)}
+        handleApplyOnPress={handleDeleteAccount}
       />
     </ScreenWrapper>
   );

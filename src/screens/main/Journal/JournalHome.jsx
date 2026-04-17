@@ -301,7 +301,7 @@ const JournalHome = ({navigation}) => {
           <LineBreak space={2} />
 
           {/* Wheel Spinner */}
-          {wishlistItems.length > 0 && (
+          {wishlistItems.length > 1 && (
             <View style={styles.wheelSection}>
               <AppText
                 title={"Can't decide? Spin the wheel!"}

@@ -162,3 +162,22 @@ export const socialLogin = async ({
     };
   }
 };
+
+export const deleteAccount = async ({token}: any) => {
+  try {
+    const res = await axios.delete(`${baseUrl}${endPoints.deleteAccount}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    console.log('DATA in deleteAccount:-', res?.data);
+
+    return res?.data;
+  } catch (error) {
+    return {
+      success: false,
+      message: error?.response?.data?.message || error.message,
+    };
+  }
+};
+
